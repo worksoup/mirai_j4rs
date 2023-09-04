@@ -139,7 +139,10 @@ impl ContactOrBotTrait for Friend {
         } else {
             AvatarSpec::XL.into()
         };
-        return format!(r"http://q.qlogo.cn/g?b=qq&nk={}&s={}", self.get_id(), size,);
+        "http://q.qlogo.cn/g?b=qq&nk=".to_string()
+            + self.get_id().to_string().as_str()
+            + "&s="
+            + size.to_string().as_str()
     }
 }
 impl UserOrBotTrait for Friend {}
@@ -167,7 +170,10 @@ impl ContactOrBotTrait for Stranger {
         } else {
             AvatarSpec::XL.into()
         };
-        return format!(r"http://q.qlogo.cn/g?b=qq&nk={}&s={}", self.get_id(), size,);
+        "http://q.qlogo.cn/g?b=qq&nk=".to_string()
+            + self.get_id().to_string().as_str()
+            + "&s="
+            + size.to_string().as_str()
     }
 }
 impl UserOrBotTrait for Stranger {}
@@ -208,7 +214,10 @@ impl ContactOrBotTrait for NormalMember {
         } else {
             AvatarSpec::XL.into()
         };
-        return format!(r"http://q.qlogo.cn/g?b=qq&nk={}&s={}", self.get_id(), size,);
+        "http://q.qlogo.cn/g?b=qq&nk=".to_string()
+            + self.get_id().to_string().as_str()
+            + "&s="
+            + size.to_string().as_str()
     }
 }
 impl ContactTrait for NormalMember {}

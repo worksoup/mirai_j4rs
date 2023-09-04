@@ -45,13 +45,13 @@ impl GetBotTrait for Bot {
     }
 }
 impl<'a> Bot {
-    pub fn close(&self) {
+    pub fn close(self) {
         Jvm::attach_thread()
             .unwrap()
             .invoke(&self.bot, "close", &[])
             .unwrap();
     }
-    pub fn close_and_join(&self) {
+    pub fn close_and_join(self /*,throwable*/) {
         Jvm::attach_thread()
             .unwrap()
             .invoke(&self.bot, "closeAndJoin", &[])
@@ -240,7 +240,10 @@ impl ContactOrBotTrait for Bot {
         } else {
             AvatarSpec::XL.into()
         };
-        return format!(r"http://q.qlogo.cn/g?b=qq&nk={}&s={}", self.get_id(), size,);
+        "http://q.qlogo.cn/g?b=qq&nk=".to_string()
+            + self.get_id().to_string().as_str()
+            + "&s="
+            + size.to_string().as_str()
     }
 }
 impl UserOrBotTrait for Bot {}
@@ -458,9 +461,9 @@ impl Env {
     {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = Jvm::attach_thread()
-        .unwrap()
-        .static_class("net.mamoe.mirai.event.GlobalEventChannel$INSTANCE")
-        .unwrap();
+            .unwrap()
+            .static_class("net.mamoe.mirai.event.GlobalEventChannel$INSTANCE")
+            .unwrap();
         let _unused = None;
         EventChannel {
             jvm,

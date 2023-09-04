@@ -15,7 +15,7 @@ mod tests {
         message::{FaceEnum, ImageType},
     };
     use j4rs::Jvm;
-    use std::{mem::transmute, path::PathBuf};
+    use std::mem::transmute;
 
     #[test]
     fn it_works() {

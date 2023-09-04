@@ -160,7 +160,7 @@ impl ActiveRankRecord {
             score: Some(score),
         }
     }
-    pub fn get_member(&mut self) -> NormalMember {
+    pub fn get_member(&self) -> NormalMember {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm.invoke(&self.instance, "getMember", &[]).unwrap();
         let bot = jvm.invoke(&instance, "getBot", &[]).unwrap();
@@ -169,7 +169,7 @@ impl ActiveRankRecord {
             .unwrap();
         NormalMember::from_instance(bot, instance, id)
     }
-    pub fn get_member_id(&mut self) -> i64 {
+    pub fn get_member_id(&self) -> i64 {
         if let Some(id) = self.member_id {
             id
         } else {
@@ -184,7 +184,7 @@ impl ActiveRankRecord {
                 .unwrap()
         }
     }
-    pub fn get_member_name(&mut self) -> String {
+    pub fn get_member_name(&self) -> String {
         if let Some(name) = &self.member_name {
             name.clone()
         } else {
@@ -199,7 +199,7 @@ impl ActiveRankRecord {
                 .unwrap()
         }
     }
-    pub fn get_score(&mut self) -> i32 {
+    pub fn get_score(&self) -> i32 {
         if let Some(score) = self.score {
             score
         } else {
@@ -214,7 +214,7 @@ impl ActiveRankRecord {
                 .unwrap()
         }
     }
-    pub fn get_temperature(&mut self) -> i32 {
+    pub fn get_temperature(&self) -> i32 {
         if let Some(temperature) = self.temperature {
             temperature
         } else {

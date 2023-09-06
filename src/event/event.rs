@@ -2,6 +2,7 @@ use contact_derive::GetInstanceDerive;
 use j4rs::{prelude::*, InvocationArg};
 use j4rs::{Instance, Jvm};
 use j4rs_derive::*;
+use std::mem::transmute;
 
 use crate::env::{GetClassTypeTrait, GetEnvTrait};
 
@@ -20,11 +21,12 @@ fn apply_on_event(on_event_ptr: Instance, event: Instance) {
     let on_event_raw: [i8; 16] = Jvm::attach_thread().unwrap().to_rust(on_event_ptr).unwrap();
     println!("rust side 2");
     println!("{:?}", on_event_raw);
-    let on_event: *mut dyn Fn(AbstractEvent) -> () = unsafe { std::mem::transmute(on_event_raw) };
+    let on_event: *mut dyn Fn(AbstractEvent) -> () = unsafe { transmute(on_event_raw) };
     unsafe {
         let _ = (*on_event)(AbstractEvent::from_instance(event));
     };
 }
+
 impl<'a, E> EventChannel<E>
 where
     E: MiraiEventTrait,
@@ -59,7 +61,7 @@ where
             on_event(e);
         });
         let call_from_java_raw: *mut dyn Fn(AbstractEvent) = Box::into_raw(call_from_java);
-        unsafe { std::mem::transmute::<_, [i8; 16]>(call_from_java_raw) }
+        unsafe { transmute::<_, [i8; 16]>(call_from_java_raw) }
     }
     fn subscribe_internal_0_2(on_event: Box<dyn FnOnce(E) -> ()>) -> [i8; 16] {
         let call_from_java: Box<dyn FnOnce(AbstractEvent) -> ()> =
@@ -68,7 +70,7 @@ where
                 on_event(e);
             });
         let call_from_java_raw: *mut dyn FnOnce(AbstractEvent) = Box::into_raw(call_from_java);
-        unsafe { std::mem::transmute::<_, [i8; 16]>(call_from_java_raw) }
+        unsafe { transmute::<_, [i8; 16]>(call_from_java_raw) }
     }
     fn subscribe_internal_1_1(
         &self,
@@ -160,22 +162,26 @@ where
     fn is_intercepted(&self) -> bool;
     fn broadcast(&self);
 }
+
 pub enum OnEvent<'a, E> {
-    Fn(&'a Box<dyn Fn(E)>), // 此处需要值，确保引用有效，值不会被 drop.
+    Fn(&'a Box<dyn Fn(E)>),
+    // 此处需要值，确保引用有效，值不会被 drop.
     FnOnce, // 此处不需要值，因为值已经移动到下方 Listener 中 call_from_java 这个指针所代表的值里了。
 }
+
 pub struct Listener<'a, E> {
     instance: Instance,
     call_from_java: [i8; 16],
     _on_event: OnEvent<'a, E>,
 }
+
 impl<E> Listener<'_, E> {
     pub fn cancel(self) {
         todo!()
     }
     pub fn complete(self) -> bool {
         let call_from_java: *mut dyn Fn(AbstractEvent) -> () =
-            unsafe { std::mem::transmute(self.call_from_java) };
+            unsafe { transmute(self.call_from_java) };
         let call_from_java = unsafe { Box::from_raw(call_from_java) };
         drop(call_from_java);
         let jvm = Jvm::attach_thread().unwrap();
@@ -188,6 +194,7 @@ impl<E> Listener<'_, E> {
 pub struct AbstractEvent {
     instance: Instance,
 }
+
 impl AbstractEvent {
     pub fn get<E>(&self) -> E
     where
@@ -201,11 +208,13 @@ impl AbstractEvent {
         )
     }
 }
+
 impl GetClassTypeTrait for AbstractEvent {
     fn get_class_type() -> Instance {
-        todo!()
+        panic!("本 api 不应当使用。")
     }
 }
+
 impl MiraiEventTrait for AbstractEvent {
     fn from_instance(instance: Instance) -> Self {
         Self { instance }
@@ -231,6 +240,7 @@ impl MiraiEventTrait for AbstractEvent {
         todo!()
     }
 }
+
 pub mod bot {
     use contact_derive::GetInstanceDerive;
     use j4rs::{Instance, Jvm};
@@ -250,11 +260,13 @@ pub mod bot {
     pub struct BotOnlineEvent {
         instance: Instance,
     }
+
     impl GetClassTypeTrait for BotOnlineEvent {
         fn get_class_type() -> Instance {
             todo!()
         }
     }
+
     impl MiraiEventTrait for BotOnlineEvent {
         fn from_instance(instance: Instance) -> Self {
             todo!()
@@ -299,34 +311,45 @@ pub mod bot {
             todo!()
         }
     }
+
     impl BotEventTrait for BotOnlineEvent {
         fn get_bot(&self) -> Bot {
             todo!()
         }
     }
+
     pub trait BotOfflineEventTrait {}
+
     pub struct Active {}
+
     pub struct Force {}
+
     pub struct Dropped {}
+
     pub struct RequireReconnect {}
+
     pub enum BotOfflineEvent {
         Active(Active),
         Force(Force),
         Dropped(Dropped),
         RequireReconnect(RequireReconnect),
     }
+
     impl BotOfflineEventTrait for BotOfflineEvent {}
+
     pub struct BotReloginEvent {}
+
     pub struct BotAvatarChangedEvent {}
+
     pub struct BotNickChangedEvent {}
+
     pub struct NudgeEvent {}
 }
+
 pub mod message {
     use super::MiraiEventTrait;
     use crate::{
-        contact::{
-            contact_trait::MemberTrait, group::Group, AnonymousMember, Friend, Member, NormalMember,
-        },
+        contact::{bot::Bot, group::Group, AnonymousMember, Friend, Member, NormalMember},
         message::MessageChain,
     };
     use contact_derive::{GetClassTypeDerive, GetInstanceDerive};
@@ -336,20 +359,34 @@ pub mod message {
     where
         Self: MiraiEventTrait,
     {
-        type ContactItem;
-        type UserItem;
-        fn get_subject(&self) -> Self::ContactItem;
-        fn get_sender(&self) -> Self::UserItem;
+        fn get_bot(&self) -> Bot {
+            todo!()
+        }
         fn get_message(&self) -> MessageChain {
             let jvm = Jvm::attach_thread().unwrap();
             let instance = jvm.invoke(&self.get_instance(), "getMessage", &[]).unwrap();
             MessageChain { instance }
         }
+        type UserItem;
+        fn get_sender(&self) -> Self::UserItem;
+        fn get_sender_name(&self) -> String {
+            todo!()
+        }
+        fn get_source(&self) {
+            todo!()
+        }
+        type ContactItem;
+        fn get_subject(&self) -> Self::ContactItem;
+        fn get_time(&self) -> i64 {
+            todo!()
+        }
     }
+
     #[derive(GetInstanceDerive, GetClassTypeDerive)]
     pub struct GroupMessageEvent {
         instance: Instance,
     }
+
     impl GroupMessageEvent {
         // 该函数被 GetClassTypeDerive 宏使用。该宏实现了 GetClassTypeTrait。
         // 这个特征可以返回 java 中 Class 对象，监听事件的时候用。
@@ -361,6 +398,7 @@ pub mod message {
             "net.mamoe.mirai.event.events.GroupMessageEvent".to_owned()
         }
     }
+
     // 这个特征实现了一个 event 所需要的函数。
     impl MiraiEventTrait for GroupMessageEvent {
         fn from_instance(instance: Instance) -> Self {
@@ -387,6 +425,7 @@ pub mod message {
             todo!()
         }
     }
+
     // 实现了 message 所需要的函数。
     impl MessageEventTrait for GroupMessageEvent {
         type ContactItem = Group;
@@ -444,15 +483,18 @@ pub mod message {
             }
         }
     }
+
     #[derive(GetInstanceDerive, GetClassTypeDerive)]
     pub struct FriendMessageEvent {
         instance: Instance,
     }
+
     impl FriendMessageEvent {
         fn get_class_name() -> String {
             "net.mamoe.mirai.event.events.FriendMessageEvent".to_owned()
         }
     }
+
     impl MiraiEventTrait for FriendMessageEvent {
         fn from_instance(instance: Instance) -> Self {
             FriendMessageEvent { instance }
@@ -478,6 +520,7 @@ pub mod message {
             todo!()
         }
     }
+
     impl MessageEventTrait for FriendMessageEvent {
         type ContactItem = Friend;
         type UserItem = Friend;
@@ -495,88 +538,130 @@ pub mod message {
             todo!()
         }
     }
+
     pub struct GroupTempMessageEvent {}
+
     pub struct StrangerMessageEvent {}
+
     pub struct OtherClientMessageEvent {}
 
     pub trait MessagePreSendEventTrait {}
+
     pub struct GroupMessagePreSendEvent {}
+
     pub struct FriendMessagePreSendEvent {}
+
     pub struct GroupTempMessagePreSendEvent {}
+
     pub struct StrangerMessagePreSendEvent {}
+
     pub struct OtherClientMessagePreSendEvent {}
 
     pub trait MessagePostSendEventTrait {}
+
     pub struct GroupMessagePostSendEvent {}
+
     pub struct FriendMessagePostSendEvent {}
+
     pub struct GroupTempMessagePostSendEvent {}
+
     pub struct StrangerMessagePostSendEvent {}
+
     pub struct OtherClientMessagePostSendEvent {}
 
     pub trait MessageRecallTrait {}
+
     pub enum MessageRecall {
         FriendRecall,
         GroupRecall,
         TempRecall,
     }
+
     pub struct BeforeImageUploadEvent {}
+
     pub enum ImageUploadEvent {
         Succeed,
         Failed,
     }
+
     pub struct NudgeEvent {}
 
     pub trait MessageSyncEvent {}
 }
+
 pub mod group {
     pub enum BotLeaveEvent {
         Active,
         Kick,
     }
+
     pub struct BotGroupPermissionChangeEvent {}
+
     pub struct BotMuteEvent {}
+
     pub struct BotUnmuteEvent {}
+
     pub struct BotJoinGroupEvent {}
+
     pub mod settings {
         pub trait GroupSettingsChangeEvent {}
+
         pub struct GroupNameChangeEvent {}
+
         pub struct GroupEntranceAnnouncementChangeEvent {}
+
         pub struct GroupMuteAllChangeEvent {}
+
         pub struct GroupAllowAnonymousChatChangeEvent {}
+
         pub struct GroupAllowMemberInviteChangeEvent {}
     }
+
     pub mod member {
         pub enum MemberJoinEvent {
             Invite,
             Active,
         }
+
         pub enum MemberLeaveEvent {
             Kick,
             Quit,
         }
+
         pub struct MemberJoinRequestEvent {}
+
         pub struct BotInvitedJoinGroupRequestEvent {}
     }
+
     pub mod honor {
         pub struct MemberCardChangeEvent {}
+
         pub struct MemberSpecialTitleChangeEvent {}
     }
 
     pub mod member_permission {
-
         pub struct MemberPermissionChangeEvent {}
     }
+
     pub mod action {
         pub struct MemberMuteEvent {}
+
         pub struct MemberUnmuteEvent {}
     }
 }
+
 pub mod friend {
     pub struct FriendRemarkChangeEvent {}
+
     pub struct FriendAddEvent {}
+
     pub struct FriendDeleteEvent {}
+
     pub struct NewFriendRequestEvent {}
+
     pub struct FriendAvatarChangedEvent {}
+
     pub struct FriendNickChangedEvent {}
+
     pub struct FriendInputStatusChangedEvent {}
 }

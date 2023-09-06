@@ -1,6 +1,7 @@
-#[derive(IntoPrimitive, Debug)]
+#[derive(num_enum::FromPrimitive, num_enum::IntoPrimitive, Debug)]
 #[repr(i32)]
 pub enum FaceEnum {
+    #[default]
     惊讶 = 0,
     撇嘴 = 1,
     色 = 2,

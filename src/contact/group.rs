@@ -16,6 +16,7 @@ use std::collections::HashMap;
 pub struct GroupSettings {
     instance: Instance,
 }
+
 impl GroupSettings {
     pub fn is_allow_member_invite(&self) -> bool {
         Jvm::attach_thread()
@@ -100,21 +101,26 @@ impl GroupSettings {
             .unwrap();
     }
 }
+
 #[derive(GetInstanceDerive, GetBotDerive)]
 pub struct Group {
     pub(crate) bot: Instance,
     pub(crate) instance: Instance,
     pub(crate) id: i64,
 }
+
 pub struct GroupActive {
     instance: Instance,
 }
+
 pub struct Announcements {
     instance: Instance,
 }
+
 pub struct MemberPermission {
     instance: Instance,
 }
+
 pub struct ActiveRankRecord {
     instance: Instance,
     member_name: Option<String>,
@@ -122,6 +128,7 @@ pub struct ActiveRankRecord {
     temperature: Option<i32>,
     score: Option<i32>,
 }
+
 impl ActiveRankRecord {
     pub fn new(
         member_name: String,
@@ -230,10 +237,12 @@ impl ActiveRankRecord {
         }
     }
 }
+
 pub struct MiraiMap<K, V> {
     pub(crate) instance: Instance,
     pub(crate) _t: Option<HashMap<K, V>>,
 }
+
 impl<K, V> MiraiMap<K, V> {
     //顺序复制为rust HashMap.
     pub fn to_hash_map_t(
@@ -248,7 +257,7 @@ impl<K, V> MiraiMap<K, V> {
         >,
     ) -> HashMap<K, V>
     where
-        K: std::cmp::Eq + std::cmp::PartialEq + std::hash::Hash,
+        K: Eq + PartialEq + std::hash::Hash,
     {
         let jvm = Jvm::attach_thread().unwrap();
         let jcast =
@@ -276,6 +285,7 @@ impl<K, V> MiraiMap<K, V> {
         map
     }
 }
+
 //特化版本。
 impl MiraiMap<i32, String> {
     pub fn to_hash_map(&self) -> HashMap<i32, String> {
@@ -293,6 +303,7 @@ impl MiraiMap<i32, String> {
         ))
     }
 }
+
 //特化版本。
 impl MiraiMap<String, i32> {
     pub fn to_hash_map(&self) -> HashMap<String, i32> {
@@ -310,6 +321,7 @@ impl MiraiMap<String, i32> {
         ))
     }
 }
+
 //特化版本。该版本不应当使用。
 impl MiraiMap<String, String> {
     pub fn to_hash_map(&self) -> HashMap<String, String> {
@@ -328,18 +340,21 @@ impl MiraiMap<String, String> {
         ))
     }
 }
+
 impl<K, V> GetEnvTrait for MiraiMap<K, V> {
-    fn get_instance(&self) -> j4rs::Instance {
+    fn get_instance(&self) -> Instance {
         Jvm::attach_thread()
             .unwrap()
             .clone_instance(&self.instance)
             .unwrap()
     }
 }
+
 pub struct MiraiList<T> {
     instance: Instance,
     vec: Option<Vec<T>>,
 }
+
 impl MiraiList<ActiveRankRecord> {
     ///这个函数记得改改。
     pub fn to_vector(&self) -> &Option<Vec<ActiveRankRecord>> {
@@ -370,33 +385,41 @@ impl MiraiList<ActiveRankRecord> {
         self.vec = Some(vec);
     }
 }
+
 impl<T> GetEnvTrait for MiraiList<T> {
-    fn get_instance(&self) -> j4rs::Instance {
+    fn get_instance(&self) -> Instance {
         Jvm::attach_thread()
             .unwrap()
             .clone_instance(&self.instance)
             .unwrap()
     }
 }
+
 pub struct ActiveChart {
     instance: Instance,
 }
+
 pub struct ActiveHonorInfo {
     instance: Instance,
 }
+
 /// 群荣耀历史数据
 pub struct ActiveHonorList {
     instance: Instance,
 }
+
 pub struct MemberMedalInfo {
     instance: Instance,
 }
+
 pub struct MemberMedalType {
     instance: Instance,
 }
+
 pub struct MemberActive {
     instance: Instance,
 }
+
 impl GroupActive {
     pub fn get_rank_titles(&self) -> MiraiMap<i32, String> {
         MiraiMap {
@@ -559,12 +582,14 @@ impl GroupActive {
             .unwrap();
     }
 }
+
 impl FromInstance for Group {
     type Item = Group;
     fn from_instance(bot: Instance, instance: Instance, id: i64) -> Group {
         Group { bot, instance, id }
     }
 }
+
 impl ContactOrBotTrait for Group {
     fn get_id(&self) -> i64 {
         self.id
@@ -575,10 +600,18 @@ impl ContactOrBotTrait for Group {
         } else {
             AvatarSpec::XL.into()
         };
-        return format!(r"http://p.qlogo.cn/gh/{0}/{0}/{1}", self.get_id(), size);
+        let id = self.get_id().to_string();
+        return "http://p.qlogo.cn/gh/".to_string()
+            + id.as_str()
+            + "/"
+            + id.as_str()
+            + "/"
+            + size.to_string().as_str();
     }
 }
+
 impl ContactTrait for Group {}
+
 impl Group {
     pub fn new(bot: &Bot, id: i64) -> Option<Group> {
         let instance = Jvm::attach_thread()

@@ -1,30 +1,16 @@
 //TODO : message_chain_builder
 use super::MessageChain;
 use crate::{
-    contact::{bot::Env, group::Group},
+    contact::{bot::Env, contact_trait::ContactTrait, group::Group},
     env::GetEnvTrait,
 };
 use j4rs::{InvocationArg, Jvm};
+
 pub trait MessageTrait
 where
     Self: GetEnvTrait,
 {
-    fn to_display_string(&self, group: Group) -> String {
-        Jvm::attach_thread()
-            .unwrap()
-            .to_rust(
-                Jvm::attach_thread()
-                    .unwrap()
-                    .invoke(
-                        &self.get_instance(),
-                        "getDisplay",
-                        &[InvocationArg::try_from(group.get_instance()).unwrap()],
-                    )
-                    .unwrap(),
-            )
-            .unwrap()
-    }
-    fn to_content_text(&self) -> String {
+    fn to_content(&self) -> String {
         Jvm::attach_thread()
             .unwrap()
             .to_rust(
@@ -46,11 +32,23 @@ where
             )
             .unwrap()
     }
+    fn equals_to_message<T: MessageTrait>(
+        &self,
+        message: T,
+        ignore_case: bool,
+        strict: bool,
+    ) -> bool {
+        todo!()
+    }
+    fn equals_to_string<T: MessageTrait>(&self, message: T, ignore_case: bool) -> bool {
+        todo!()
+    }
     fn plus<T>(&self, message: T) -> MessageChain
     where
         T: MessageTrait,
     {
         // j4rs 旧版本中有 bug, 所以只能如下写法。见 https://github.com/astonbitecode/j4rs/issues/71
+        // 再注：不是同一个 bug, 所以新版本还是要这么写。
         let jvm = Jvm::attach_thread().unwrap();
         let msg1 = InvocationArg::try_from(self.get_instance()).unwrap(); // j4rs <= 0.17.1
         let msg2 = InvocationArg::try_from(message.get_instance()).unwrap();
@@ -61,11 +59,12 @@ where
         MessageChain { instance }
     }
 }
+
 pub trait CodableMessageTrait
 where
     Self: MessageTrait,
 {
-    fn to_mirai_code(&self) -> String {
+    fn to_code(&self) -> String {
         Jvm::attach_thread()
             .unwrap()
             .to_rust(
@@ -76,7 +75,7 @@ where
             )
             .unwrap()
     }
-    fn append_mirai_code_to(&self) -> String {
+    fn append_code_to(&self) -> String {
         //  Jvm::attach_thread().unwrap()
         //     .to_rust(
         //          Jvm::attach_thread().unwrap()
@@ -87,11 +86,13 @@ where
         todo!()
     }
 }
+
 pub trait SingleMessageTrait
 where
     Self: MessageTrait,
 {
 }
+
 pub trait MessageChainTrait
 where
     Self: MessageTrait + CodableMessageTrait,
@@ -99,36 +100,77 @@ where
     fn contains(&self) {
         todo!()
     }
-    fn deserialize_from_json_string(_env: &Env, _json: String) -> MessageChain {
-        todo!()
+    fn deserialize_from_json(json: String) -> MessageChain {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm
+            .invoke_static(
+                "net.mamoe.mirai.message.data.MessageChain",
+                "deserializeFromJsonString",
+                &[InvocationArg::try_from(json).unwrap()],
+            )
+            .unwrap();
+        MessageChain { instance }
     }
-    fn deserialize_from_mirai_code(_env: &Env, _json: String) -> MessageChain {
-        todo!()
+    fn deserialize_from_code<T: ContactTrait>(code: String, contact: T) -> MessageChain {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm
+            .invoke_static(
+                "net.mamoe.mirai.message.data.MessageChain",
+                "deserializeFromMiraiCode",
+                &[
+                    InvocationArg::try_from(code).unwrap(),
+                    InvocationArg::try_from(contact.get_instance()).unwrap(),
+                ],
+            )
+            .unwrap();
+        MessageChain { instance }
     }
     fn get(&self) //-> impl SingleMessageTrait
     {
         todo!()
     }
-    fn serialize_to_json_string(_env: &Env, _chain: &MessageChain) -> String {
-        todo!()
+    fn serialize_to_json_string(chain: &MessageChain) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm
+            .invoke_static(
+                "net.mamoe.mirai.message.data.MessageChain",
+                "serializeToJsonString",
+                &[InvocationArg::try_from(chain.get_instance()).unwrap()],
+            )
+            .unwrap();
+        jvm.to_rust(instance).unwrap()
     }
-    fn serialize_to_string(_env: &Env, _chain: &MessageChain) -> String {
-        todo!()
+    fn serialize_to_string(chain: &MessageChain) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm
+            .invoke_static(
+                "net.mamoe.mirai.message.data.MessageChain",
+                "serializeToString",
+                &[InvocationArg::try_from(chain.get_instance()).unwrap()],
+            )
+            .unwrap();
+        jvm.to_rust(instance).unwrap()
     }
 }
+
 pub trait MessageContentTrait
 where
     Self: SingleMessageTrait,
 {
 }
+
 pub trait RichMessageTrait
 where
     Self: MessageContentTrait,
 {
+    fn get_key(&self) {
+        todo!()
+    }
     fn share() {
         todo!()
     }
 }
+
 pub trait ServiceMessageTrait
 where
     Self: RichMessageTrait + CodableMessageTrait,
@@ -137,6 +179,7 @@ where
         todo!()
     }
 }
+
 pub trait ConstrainSingleTrait
 where
     Self: SingleMessageTrait,
@@ -148,27 +191,37 @@ where
         todo!()
     }
 }
+
 pub trait MarketFace
 where
     Self: ConstrainSingleTrait + MessageContentTrait,
 {
+    fn get_id() -> i32 {
+        todo!()
+    }
+    fn get_key() -> () {
+        todo!()
+    }
     fn get_name() -> String {
         todo!()
     }
 }
+
 pub trait MessageMetaDataTrait
 where
     Self: SingleMessageTrait,
 {
 }
+
 impl<T> MessageTrait for T
 where
     T: MessageMetaDataTrait,
 {
-    fn to_content_text(&self) -> String {
+    fn to_content(&self) -> String {
         String::new()
     }
 }
+
 /// # TODO
 pub trait CustomMessageTrait
 where
@@ -176,8 +229,21 @@ where
 {
     //TODO
 }
+
 pub trait AudioTrait
 where
     Self: SingleMessageTrait + ConstrainSingleTrait,
 {
+}
+
+pub trait MessageHashCodeTrait: MessageTrait {
+    fn hash_code(&self) -> i32 {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.chain(&self.get_instance())
+            .unwrap()
+            .invoke("hashCode", &[])
+            .unwrap()
+            .to_rust()
+            .unwrap()
+    }
 }

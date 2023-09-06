@@ -74,7 +74,7 @@
 
  ``` toml
 [dependencies]
-mirai_j4rs={ git = "https://github.com/Leart-Loen/mirai_j4rs.git" }
+mirai_j4rs={ git = "https://github.com/worksoup/mirai_j4rs.git" }
  ```
 
 ## 机器人

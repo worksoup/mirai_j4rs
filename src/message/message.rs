@@ -532,13 +532,11 @@ impl MessageContentTrait for Image {}
 
 impl MessageHashCodeTrait for Image {}
 
-pub struct UnsupportedMessage {}
-
-impl GetEnvTrait for UnsupportedMessage {
-    fn get_instance(&self) -> Instance {
-        todo!()
-    }
+#[derive(GetInstanceDerive)]
+pub struct UnsupportedMessage {
+    instance: Instance,
 }
+
 
 impl MessageTrait for UnsupportedMessage {}
 
@@ -546,18 +544,11 @@ impl SingleMessageTrait for UnsupportedMessage {}
 
 impl MessageContentTrait for UnsupportedMessage {}
 
+#[derive(GetInstanceDerive)]
 pub struct FileMessage {
     instance: Instance,
 }
 
-impl GetEnvTrait for FileMessage {
-    fn get_instance(&self) -> Instance {
-        Jvm::attach_thread()
-            .unwrap()
-            .clone_instance(&self.instance)
-            .unwrap()
-    }
-}
 
 impl MessageTrait for FileMessage {}
 
@@ -569,17 +560,9 @@ impl ConstrainSingleTrait for FileMessage {}
 
 impl CodableMessageTrait for FileMessage {}
 
+#[derive(GetInstanceDerive)]
 pub struct MusicShare {
     instance: Instance,
-}
-
-impl GetEnvTrait for MusicShare {
-    fn get_instance(&self) -> Instance {
-        Jvm::attach_thread()
-            .unwrap()
-            .clone_instance(&self.instance)
-            .unwrap()
-    }
 }
 
 impl MessageTrait for MusicShare {}
@@ -592,18 +575,11 @@ impl ConstrainSingleTrait for MusicShare {}
 
 impl CodableMessageTrait for MusicShare {}
 
+#[derive(GetInstanceDerive)]
 pub struct LightApp {
     instance: Instance,
 }
 
-impl GetEnvTrait for LightApp {
-    fn get_instance(&self) -> Instance {
-        Jvm::attach_thread()
-            .unwrap()
-            .clone_instance(&self.instance)
-            .unwrap()
-    }
-}
 
 impl MessageTrait for LightApp {}
 
@@ -615,17 +591,9 @@ impl RichMessageTrait for LightApp {}
 
 impl CodableMessageTrait for LightApp {}
 
+#[derive(GetInstanceDerive)]
 pub struct ForwardMessage {
     instance: Instance,
-}
-
-impl GetEnvTrait for ForwardMessage {
-    fn get_instance(&self) -> Instance {
-        Jvm::attach_thread()
-            .unwrap()
-            .clone_instance(&self.instance)
-            .unwrap()
-    }
 }
 
 impl MessageTrait for ForwardMessage {}

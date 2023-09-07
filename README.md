@@ -37,6 +37,7 @@
 - [ ] 自定义消息
 - [ ] 音乐分享
 - [ ] 短视频
+- [ ] 超级表情
 
 **群相关**
 
@@ -74,7 +75,7 @@
 
  ``` toml
 [dependencies]
-mirai_j4rs={ git = "https://github.com/Leart-Loen/mirai_j4rs.git" }
+mirai_j4rs={ git = "https://github.com/worksoup/mirai_j4rs.git" }
  ```
 
 ## 机器人

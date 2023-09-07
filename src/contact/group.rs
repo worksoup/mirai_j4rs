@@ -256,8 +256,8 @@ impl<K, V> MiraiMap<K, V> {
             ) -> (K, V),
         >,
     ) -> HashMap<K, V>
-    where
-        K: Eq + PartialEq + std::hash::Hash,
+        where
+            K: Eq + PartialEq + std::hash::Hash,
     {
         let jvm = Jvm::attach_thread().unwrap();
         let jcast =
@@ -601,7 +601,8 @@ impl ContactOrBotTrait for Group {
             AvatarSpec::XL.into()
         };
         let id = self.get_id().to_string();
-        return "http://p.qlogo.cn/gh/".to_string()
+        // 这里 Mirai 源码中应该是 http 而不是 https.
+        return "https://p.qlogo.cn/gh/".to_string()
             + id.as_str()
             + "/"
             + id.as_str()
@@ -794,9 +795,9 @@ impl Group {
                 "setEssenceMessage",
                 &[InvocationArg::try_from(source.get_instance()).unwrap()],
             )
-            .unwrap(),
+                .unwrap(),
         )
-        .unwrap()
+            .unwrap()
     }
     // function name need to be changed.
     pub fn set_essence_message_s(group: Group, chain: MessageChain) -> bool {
@@ -810,9 +811,9 @@ impl Group {
                     InvocationArg::try_from(chain.get_instance()).unwrap(),
                 ],
             )
-            .unwrap(),
+                .unwrap(),
         )
-        .unwrap()
+            .unwrap()
     }
     pub fn set_name(&self, name: &str) {
         Jvm::attach_thread()

@@ -4,11 +4,11 @@ use super::{
     ContactList, Friend, OtherClient, Stranger,
 };
 use crate::{
-    contact::{bot, group::MiraiMap},
+    contact::group::MiraiMap,
     env::{GetBotTrait, GetEnvTrait},
-    event::{EventChannel, MiraiEventTrait},
+    event::{event_trait::MiraiEventTrait, EventChannel},
     other::{
-        enums::{self, AvatarSpec, HeartbeatStrategy, MiraiProtocol},
+        enums::{AvatarSpec, HeartbeatStrategy, MiraiProtocol},
         tools,
     },
 };
@@ -25,16 +25,18 @@ pub struct Bot {
     pub(crate) bot: Instance,
     pub(crate) id: i64,
 }
+
 impl GetEnvTrait for Bot {
-    fn get_instance(&self) -> j4rs::Instance {
+    fn get_instance(&self) -> Instance {
         Jvm::attach_thread()
             .unwrap()
             .clone_instance(&self.bot)
             .unwrap()
     }
 }
+
 impl GetBotTrait for Bot {
-    fn get_bot(&self) -> bot::Bot {
+    fn get_bot(&self) -> Bot {
         Bot {
             bot: Jvm::attach_thread()
                 .unwrap()
@@ -44,6 +46,7 @@ impl GetBotTrait for Bot {
         }
     }
 }
+
 impl<'a> Bot {
     pub fn close(self) {
         Jvm::attach_thread()
@@ -92,8 +95,8 @@ impl<'a> Bot {
         }
     }
     pub fn get_event_channel<E>(&self) -> EventChannel<E>
-    where
-        E: MiraiEventTrait,
+        where
+            E: MiraiEventTrait,
     {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = Jvm::attach_thread()
@@ -230,29 +233,37 @@ impl<'a> Bot {
         todo!()
     }
 }
+
 impl ContactOrBotTrait for Bot {
     fn get_id(&self) -> i64 {
         self.id
     }
-    fn get_avatar_url(&self, size: Option<crate::other::enums::AvatarSpec>) -> String {
+    fn get_avatar_url(&self, size: Option<AvatarSpec>) -> String {
         let size: i32 = if let Some(size) = size {
             size.into()
         } else {
             AvatarSpec::XL.into()
         };
-        "http://q.qlogo.cn/g?b=qq&nk=".to_string()
+        // 这里 Mirai 源码中应该是 http 而不是 https.
+        "https://q.qlogo.cn/g?b=qq&nk=".to_string()
             + self.get_id().to_string().as_str()
             + "&s="
             + size.to_string().as_str()
     }
 }
+
 impl UserOrBotTrait for Bot {}
+
 pub struct MiraiLogger(Instance);
+
 pub struct DeviceInfo(Instance);
+
 pub struct LoginSolver(Instance);
+
 pub struct ContactListCache {
     instance: Instance,
 }
+
 impl ContactListCache {
     pub fn get_save_interval_millis(&self) -> u64 {
         return Jvm::attach_thread()
@@ -327,10 +338,12 @@ impl ContactListCache {
             .unwrap();
     }
 }
+
 pub struct Env {
     jvm: Jvm,
     instance: Instance,
 }
+
 impl Env {
     pub fn new(jar_paths: &Vec<String>, java_opts: &Vec<String>) -> Self {
         let entries = {
@@ -364,7 +377,7 @@ impl Env {
     }
     pub fn fix_protocol_version_fetch(
         &self,
-        protocol: enums::MiraiProtocol,
+        protocol: MiraiProtocol,
         version: String,
     ) -> () {
         println!("fix protocol version - tmp - fetch");
@@ -377,7 +390,7 @@ impl Env {
             ],
         );
     }
-    pub fn fix_protocol_version_load(&self, protocol: enums::MiraiProtocol) -> () {
+    pub fn fix_protocol_version_load(&self, protocol: MiraiProtocol) -> () {
         println!("fix protocol version - tmp - load");
         let _ = self.jvm.invoke_static(
             "xyz.cssxsh.mirai.tool.FixProtocolVersion",
@@ -426,7 +439,7 @@ impl Env {
                                 .clone_instance(instance)
                                 .unwrap(),
                         )
-                        .unwrap()],
+                            .unwrap()],
                     )
                     .unwrap(),
             )
@@ -456,8 +469,8 @@ impl Env {
     }
     //默认是global的。
     pub fn event_channel<E>(&self) -> EventChannel<E>
-    where
-        E: MiraiEventTrait,
+        where
+            E: MiraiEventTrait,
     {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = Jvm::attach_thread()
@@ -472,9 +485,11 @@ impl Env {
         }
     }
 }
+
 pub trait Certificate<T> {
     fn new_bot(&self, id: i64, password: T, bot_configuration: Option<BotConfiguration>) -> Bot;
 }
+
 impl Certificate<String> for Env {
     fn new_bot(
         &self,
@@ -517,6 +532,7 @@ impl Certificate<String> for Env {
         Bot { bot, id }
     }
 }
+
 impl Certificate<[u8; 16]> for Env {
     fn new_bot(
         &self,
@@ -560,7 +576,7 @@ impl Certificate<[u8; 16]> for Env {
                                 .create_java_array("byte", &password_md5)
                                 .unwrap(),
                         )
-                        .unwrap(),
+                            .unwrap(),
                         InvocationArg::try_from(bot_configuration.get_instance()).unwrap(),
                     ],
                 )
@@ -582,7 +598,7 @@ impl Certificate<[u8; 16]> for Env {
                                 .create_java_array("byte", &password_md5)
                                 .unwrap(),
                         )
-                        .unwrap(),
+                            .unwrap(),
                     ],
                 )
                 .unwrap()
@@ -590,17 +606,20 @@ impl Certificate<[u8; 16]> for Env {
         Bot { bot, id }
     }
 }
+
 pub struct BotConfiguration {
     instance: Instance,
 }
-impl crate::env::GetEnvTrait for BotConfiguration {
-    fn get_instance(&self) -> j4rs::Instance {
+
+impl GetEnvTrait for BotConfiguration {
+    fn get_instance(&self) -> Instance {
         Jvm::attach_thread()
             .unwrap()
             .clone_instance(&self.instance)
             .unwrap()
     }
 }
+
 // builders
 impl BotConfiguration {
     pub fn copy_configuration_from(bot: &Bot) -> Self {
@@ -618,6 +637,7 @@ impl BotConfiguration {
         BotConfiguration { instance }
     }
 }
+
 // getters
 impl BotConfiguration {
     pub fn get_auto_reconnect_on_force_offline(&self) -> bool {
@@ -648,7 +668,7 @@ impl BotConfiguration {
                                 .clone_instance(&bot.bot)
                                 .unwrap(),
                         )
-                        .unwrap()],
+                            .unwrap()],
                     )
                     .unwrap(),
             )
@@ -694,7 +714,7 @@ impl BotConfiguration {
                                 .clone_instance(&bot.bot)
                                 .unwrap(),
                         )
-                        .unwrap()],
+                            .unwrap()],
                     )
                     .unwrap(),
             )
@@ -838,7 +858,8 @@ impl BotConfiguration {
         return PathBuf::from(i);
     }
 }
-/// askers
+
+/// isXXX()
 impl BotConfiguration {
     pub fn is_convert_line_separator(&self) -> bool {
         return Jvm::attach_thread()
@@ -861,6 +882,7 @@ impl BotConfiguration {
             .unwrap();
     }
 }
+
 /// setters
 impl BotConfiguration {
     pub fn set_auto_reconnect_on_force_offline(&self, yes: bool) {
@@ -961,7 +983,7 @@ impl BotConfiguration {
                         )
                         .unwrap(),
                 )
-                .unwrap()],
+                    .unwrap()],
             )
             .unwrap();
     }
@@ -1093,6 +1115,7 @@ impl BotConfiguration {
             .unwrap();
     }
 }
+
 impl BotConfiguration {
     /// 在被挤下线时自动重连。
     pub fn auto_reconnect_on_force_offline(&self) {
@@ -1200,9 +1223,9 @@ impl BotConfiguration {
         } else {
             retain.unwrap()
         })
-        .unwrap()
-        .into_primitive()
-        .unwrap();
+            .unwrap()
+            .into_primitive()
+            .unwrap();
         if indentity.is_none() {
             Jvm::attach_thread()
                 .unwrap()
@@ -1325,6 +1348,7 @@ impl BotConfiguration {
     //     }
     // }
 }
+
 /// bot builder
 pub struct BotBuilder {
     pub env: Env,
@@ -1333,15 +1357,18 @@ pub struct BotBuilder {
     password: Option<String>,
     password_md5: Option<[u8; 16]>,
 }
+
 #[derive(Deserialize, Serialize)]
 struct BaseConfig {
     config_file: String,
 }
+
 #[derive(Deserialize, Serialize)]
 struct EnvConfig {
     jar_paths: Vec<String>,
     java_opts: Vec<String>,
 }
+
 impl BotBuilder {
     fn internal_new_env() -> Env {
         let default_base_config = BaseConfig {
@@ -1359,9 +1386,8 @@ impl BotBuilder {
         let mut dir_tmp = dir.to_path_buf();
         dir_tmp.push("base_config.toml");
         // 如果 `base_config.toml` 不存在则创建一个默认的。
-        if let Ok(base_caonfig_file) = std::fs::metadata(&dir_tmp) {
-            if base_caonfig_file.is_file() {
-            } else {
+        if let Ok(base_config_file) = std::fs::metadata(&dir_tmp) {
+            if base_config_file.is_file() {} else {
                 std::fs::remove_dir(&dir_tmp).unwrap();
                 let _ = std::fs::File::create(&dir_tmp).unwrap();
                 let contents = toml::to_string(&default_base_config).unwrap();
@@ -1530,7 +1556,7 @@ impl BotBuilder {
     }
     pub fn fix_protocol_version_fetch(
         self,
-        protocol: enums::MiraiProtocol,
+        protocol: MiraiProtocol,
         version: String,
     ) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
@@ -1545,7 +1571,7 @@ impl BotBuilder {
         );
         self
     }
-    pub fn fix_protocol_version_load(self, protocol: enums::MiraiProtocol) -> Self {
+    pub fn fix_protocol_version_load(self, protocol: MiraiProtocol) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         println!("fix protocol version - tmp - load");
         let _ = jvm.invoke_static(

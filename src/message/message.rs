@@ -65,20 +65,12 @@ impl<'a, T> MessageReceipt<'a, T>
     } // 重载。
 }
 
+#[derive(GetInstanceDerive)]
 pub struct MessageChain {
     pub(crate) instance: Instance,
 }
 
 impl MessageChain {}
-
-impl GetEnvTrait for MessageChain {
-    fn get_instance(&self) -> Instance {
-        Jvm::attach_thread()
-            .unwrap()
-            .clone_instance(&self.instance)
-            .unwrap()
-    }
-}
 
 impl MessageTrait for MessageChain {}
 
@@ -86,18 +78,18 @@ impl CodableMessageTrait for MessageChain {}
 
 impl MessageChainTrait for MessageChain {}
 
+impl Iterator for MessageChain {
+    type Item = ();
+
+    fn next(&mut self) -> Option<Self::Item> {
+        todo!()
+    }
+}
+
+#[derive(GetInstanceDerive)]
 pub struct At {
     id: i64,
     instance: Instance,
-}
-
-impl GetEnvTrait for At {
-    fn get_instance(&self) -> Instance {
-        Jvm::attach_thread()
-            .unwrap()
-            .clone_instance(&self.instance)
-            .unwrap()
-    }
 }
 
 impl At {
@@ -160,17 +152,9 @@ impl MessageHashCodeTrait for At {
     }
 }
 
+#[derive(GetInstanceDerive)]
 pub struct AtAll {
     instance: Instance,
-}
-
-impl GetEnvTrait for AtAll {
-    fn get_instance(&self) -> Instance {
-        Jvm::attach_thread()
-            .unwrap()
-            .clone_instance(&self.instance)
-            .unwrap()
-    }
 }
 
 impl AtAll {
@@ -209,6 +193,7 @@ impl MessageHashCodeTrait for AtAll {
     }
 }
 
+#[derive(GetInstanceDerive)]
 pub struct PlainText {
     content: String,
     instance: Instance,
@@ -248,15 +233,6 @@ impl From<String> for PlainText {
 impl PlainText {
     pub fn get_content(&self) -> String {
         self.content.clone()
-    }
-}
-
-impl GetEnvTrait for PlainText {
-    fn get_instance(&self) -> Instance {
-        Jvm::attach_thread()
-            .unwrap()
-            .clone_instance(&self.instance)
-            .unwrap()
     }
 }
 
@@ -506,7 +482,7 @@ impl Image {
             .to_rust()
             .unwrap()
     }
-    pub fn is_uploaded(bot: Bot, md5: [u8; 16] /*md5大小想必是16*/, size: i64) -> bool {
+    pub fn is_uploaded(bot: Bot, md5: [u8; 16], size: i64) -> bool {
         todo!()
     }
     pub fn query_url(&self) -> String {
@@ -744,15 +720,6 @@ impl MarketFace for RockPaperScissors {}
 #[derive(GetInstanceDerive)]
 pub struct VipFace {
     instance: Instance,
-}
-
-impl GetEnvTrait for VipFace {
-    fn get_instance(&self) -> Instance {
-        Jvm::attach_thread()
-            .unwrap()
-            .clone_instance(&self.instance)
-            .unwrap()
-    }
 }
 
 impl MessageTrait for VipFace {}

@@ -1,14 +1,14 @@
 //TODO : message_chain_builder
 use super::MessageChain;
 use crate::{
-    contact::{bot::Env, contact_trait::ContactTrait, group::Group},
+    contact::contact_trait::ContactTrait,
     env::GetEnvTrait,
 };
 use j4rs::{InvocationArg, Jvm};
 
 pub trait MessageTrait
-where
-    Self: GetEnvTrait,
+    where
+        Self: GetEnvTrait,
 {
     fn to_content(&self) -> String {
         Jvm::attach_thread()
@@ -44,8 +44,8 @@ where
         todo!()
     }
     fn plus<T>(&self, message: T) -> MessageChain
-    where
-        T: MessageTrait,
+        where
+            T: MessageTrait,
     {
         // j4rs 旧版本中有 bug, 所以只能如下写法。见 https://github.com/astonbitecode/j4rs/issues/71
         // 再注：不是同一个 bug, 所以新版本还是要这么写。
@@ -55,14 +55,14 @@ where
         let instance = jvm // j4rs <= 0.17.1
             .invoke_static("rt.lea.Utils", "callPlus", &[msg1, msg2]) // j4rs <= 0.17.1
             .unwrap(); // j4rs <= 0.17.1
-                       // let instance = jvm.invoke(&self.get_instance(), "plus", &[msg2]).unwrap(); // j4rs above 0.17.1
+        // let instance = jvm.invoke(&self.get_instance(), "plus", &[msg2]).unwrap(); // j4rs above 0.17.1
         MessageChain { instance }
     }
 }
 
 pub trait CodableMessageTrait
-where
-    Self: MessageTrait,
+    where
+        Self: MessageTrait,
 {
     fn to_code(&self) -> String {
         Jvm::attach_thread()
@@ -88,14 +88,13 @@ where
 }
 
 pub trait SingleMessageTrait
-where
-    Self: MessageTrait,
-{
-}
+    where
+        Self: MessageTrait,
+{}
 
 pub trait MessageChainTrait
-where
-    Self: MessageTrait + CodableMessageTrait,
+    where
+        Self: MessageTrait + CodableMessageTrait,
 {
     fn contains(&self) {
         todo!()
@@ -125,7 +124,7 @@ where
             .unwrap();
         MessageChain { instance }
     }
-    fn get(&self) //-> impl SingleMessageTrait
+    fn get(&self) // TODO -> impl SingleMessageTrait
     {
         todo!()
     }
@@ -154,14 +153,13 @@ where
 }
 
 pub trait MessageContentTrait
-where
-    Self: SingleMessageTrait,
-{
-}
+    where
+        Self: SingleMessageTrait,
+{}
 
 pub trait RichMessageTrait
-where
-    Self: MessageContentTrait,
+    where
+        Self: MessageContentTrait,
 {
     fn get_key(&self) {
         todo!()
@@ -172,8 +170,8 @@ where
 }
 
 pub trait ServiceMessageTrait
-where
-    Self: RichMessageTrait + CodableMessageTrait,
+    where
+        Self: RichMessageTrait + CodableMessageTrait,
 {
     fn get_service_id() {
         todo!()
@@ -181,8 +179,8 @@ where
 }
 
 pub trait ConstrainSingleTrait
-where
-    Self: SingleMessageTrait,
+    where
+        Self: SingleMessageTrait,
 {
     fn get_key() -> () {
         todo!()
@@ -193,8 +191,8 @@ where
 }
 
 pub trait MarketFace
-where
-    Self: ConstrainSingleTrait + MessageContentTrait,
+    where
+        Self: ConstrainSingleTrait + MessageContentTrait,
 {
     fn get_id() -> i32 {
         todo!()
@@ -208,14 +206,13 @@ where
 }
 
 pub trait MessageMetaDataTrait
-where
-    Self: SingleMessageTrait,
-{
-}
+    where
+        Self: SingleMessageTrait,
+{}
 
 impl<T> MessageTrait for T
-where
-    T: MessageMetaDataTrait,
+    where
+        T: MessageMetaDataTrait,
 {
     fn to_content(&self) -> String {
         String::new()
@@ -224,17 +221,16 @@ where
 
 /// # TODO
 pub trait CustomMessageTrait
-where
-    Self: SingleMessageTrait,
+    where
+        Self: SingleMessageTrait,
 {
     //TODO
 }
 
 pub trait AudioTrait
-where
-    Self: SingleMessageTrait + ConstrainSingleTrait,
-{
-}
+    where
+        Self: SingleMessageTrait + ConstrainSingleTrait,
+{}
 
 pub trait MessageHashCodeTrait: MessageTrait {
     fn hash_code(&self) -> i32 {

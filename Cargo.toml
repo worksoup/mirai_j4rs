@@ -8,7 +8,7 @@ edition = "2021"
 crate-type = ["cdylib", "lib"]
 
 [dependencies]
-j4rs = "*"
+j4rs = { git = "https://github.com/astonbitecode/j4rs.git" }
 const_unit_poc = "*"
 contact_derive = { path = "./contact_derive" }
 num_enum = "*"

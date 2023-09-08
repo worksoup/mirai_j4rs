@@ -233,3 +233,4 @@ pub trait StrangerTrait
     where
         Self: UserTrait,
 {}
+

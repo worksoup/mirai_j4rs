@@ -2,8 +2,7 @@
 
 **ɒiM_J is Mirai_J4rs.**
 
-使用 [`j4rs`](https://crates.io/crates/j4rs) 库简易(陋)地封装了一下 [`Mirai`](https://docs.mirai.mamoe.net/), api
-基本与 `Mirai` 保持一致。
+使用 [`j4rs`](https://crates.io/crates/j4rs) 库简易(陋)地封装了一下 [`Mirai`](https://docs.mirai.mamoe.net/), api 基本与 `Mirai` 保持一致。
 
 一直都是自己的其他项目在用，所以完全没有什么设计可言，也没有完全覆盖 `Mirai` 的功能。
 

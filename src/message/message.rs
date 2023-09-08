@@ -5,11 +5,63 @@ use super::message_trait::{
     MessageHashCodeTrait, MessageTrait, RichMessageTrait, SingleMessageTrait,
 };
 use crate::contact::bot::{Bot, Env};
+use crate::contact::contact_trait::FileSupportedTrait;
+use crate::message::message_trait::MessageMetaDataTrait;
+use crate::message::ImageType::{APNG, BMP, GIF, JPG, PNG, UNKNOW};
 use crate::{
     contact::{contact_trait::ContactTrait, group::Group},
     env::GetEnvTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
+
+#[derive(GetInstanceDerive)]
+pub struct QuoteReply {
+    instance: Instance,
+}
+
+impl MessageMetaDataTrait for QuoteReply {}
+
+impl SingleMessageTrait for QuoteReply {}
+
+impl ConstrainSingleTrait for QuoteReply {}
+
+impl MessageHashCodeTrait for QuoteReply {}
+
+impl QuoteReply {
+    pub fn get_source(&self) -> MessageSource {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke(&self.instance, "getSource", &[]).unwrap();
+        MessageSource { instance }
+    }
+}
+
+impl From<MessageChain> for QuoteReply {
+    fn from(source_message: MessageChain) -> Self {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm
+            .create_instance(
+                "net.mamoe.mirai.message.data.QuoteReply",
+                &[InvocationArg::try_from(source_message.get_instance()).unwrap()],
+            )
+            .unwrap();
+        Self { instance }
+    }
+}
+
+impl Clone for MessageSource {
+    fn clone(&self) -> Self {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm
+            .create_instance(
+                "net.mamoe.mirai.message.data.QuoteReply",
+                &[InvocationArg::try_from(self.get_instance()).unwrap()],
+            )
+            .unwrap();
+        Self { instance }
+    }
+}
+
+impl MessageTrait for QuoteReply {}
 
 pub struct MessageReceipt<'a, T>
     where
@@ -29,8 +81,8 @@ impl<'a, T> MessageReceipt<'a, T>
     pub fn get_target(&self) -> &T {
         self.target
     }
-    pub fn get_source(&self) {
-        todo!()
+    pub fn get_source(&self) -> () {
+        todo!("net.mamoe.mirai.message.data.OnlineMessageSource.Outgoing")
     }
     pub fn is_to_group(&self) -> bool {
         Jvm::attach_thread()
@@ -42,15 +94,26 @@ impl<'a, T> MessageReceipt<'a, T>
             .to_rust()
             .unwrap()
     }
-    pub fn quote(&self) {
-        todo!()
+    pub fn quote(&self) -> QuoteReply {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke(&self.instance, "quote", &[]).unwrap();
+        QuoteReply { instance }
     }
-    pub fn quote_reply(&self) {
-        todo!()
+    pub fn quote_reply(&self, message: impl MessageTrait) -> () {
+        // let jvm = Jvm::attach_thread().unwrap();
+        // let instance = jvm
+        //     .invoke(
+        //         &self.instance,
+        //         "quote",
+        //         &[],
+        //     )
+        //     .unwrap();
+        // Self { instance, target: &() }
+        todo!("不太好办。")
     }
-    // 两个重载。
-    pub fn _quote_reply() {
-        todo!()
+    // TODO: 两个重载。
+    pub fn quote_reply_string(&self, message: String) -> () {
+        todo!("不太好办。")
     }
     // 重载。
     pub fn recall(&self) {
@@ -59,10 +122,9 @@ impl<'a, T> MessageReceipt<'a, T>
             .invoke(&self.instance, "recall", &[])
             .unwrap();
     }
-    //两个重载
-    fn _recall() {
-        todo!()
-    } // 重载。
+    pub fn recall_in(&self) {
+        todo!("该函数是否应当实现？")
+    }
 }
 
 #[derive(GetInstanceDerive)]
@@ -71,8 +133,6 @@ pub struct MessageChain {
 }
 
 impl MessageChain {}
-
-impl MessageTrait for MessageChain {}
 
 impl CodableMessageTrait for MessageChain {}
 
@@ -257,7 +317,7 @@ impl MessageContentTrait for PlainText {}
 
 impl MessageHashCodeTrait for PlainText {}
 
-include!("./face.rs");
+include!("face_res.rs");
 #[derive(GetInstanceDerive)]
 pub struct Face {
     name: String,
@@ -441,13 +501,29 @@ impl Image {
     pub fn get_image_id_regex() {
         todo!()
     }
-    pub fn get_md5(&self) -> Vec<u8> {
+    pub fn get_md5(&self) -> [i8; 16] {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.chain(&self.instance)
-            .unwrap()
-            .invoke("getMd5", &[])
+        let bytes = jvm.invoke(&self.instance, "getMd5", &[]).unwrap();
+        let instance = jvm
+            .invoke_static(
+                "org.apache.commons.lang3.ArrayUtils",
+                "toObject",
+                &[InvocationArg::try_from(bytes).unwrap()],
+            )
             .unwrap();
-        todo!()
+        let instance = jvm
+            .invoke_static(
+                "java.util.Array",
+                "stream",
+                &[InvocationArg::try_from(instance).unwrap()],
+            )
+            .unwrap();
+        jvm.chain(&instance)
+            .unwrap()
+            .invoke("toList", &[])
+            .unwrap()
+            .to_rust()
+            .unwrap()
     }
     pub fn get_size(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
@@ -467,11 +543,22 @@ impl Image {
             .to_rust()
             .unwrap()
     }
+    // TODO: 吗的什么玩意儿。又是不知道哪来的。
     pub fn get_storage() -> i64 {
-        todo!()
+        todo!("低优先级。")
     }
-    pub fn get_image_type() -> ImageType {
-        todo!()
+    pub fn get_image_type(&self) -> ImageType {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke(&self.instance, "getImageType", &[]).unwrap();
+        let r#type = jvm.to_rust::<String>(instance).unwrap();
+        match r#type.as_str() {
+            "PNG" => PNG,
+            "BMP" => BMP,
+            "JPG" => JPG,
+            "GIF" => GIF,
+            "APNG" => APNG,
+            _ => UNKNOW,
+        }
     }
     pub fn is_emoji(&self) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
@@ -482,9 +569,35 @@ impl Image {
             .to_rust()
             .unwrap()
     }
-    pub fn is_uploaded(bot: Bot, md5: [u8; 16], size: i64) -> bool {
-        todo!()
+    pub fn is_uploaded(&self, bot: Bot, md5: [i8; 16], size: i64) -> bool {
+        let jvm = Jvm::attach_thread().unwrap();
+        let bot = InvocationArg::try_from(bot.get_instance()).unwrap();
+        let md5 = {
+            let mut tmp = Vec::new();
+            for item in md5 {
+                tmp.push(
+                    InvocationArg::try_from(item)
+                        .unwrap()
+                        .into_primitive()
+                        .unwrap(),
+                );
+            }
+            tmp
+        };
+        let md5 = jvm.create_java_array("byte", &md5).unwrap();
+        let md5 = InvocationArg::try_from(md5).unwrap();
+        let size = InvocationArg::try_from(size)
+            .unwrap()
+            .into_primitive()
+            .unwrap();
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "isUpload", &[bot, md5, size])
+                .unwrap(),
+        )
+            .unwrap()
     }
+    /// TODO: 此函数为重载，还未实现。
+    pub fn todo_is_uploaded() -> () {}
     pub fn query_url(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
@@ -497,8 +610,6 @@ impl Image {
         jvm.to_rust(instance).unwrap()
     }
 }
-
-impl MessageTrait for Image {}
 
 impl CodableMessageTrait for Image {}
 
@@ -513,7 +624,6 @@ pub struct UnsupportedMessage {
     instance: Instance,
 }
 
-
 impl MessageTrait for UnsupportedMessage {}
 
 impl SingleMessageTrait for UnsupportedMessage {}
@@ -521,12 +631,76 @@ impl SingleMessageTrait for UnsupportedMessage {}
 impl MessageContentTrait for UnsupportedMessage {}
 
 #[derive(GetInstanceDerive)]
+pub struct AbsoluteFile {
+    pub(crate) instance: Instance,
+}
+
+#[derive(GetInstanceDerive)]
+pub struct AbsoluteFloder {
+    pub(crate) instance: Instance,
+}
+
+#[derive(GetInstanceDerive)]
+pub struct RemoteFiles {
+    pub(crate) instance: Instance,
+}
+
+#[derive(GetInstanceDerive)]
 pub struct FileMessage {
     instance: Instance,
 }
 
-
-impl MessageTrait for FileMessage {}
+impl FileMessage {
+    pub fn get_name(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "getName", &[]).unwrap())
+            .unwrap()
+    }
+    pub fn get_size(&self) -> i64 {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "getSize", &[]).unwrap())
+            .unwrap()
+    }
+    pub fn get_file_id(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "getId", &[]).unwrap())
+            .unwrap()
+    }
+    pub fn get_internal_id(&self) -> i32 {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "getInternalId", &[]).unwrap())
+            .unwrap()
+    }
+    pub fn new(file_id: String, internal_id: i32, name: String, size: i64) -> Self {
+        let jvm = Jvm::attach_thread().unwrap();
+        let file_id = InvocationArg::try_from(&file_id).unwrap();
+        let internal_id = InvocationArg::try_from(internal_id)
+            .unwrap()
+            .into_primitive()
+            .unwrap();
+        let name = InvocationArg::try_from(name).unwrap();
+        let size = InvocationArg::try_from(size)
+            .unwrap()
+            .into_primitive()
+            .unwrap();
+        let instance = jvm
+            .invoke_static(
+                "net.mamoe.mirai.message.data.FileMessage",
+                "create",
+                &[file_id, internal_id, name, size],
+            )
+            .unwrap();
+        FileMessage { instance }
+    }
+    pub fn to_absolute_file<FileSupported: FileSupportedTrait>(
+        &self,
+        contact: FileSupported,
+    ) -> AbsoluteFile {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke(&self.instance, "toAbsoluteFile", &[]).unwrap();
+        AbsoluteFile { instance }
+    }
+}
 
 impl SingleMessageTrait for FileMessage {}
 
@@ -541,8 +715,6 @@ pub struct MusicShare {
     instance: Instance,
 }
 
-impl MessageTrait for MusicShare {}
-
 impl SingleMessageTrait for MusicShare {}
 
 impl MessageContentTrait for MusicShare {}
@@ -555,9 +727,6 @@ impl CodableMessageTrait for MusicShare {}
 pub struct LightApp {
     instance: Instance,
 }
-
-
-impl MessageTrait for LightApp {}
 
 impl SingleMessageTrait for LightApp {}
 
@@ -625,8 +794,6 @@ impl Dice {
     }
 }
 
-impl MessageTrait for Dice {}
-
 impl SingleMessageTrait for Dice {}
 
 impl MessageContentTrait for Dice {}
@@ -692,8 +859,6 @@ impl RockPaperScissors {
     }
 }
 
-impl MessageTrait for RockPaperScissors {}
-
 impl SingleMessageTrait for RockPaperScissors {}
 
 impl MessageContentTrait for RockPaperScissors {}
@@ -722,8 +887,6 @@ pub struct VipFace {
     instance: Instance,
 }
 
-impl MessageTrait for VipFace {}
-
 impl SingleMessageTrait for VipFace {}
 
 impl MessageContentTrait for VipFace {}
@@ -738,8 +901,6 @@ pub struct PokeMessage {
     instance: Instance,
 }
 
-impl MessageTrait for PokeMessage {}
-
 impl SingleMessageTrait for PokeMessage {}
 
 impl MessageContentTrait for PokeMessage {}
@@ -748,7 +909,7 @@ impl ConstrainSingleTrait for PokeMessage {}
 
 impl CodableMessageTrait for PokeMessage {}
 
-//TODO
+// TODO
 #[derive(GetInstanceDerive)]
 pub struct MessageSource {
     instance: Instance,

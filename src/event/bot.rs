@@ -1,31 +1,23 @@
-use contact_derive::GetInstanceDerive;
+use contact_derive::{GetClassTypeDerive, GetInstanceDerive};
 use j4rs::{Instance, Jvm};
 
 use crate::{contact::bot::Bot, env::GetClassTypeTrait};
+use crate::event::event_trait::{BotEventTrait, BotOfflineEventTrait};
 
 use super::event_trait::MiraiEventTrait;
 
-pub trait BotEventTrait
-    where
-        Self: MiraiEventTrait,
-{
-    fn get_bot(&self) -> Bot;
-}
-
-#[derive(GetInstanceDerive)]
+#[derive(GetInstanceDerive, GetClassTypeDerive)]
 pub struct BotOnlineEvent {
     instance: Instance,
 }
 
-impl GetClassTypeTrait for BotOnlineEvent {
-    fn get_class_type() -> Instance {
-        todo!()
-    }
+impl BotOnlineEvent {
+    fn get_class_name() -> String { "net.mamoe.mirai.event.events.BotOnlineEvent".to_string() }
 }
 
 impl MiraiEventTrait for BotOnlineEvent {
     fn from_instance(instance: Instance) -> Self {
-        todo!()
+        BotOnlineEvent { instance }
     }
     fn cancel(&self) {
         let _ = Jvm::attach_thread()
@@ -63,18 +55,22 @@ impl MiraiEventTrait for BotOnlineEvent {
             .unwrap()
     }
 
-    fn broadcast(&self) {
-        todo!()
-    }
+    // fn broadcast(&self) {
+    //     TODO: 这个函数哪来的？为什么在最初的版本中？
+    // }
 }
 
 impl BotEventTrait for BotOnlineEvent {
     fn get_bot(&self) -> Bot {
-        todo!()
+        let jvm = Jvm::attach_thread().unwrap();
+        let bot =
+            jvm.invoke(&self.instance, "getBot", &[]).unwrap();
+        let id = jvm
+            .to_rust(jvm.invoke(&bot, "getId", &[]).unwrap())
+            .unwrap();
+        Bot { bot, id }
     }
 }
-
-pub trait BotOfflineEventTrait {}
 
 pub struct Active {}
 

@@ -1,17 +1,22 @@
+use crate::event::event_trait::MiraiEventTrait;
 use crate::{
     contact::{bot::Bot, group::Group, AnonymousMember, Friend, Member, NormalMember},
     message::MessageChain,
 };
 use contact_derive::{GetClassTypeDerive, GetInstanceDerive};
 use j4rs::{Instance, Jvm};
-use crate::event::event_trait::MiraiEventTrait;
 
 pub trait MessageEventTrait
     where
         Self: MiraiEventTrait,
 {
     fn get_bot(&self) -> Bot {
-        todo!()
+        let jvm = Jvm::attach_thread().unwrap();
+        let bot = jvm.invoke(&self.get_instance(), "getBot", &[]).unwrap();
+        let id = jvm
+            .to_rust(jvm.invoke(&bot, "getId", &[]).unwrap())
+            .unwrap();
+        Bot { bot, id }
     }
     fn get_message(&self) -> MessageChain {
         let jvm = Jvm::attach_thread().unwrap();
@@ -21,15 +26,22 @@ pub trait MessageEventTrait
     type UserItem;
     fn get_sender(&self) -> Self::UserItem;
     fn get_sender_name(&self) -> String {
-        todo!()
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(
+            jvm.invoke(&self.get_instance(), "getSenderName", &[])
+                .unwrap(),
+        )
+            .unwrap()
     }
-    fn get_source(&self) {
-        todo!()
+    fn get_source(&self) -> () {
+        todo!("net.mamoe.mirai.message.data.OnlineMessageSource.Incoming")
     }
     type ContactItem;
     fn get_subject(&self) -> Self::ContactItem;
     fn get_time(&self) -> i64 {
-        todo!()
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.get_instance(), "getTime", &[]).unwrap())
+            .unwrap()
     }
 }
 
@@ -54,26 +66,6 @@ impl GroupMessageEvent {
 impl MiraiEventTrait for GroupMessageEvent {
     fn from_instance(instance: Instance) -> Self {
         GroupMessageEvent { instance }
-    }
-
-    fn cancel(&self) {
-        todo!()
-    }
-
-    fn intercept(&self) {
-        todo!()
-    }
-
-    fn is_canceled(&self) -> bool {
-        todo!()
-    }
-
-    fn is_intercepted(&self) -> bool {
-        todo!()
-    }
-
-    fn broadcast(&self) {
-        todo!()
     }
 }
 
@@ -149,26 +141,6 @@ impl FriendMessageEvent {
 impl MiraiEventTrait for FriendMessageEvent {
     fn from_instance(instance: Instance) -> Self {
         FriendMessageEvent { instance }
-    }
-
-    fn cancel(&self) {
-        todo!()
-    }
-
-    fn intercept(&self) {
-        todo!()
-    }
-
-    fn is_canceled(&self) -> bool {
-        todo!()
-    }
-
-    fn is_intercepted(&self) -> bool {
-        todo!()
-    }
-
-    fn broadcast(&self) {
-        todo!()
     }
 }
 

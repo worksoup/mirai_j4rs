@@ -3,10 +3,13 @@
 #![feature(return_position_impl_trait_in_trait)]
 #![feature(core_intrinsics)]
 #![feature(impl_trait_in_assoc_type)]
+#![feature(specialization)]
 
 pub mod contact;
 pub mod event;
 pub mod message;
+pub mod action;
+pub mod error;
 
 #[cfg(test)]
 mod tests {
@@ -38,10 +41,11 @@ mod tests {
         println!("{}", ImageType::PNG.get_format_name());
         assert_eq!(2 + 2, 4);
     }
+
     #[test]
     fn how_is_it_in_java() {
         let _env = Env::new(&vec!["../../MiraiRS.jar".to_string()],
-        &vec!["-Djava.library.path=/home/leart/Works/Mirai/MiraiRS/rust_side/mirai_j4rs/target/release".to_string()]);
+                            &vec!["-Djava.library.path=/home/leart/Works/Mirai/MiraiRS/rust_side/mirai_j4rs/target/release".to_string()]);
         let jvm = Jvm::attach_thread().unwrap();
         let integer_min = jvm
             .static_class_field("java.lang.Integer", "MIN_VALUE")
@@ -64,17 +68,19 @@ mod env {
     pub trait GetClassTypeTrait {
         fn get_class_type() -> Instance;
     }
+
     pub trait GetEnvTrait {
         fn get_instance(&self) -> j4rs::Instance;
     }
+
     pub trait GetBotTrait {
         fn get_bot<'a>(&'a self) -> crate::contact::bot::Bot;
     }
 
     /// 通过 `j4rs::Instance` 获得当前结构体。
     pub trait FromInstance
-    where
-        Self: GetEnvTrait + ContactOrBotTrait,
+        where
+            Self: GetEnvTrait + ContactOrBotTrait,
     {
         type Item: GetEnvTrait + ContactOrBotTrait;
         fn from_instance(bot: Instance, instance: Instance, id: i64) -> Self::Item;
@@ -93,6 +99,7 @@ pub mod other {
             /// `HeartbeatStrategy.NONE`
             N,
         }
+
         pub enum MiraiProtocol {
             /// `MiraiProtocol.ANDROID_PHONE`
             A,
@@ -105,6 +112,7 @@ pub mod other {
             /// `MiraiProtocol.MACOS`
             M,
         }
+
         /// Mirai 中定义：
         /// ```
         /// public enum class AvatarSpec(@MiraiInternalApi public val size: Int) : Comparable<AvatarSpec> {
@@ -130,14 +138,20 @@ pub mod other {
         #[derive(IntoPrimitive)]
         #[repr(i32)]
         pub enum AvatarSpec {
-            XS = 40,      //SMALLEST(40),
-            S = 41,       //SMALL(41),
-            M = 100,      //MEDIUM(100),
-            L = 140,      //LARGE(140),
-            XL = 640,     //LARGEST(640),
+            XS = 40,
+            //SMALLEST(40),
+            S = 41,
+            //SMALL(41),
+            M = 100,
+            //MEDIUM(100),
+            L = 140,
+            //LARGE(140),
+            XL = 640,
+            //LARGEST(640),
             ORIGINAL = 0, //ORIGINAL(0);
         }
     }
+
     pub mod tools {
         use j4rs::{InvocationArg, Jvm};
 
@@ -165,6 +179,7 @@ pub mod other {
                     .unwrap(),
             )
         }
+
         pub fn protocol_str2enum(protocol: String) -> MiraiProtocol {
             match protocol.as_str() {
                 "ANDROID_PHONE" => MiraiProtocol::A,

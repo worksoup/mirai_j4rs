@@ -145,10 +145,10 @@ impl<'a, E> EventChannel<E>
         }
     }
     pub fn exception_handler(&self) -> Self {
-        todo!()
+        todo!("exception_handler")
     }
     pub fn filter(&self) -> Self {
-        todo!()
+        todo!("filter")
     }
 }
 
@@ -166,8 +166,9 @@ pub struct Listener<'a, E> {
 }
 
 impl<E> Listener<'_, E> {
+    // 这个函数暂不实现。
     pub fn cancel(self) {
-        todo!()
+        todo!("低优先级：cancel")
     }
     pub fn complete(self) -> bool {
         let call_from_java: *mut dyn Fn(AbstractEvent) -> () =
@@ -208,25 +209,5 @@ impl GetClassTypeTrait for AbstractEvent {
 impl MiraiEventTrait for AbstractEvent {
     fn from_instance(instance: Instance) -> Self {
         Self { instance }
-    }
-
-    fn cancel(&self) {
-        todo!()
-    }
-
-    fn intercept(&self) {
-        todo!()
-    }
-
-    fn is_canceled(&self) -> bool {
-        todo!()
-    }
-
-    fn is_intercepted(&self) -> bool {
-        todo!()
-    }
-
-    fn broadcast(&self) {
-        todo!()
     }
 }

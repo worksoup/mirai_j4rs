@@ -13,13 +13,57 @@ use crate::{
     },
 };
 use const_unit_poc::values::{h, ms};
+use contact_derive::GetInstanceDerive;
 use core::str;
 use j4rs::{ClasspathEntry, Instance, InvocationArg, JavaOpt, Jvm, JvmBuilder};
 use serde::{Deserialize, Serialize};
+use std::error::Error;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
 };
+use crate::action::nudges::BotNudge;
+
+#[derive(GetInstanceDerive)]
+pub struct FriendGroup {
+    pub(crate) instance: Instance,
+}
+
+// TODO: 迭代器特征
+#[derive(GetInstanceDerive)]
+pub struct FriendGroups {
+    pub(crate) instance: Instance,
+}
+
+impl FriendGroups {
+    pub fn create(name: String) -> FriendGroup {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm
+            .invoke_static(
+                "net.mamoe.mirai.contact.friendgroup.FriendGroups",
+                "create",
+                &[name.try_into().unwrap()],
+            )
+            .unwrap();
+        FriendGroup { instance }
+    }
+    pub fn get(&self, id: i64) -> FriendGroup {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm
+            .invoke(
+                &self.instance,
+                "get",
+                &[InvocationArg::try_from(id).unwrap()],
+            )
+            .unwrap();
+        FriendGroup { instance }
+    }
+    pub fn get_default(&self) -> FriendGroup {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke(&self.instance, "getDefault", &[]).unwrap();
+        FriendGroup { instance }
+    }
+}
 
 pub struct Bot {
     pub(crate) bot: Instance,
@@ -47,19 +91,22 @@ impl GetBotTrait for Bot {
     }
 }
 
-impl<'a> Bot {
+impl Bot {
     pub fn close(self) {
         Jvm::attach_thread()
             .unwrap()
             .invoke(&self.bot, "close", &[])
             .unwrap();
     }
-    pub fn close_and_join(self /*,throwable*/) {
+    pub fn close_and_join(self, err: impl Error) {
+        let r#type = err.to_string();
+        let what = String::from(""); // TODO
+        let r#type = InvocationArg::try_from(r#type).unwrap();
+        let what = InvocationArg::try_from(what).unwrap();
         Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.bot, "closeAndJoin", &[])
+            .invoke(&self.bot, "closeAndJoin", &[r#type, what])
             .unwrap();
-        todo!()
     }
     pub fn get_as_friend(&self) -> Friend {
         let id = self.id;
@@ -132,8 +179,10 @@ impl<'a> Bot {
             })
         }
     }
-    pub fn get_friend_groups(&self) {
-        todo!()
+    pub fn get_friend_groups(&self) -> FriendGroups {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke(&self.bot, "getFriendGroups", &[]).unwrap();
+        FriendGroups { instance }
     }
     pub fn get_friends(&self) -> ContactList<Friend> {
         let instance = Jvm::attach_thread()
@@ -161,7 +210,7 @@ impl<'a> Bot {
         }
     }
     pub fn get_logger() -> MiraiLogger {
-        todo!()
+        todo!("get logger")
     }
     pub fn get_other_clients(&self) -> ContactList<OtherClient> {
         let instance = Jvm::attach_thread()
@@ -229,8 +278,10 @@ impl<'a> Bot {
             .invoke(&self.bot, "login", &Vec::new())
             .unwrap();
     }
-    pub fn nudge() {
-        todo!()
+    pub fn nudge(&self) -> BotNudge {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke(&self.bot, "nudge", &[]).unwrap();
+        BotNudge { instance }
     }
 }
 
@@ -375,11 +426,7 @@ impl Env {
             .unwrap();
         Self { jvm, instance }
     }
-    pub fn fix_protocol_version_fetch(
-        &self,
-        protocol: MiraiProtocol,
-        version: String,
-    ) -> () {
+    pub fn fix_protocol_version_fetch(&self, protocol: MiraiProtocol, version: String) -> () {
         println!("fix protocol version - tmp - fetch");
         let _ = self.jvm.invoke_static(
             "xyz.cssxsh.mirai.tool.FixProtocolVersion",
@@ -465,7 +512,7 @@ impl Env {
     }
     pub fn get_bots(&self) -> ContactList<Friend> /*should be 'MiraiList<Bot>' which has not been implemented yet*/
     {
-        todo!()
+        todo!("should be 'MiraiList<Bot>' which has not been implemented yet")
     }
     //默认是global的。
     pub fn event_channel<E>(&self) -> EventChannel<E>
@@ -899,7 +946,7 @@ impl BotConfiguration {
             .unwrap();
     }
     pub fn set_bot_logger_supplier(&self) {
-        todo!();
+        todo!("set_bot_logger_supplier");
     }
     pub fn set_cache_dir(&self, path: &PathBuf) {
         let path = path.to_str().unwrap();
@@ -944,7 +991,7 @@ impl BotConfiguration {
             .unwrap()
             .invoke(&self.instance, "setDeviceInfo", &[])
             .unwrap();
-        todo!("");
+        todo!("set_device_info");
     }
     pub fn set_heartbeat_period_millis(&self, millis: i64) {
         Jvm::attach_thread()
@@ -1041,14 +1088,15 @@ impl BotConfiguration {
             .unwrap()
             .invoke(&self.instance, "setNetworkLoggerSupplier", &[])
             .unwrap();
-        todo!();
+        todo!("set_network_logger_supplier");
     }
+    // TODO: 该函数是否应当实现？
     pub fn set_parent_coroutine_context(&self) {
         Jvm::attach_thread()
             .unwrap()
             .invoke(&self.instance, "setParentCoroutineContext", &[])
             .unwrap();
-        todo!();
+        todo!("set_parent_coroutine_context");
     }
     pub fn set_protocol(&self, protocol: MiraiProtocol) {
         Jvm::attach_thread()
@@ -1554,11 +1602,7 @@ impl BotBuilder {
         }
         self
     }
-    pub fn fix_protocol_version_fetch(
-        self,
-        protocol: MiraiProtocol,
-        version: String,
-    ) -> Self {
+    pub fn fix_protocol_version_fetch(self, protocol: MiraiProtocol, version: String) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         println!("fix protocol version - tmp - fetch");
         let _ = jvm.invoke_static(

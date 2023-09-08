@@ -1,9 +1,9 @@
+use const_unit_poc::units::s;
 //TODO : message_chain_builder
 use super::MessageChain;
-use crate::{
-    contact::contact_trait::ContactTrait,
-    env::GetEnvTrait,
-};
+use crate::contact::contact_trait::FileSupportedTrait;
+use crate::message::AbsoluteFloder;
+use crate::{contact::contact_trait::ContactTrait, env::GetEnvTrait};
 use j4rs::{InvocationArg, Jvm};
 
 pub trait MessageTrait
@@ -21,6 +21,7 @@ pub trait MessageTrait
             )
             .unwrap()
     }
+
     fn to_string(&self) -> String {
         Jvm::attach_thread()
             .unwrap()
@@ -32,6 +33,7 @@ pub trait MessageTrait
             )
             .unwrap()
     }
+
     fn equals_to_message<T: MessageTrait>(
         &self,
         message: T,
@@ -40,9 +42,11 @@ pub trait MessageTrait
     ) -> bool {
         todo!()
     }
+
     fn equals_to_string<T: MessageTrait>(&self, message: T, ignore_case: bool) -> bool {
         todo!()
     }
+
     fn plus<T>(&self, message: T) -> MessageChain
         where
             T: MessageTrait,
@@ -60,10 +64,7 @@ pub trait MessageTrait
     }
 }
 
-pub trait CodableMessageTrait
-    where
-        Self: MessageTrait,
-{
+pub trait CodableMessageTrait: MessageTrait {
     fn to_code(&self) -> String {
         Jvm::attach_thread()
             .unwrap()
@@ -76,6 +77,8 @@ pub trait CodableMessageTrait
             .unwrap()
     }
     fn append_code_to(&self) -> String {
+        // TODO StringBuilder
+
         //  Jvm::attach_thread().unwrap()
         //     .to_rust(
         //          Jvm::attach_thread().unwrap()
@@ -83,14 +86,40 @@ pub trait CodableMessageTrait
         //             .unwrap(),
         //     )
         //     .unwrap()
-        todo!()
+        todo!("StringBuilder")
     }
 }
 
-pub trait SingleMessageTrait
+impl<Codable> MessageTrait for Codable
     where
-        Self: MessageTrait,
-{}
+        Codable: CodableMessageTrait,
+{
+    default fn to_content(&self) -> String {
+        MessageTrait::to_content(self)
+    }
+    default fn to_string(&self) -> String {
+        MessageTrait::to_string(self)
+    }
+    default fn equals_to_message<T: MessageTrait>(
+        &self,
+        message: T,
+        ignore_case: bool,
+        strict: bool,
+    ) -> bool {
+        MessageTrait::equals_to_message(self, message, ignore_case, strict)
+    }
+    default fn equals_to_string<T: MessageTrait>(&self, message: T, ignore_case: bool) -> bool {
+        MessageTrait::equals_to_string(self, message, ignore_case)
+    }
+    default fn plus<T>(&self, message: T) -> MessageChain
+        where
+            T: MessageTrait,
+    {
+        MessageTrait::plus(self, message)
+    }
+}
+
+pub trait SingleMessageTrait: MessageTrait {}
 
 pub trait MessageChainTrait
     where
@@ -164,17 +193,19 @@ pub trait RichMessageTrait
     fn get_key(&self) {
         todo!()
     }
-    fn share() {
-        todo!()
-    }
+    fn share(&self) -> () {}
 }
 
 pub trait ServiceMessageTrait
     where
         Self: RichMessageTrait + CodableMessageTrait,
 {
-    fn get_service_id() {
-        todo!()
+    fn get_service_id(&self) -> i32 {
+        let jvm = Jvm::attach_thread().unwrap();
+        let id = jvm
+            .invoke(&self.get_instance(), "getServiceId", &[])
+            .unwrap();
+        jvm.to_rust(id).unwrap()
     }
 }
 
@@ -186,7 +217,7 @@ pub trait ConstrainSingleTrait
         todo!()
     }
     fn get_content() -> () {
-        todo!()
+        todo!("又是他妈的不知道哪儿来的")
     }
 }
 
@@ -194,14 +225,26 @@ pub trait MarketFace
     where
         Self: ConstrainSingleTrait + MessageContentTrait,
 {
-    fn get_id() -> i32 {
-        todo!()
+    fn get_id(&self) -> i32 {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.chain(&self.get_instance())
+            .unwrap()
+            .invoke("getId", &[])
+            .unwrap()
+            .to_rust()
+            .unwrap()
     }
     fn get_key() -> () {
         todo!()
     }
-    fn get_name() -> String {
-        todo!()
+    fn get_name(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.chain(&self.get_instance())
+            .unwrap()
+            .invoke("getName", &[])
+            .unwrap()
+            .to_rust()
+            .unwrap()
     }
 }
 
@@ -210,34 +253,177 @@ pub trait MessageMetaDataTrait
         Self: SingleMessageTrait,
 {}
 
-impl<T> MessageTrait for T
-    where
-        T: MessageMetaDataTrait,
-{
-    fn to_content(&self) -> String {
-        String::new()
-    }
-}
+// impl MessageTrait for MessageMetaDataTrait
+// {
+//     fn to_content(&self) -> String {
+//         String::new()
+//     }
+// }
 
-/// # TODO
-pub trait CustomMessageTrait
-    where
-        Self: SingleMessageTrait,
-{
+/// TODO
+pub trait CustomMessageTrait: SingleMessageTrait {
     //TODO
 }
 
-pub trait AudioTrait
-    where
-        Self: SingleMessageTrait + ConstrainSingleTrait,
-{}
+pub trait AudioTrait: SingleMessageTrait + ConstrainSingleTrait {}
 
-pub trait MessageHashCodeTrait: MessageTrait {
+pub trait MessageHashCodeTrait: GetEnvTrait {
     fn hash_code(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(&self.get_instance())
             .unwrap()
             .invoke("hashCode", &[])
+            .unwrap()
+            .to_rust()
+            .unwrap()
+    }
+}
+
+pub trait AbsoluteFileFloder: Sized + GetEnvTrait {
+    fn delete(&self) -> bool {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.chain(&self.get_instance())
+            .unwrap()
+            .invoke("delete", &[])
+            .unwrap()
+            .to_rust()
+            .unwrap()
+    }
+    fn exists(&self) -> bool {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.chain(&self.get_instance())
+            .unwrap()
+            .invoke("exists", &[])
+            .unwrap()
+            .to_rust()
+            .unwrap()
+    }
+    fn get_absolute_path(&self) -> String // 这里应该是远程文件，所以先不用 PathBuf
+    {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.chain(&self.get_instance())
+            .unwrap()
+            .invoke("getAbsolutePath", &[])
+            .unwrap()
+            .to_rust()
+            .unwrap()
+    }
+    fn get_contact(&self) /*-> impl FileSupportedTrait */
+    {
+        todo!()
+    }
+    fn get_extension<T: AbsoluteFileFloder>(file_or_folder: T) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.chain(&file_or_folder.get_instance())
+            .unwrap()
+            .invoke("getExtension", &[])
+            .unwrap()
+            .to_rust()
+            .unwrap()
+    }
+    fn get_id(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.chain(&self.get_instance())
+            .unwrap()
+            .invoke("getId", &[])
+            .unwrap()
+            .to_rust()
+            .unwrap()
+    }
+    fn get_last_modified_time(&self) -> i64 {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.chain(&self.get_instance())
+            .unwrap()
+            .invoke("getLastModifiedTime", &[])
+            .unwrap()
+            .to_rust()
+            .unwrap()
+    }
+    fn get_name(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.chain(&self.get_instance())
+            .unwrap()
+            .invoke("getName", &[])
+            .unwrap()
+            .to_rust()
+            .unwrap()
+    }
+    fn get_name_without_extension<T: AbsoluteFileFloder>(file_or_folder: T) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.chain(&file_or_folder.get_instance())
+            .unwrap()
+            .invoke("getNameWithoutExtension", &[])
+            .unwrap()
+            .to_rust()
+            .unwrap()
+    }
+    fn get_parent(&self) -> AbsoluteFloder {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm
+            .invoke(&self.get_instance(), "getParent", &[])
+            .unwrap();
+        AbsoluteFloder { instance }
+    }
+    fn get_upload_time(&self) -> i64 {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.chain(&self.get_instance())
+            .unwrap()
+            .invoke("getUploadTime", &[])
+            .unwrap()
+            .to_rust()
+            .unwrap()
+    }
+    fn get_upload_id(&self) -> i64 {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.chain(&self.get_instance())
+            .unwrap()
+            .invoke("getUploadId", &[])
+            .unwrap()
+            .to_rust()
+            .unwrap()
+    }
+    fn is_file(&self) -> bool {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.chain(&self.get_instance())
+            .unwrap()
+            .invoke("isFile", &[])
+            .unwrap()
+            .to_rust()
+            .unwrap()
+    }
+    fn is_folder(&self) -> bool {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.chain(&self.get_instance())
+            .unwrap()
+            .invoke("isFolder", &[])
+            .unwrap()
+            .to_rust()
+            .unwrap()
+    }
+    fn refresh(&self) -> bool {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.chain(&self.get_instance())
+            .unwrap()
+            .invoke("refresh", &[])
+            .unwrap()
+            .to_rust()
+            .unwrap()
+    }
+    fn refreshed(&self) -> Self;
+    fn rename_to(&self, name: &str) -> bool {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.chain(&self.get_instance())
+            .unwrap()
+            .invoke("renameTo", &[InvocationArg::try_from(name).unwrap()])
+            .unwrap()
+            .to_rust()
+            .unwrap()
+    }
+    fn to_string(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.chain(&self.get_instance())
+            .unwrap()
+            .invoke("toString", &[])
             .unwrap()
             .to_rust()
             .unwrap()

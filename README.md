@@ -14,18 +14,21 @@
 
 **消息相关**
 
-- [x] `PlainText`
-- [x] `Face`
-- [ ] `MarketFace`
-    - [ ] `VipFace`
-    - [ ] `PokeFace`
-    - [x] `Dice`
-    - [x] `RockPaperScissors`
-- [ ] 戳一戳
+- [x] `PlainText` 文本消息
+- [x] `Face` 表情消息
+- [ ] `MarketFace` 市场表情
+    - [ ] `VipFace` Vip表情
+    - [ ] `PokeFace`  
+    - [x] `Dice` 🎲
+    - [x] `RockPaperScissors` 石头剪刀布
+- [x] `Nudge` 戳一戳
+    - [x] `BotNudge`
+    - [x] `MemberNudge`
+    - [x] `FriendNudge`
 - [x] `Image`（包括自定义表情）
 - [ ] XML，JSON 等富文本消息
 - [ ] 长消息（5000 字符 + 50 图片）
-- [ ] 引用回复
+- [x] `QuoteReply` 回复消息
 - [ ] 合并转发
 - [ ] 撤回
 - [ ] 提及群员

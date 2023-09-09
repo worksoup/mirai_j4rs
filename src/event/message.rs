@@ -1,49 +1,9 @@
-use crate::event::event_trait::MiraiEventTrait;
+use crate::event::event_trait::{MessageEventTrait, MiraiEventTrait};
 use crate::{
-    contact::{bot::Bot, group::Group, AnonymousMember, Friend, Member, NormalMember},
-    message::MessageChain,
+    contact::{group::Group, AnonymousMember, Friend, Member, NormalMember},
 };
 use contact_derive::{GetClassTypeDerive, GetInstanceDerive};
 use j4rs::{Instance, Jvm};
-
-pub trait MessageEventTrait
-    where
-        Self: MiraiEventTrait,
-{
-    fn get_bot(&self) -> Bot {
-        let jvm = Jvm::attach_thread().unwrap();
-        let bot = jvm.invoke(&self.get_instance(), "getBot", &[]).unwrap();
-        let id = jvm
-            .to_rust(jvm.invoke(&bot, "getId", &[]).unwrap())
-            .unwrap();
-        Bot { bot, id }
-    }
-    fn get_message(&self) -> MessageChain {
-        let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.get_instance(), "getMessage", &[]).unwrap();
-        MessageChain { instance }
-    }
-    type UserItem;
-    fn get_sender(&self) -> Self::UserItem;
-    fn get_sender_name(&self) -> String {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(
-            jvm.invoke(&self.get_instance(), "getSenderName", &[])
-                .unwrap(),
-        )
-            .unwrap()
-    }
-    fn get_source(&self) -> () {
-        todo!("net.mamoe.mirai.message.data.OnlineMessageSource.Incoming")
-    }
-    type ContactItem;
-    fn get_subject(&self) -> Self::ContactItem;
-    fn get_time(&self) -> i64 {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.get_instance(), "getTime", &[]).unwrap())
-            .unwrap()
-    }
-}
 
 #[derive(GetInstanceDerive, GetClassTypeDerive)]
 pub struct GroupMessageEvent {
@@ -162,51 +122,72 @@ impl MessageEventTrait for FriendMessageEvent {
     }
 }
 
+// TODO
 pub struct GroupTempMessageEvent {}
 
+// TODO
 pub struct StrangerMessageEvent {}
 
+// TODO
 pub struct OtherClientMessageEvent {}
 
+// TODO
 pub trait MessagePreSendEventTrait {}
 
+// TODO
 pub struct GroupMessagePreSendEvent {}
 
+// TODO
 pub struct FriendMessagePreSendEvent {}
 
+// TODO
 pub struct GroupTempMessagePreSendEvent {}
 
+// TODO
 pub struct StrangerMessagePreSendEvent {}
 
+// TODO
 pub struct OtherClientMessagePreSendEvent {}
 
+// TODO
 pub trait MessagePostSendEventTrait {}
 
+// TODO
 pub struct GroupMessagePostSendEvent {}
 
+// TODO
 pub struct FriendMessagePostSendEvent {}
 
+// TODO
 pub struct GroupTempMessagePostSendEvent {}
 
+// TODO
 pub struct StrangerMessagePostSendEvent {}
 
+// TODO
 pub struct OtherClientMessagePostSendEvent {}
 
+// TODO
 pub trait MessageRecallTrait {}
 
+// TODO
 pub enum MessageRecall {
     FriendRecall,
     GroupRecall,
     TempRecall,
 }
 
+// TODO
 pub struct BeforeImageUploadEvent {}
 
+// TODO
 pub enum ImageUploadEvent {
     Succeed,
     Failed,
 }
 
+// TODO
 pub struct NudgeEvent {}
 
+// TODO
 pub trait MessageSyncEvent {}

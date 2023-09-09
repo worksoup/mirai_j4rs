@@ -4,3 +4,5 @@ contact_derive/target/
 contact_derive/Cargo.lock
 .vscode/
 .idea/
+.settings/
+.project

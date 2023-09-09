@@ -1,8 +1,6 @@
-use const_unit_poc::units::s;
 //TODO : message_chain_builder
 use super::MessageChain;
-use crate::contact::contact_trait::FileSupportedTrait;
-use crate::message::AbsoluteFloder;
+use crate::message::AbsoluteFolder;
 use crate::{contact::contact_trait::ContactTrait, env::GetEnvTrait};
 use j4rs::{InvocationArg, Jvm};
 
@@ -57,7 +55,7 @@ pub trait MessageTrait
         let msg1 = InvocationArg::try_from(self.get_instance()).unwrap(); // j4rs <= 0.17.1
         let msg2 = InvocationArg::try_from(message.get_instance()).unwrap();
         let instance = jvm // j4rs <= 0.17.1
-            .invoke_static("rt.lea.Utils", "callPlus", &[msg1, msg2]) // j4rs <= 0.17.1
+            .invoke_static("rt.lea.LumiaUtils", "callPlus", &[msg1, msg2]) // j4rs <= 0.17.1
             .unwrap(); // j4rs <= 0.17.1
         // let instance = jvm.invoke(&self.get_instance(), "plus", &[msg2]).unwrap(); // j4rs above 0.17.1
         MessageChain { instance }
@@ -125,9 +123,6 @@ pub trait MessageChainTrait
     where
         Self: MessageTrait + CodableMessageTrait,
 {
-    fn contains(&self) {
-        todo!()
-    }
     fn deserialize_from_json(json: String) -> MessageChain {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
@@ -357,12 +352,12 @@ pub trait AbsoluteFileFloder: Sized + GetEnvTrait {
             .to_rust()
             .unwrap()
     }
-    fn get_parent(&self) -> AbsoluteFloder {
+    fn get_parent(&self) -> AbsoluteFolder {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke(&self.get_instance(), "getParent", &[])
             .unwrap();
-        AbsoluteFloder { instance }
+        AbsoluteFolder { instance }
     }
     fn get_upload_time(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();

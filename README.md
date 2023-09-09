@@ -85,7 +85,7 @@ mirai_j4rs={ git = "https://github.com/worksoup/mirai_j4rs.git" }
 第一种方法，适用于单个 `Bot`（因为内部没有措施防止 `Env` 重复定义）。
 
 ``` rust
-use mirai_j4rs::prelude::*;
+use mirai_j4rs::prelude::*; // prelude 还没写。请自行导入所需的模块等。
 fn main(){
     let bot = BotBuilder::new()
         .id(i64/*这里是你机器人的 id.*/)

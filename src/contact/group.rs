@@ -12,6 +12,7 @@ use crate::{
 use contact_derive::{GetBotDerive, GetInstanceDerive};
 use j4rs::{Instance, InvocationArg, Jvm};
 use std::collections::HashMap;
+use std::marker::PhantomData;
 
 pub struct GroupSettings {
     instance: Instance,
@@ -260,7 +261,7 @@ impl<K, V> MiraiMap<K, V> {
             K: Eq + PartialEq + std::hash::Hash,
     {
         let jvm = Jvm::attach_thread().unwrap();
-        let jcast =
+        let java_cast =
             |instance: &Instance, obj: &str| -> Instance { jvm.cast(&instance, obj).unwrap() };
         let mut map = HashMap::<K, V>::new();
         let entry_set = jvm.invoke(&self.instance, "entrySet", &[]).unwrap();
@@ -274,11 +275,11 @@ impl<K, V> MiraiMap<K, V> {
             .unwrap()
         {
             let entry = jvm.invoke(&it, "next", &[]).unwrap();
-            let entry = jcast(&entry, "java.util.Map$Entry");
+            let entry = java_cast(&entry, "java.util.Map$Entry");
             let k = jvm.invoke(&entry, "getKey", &[]).unwrap();
             let v = jvm.invoke(&entry, "getValue", &[]).unwrap();
 
-            let ins = cast(&k, &v, &jvm, &jcast);
+            let ins = cast(&k, &v, &jvm, &java_cast);
 
             map.insert(ins.0, ins.1);
         }
@@ -748,7 +749,7 @@ impl Group {
         ContactList {
             bot: self.bot,
             instance,
-            _unused: None,
+            _unused: PhantomData::default(),
         }
     }
     pub fn get_name(&self) -> String {

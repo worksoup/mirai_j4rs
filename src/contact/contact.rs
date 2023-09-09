@@ -1,3 +1,4 @@
+use std::marker::PhantomData;
 //联系人
 use super::bot::{Bot, Env};
 use super::contact_trait::{
@@ -14,7 +15,7 @@ pub struct ContactList<T>
 {
     pub(crate) bot: Instance,
     pub(crate) instance: Instance,
-    pub(crate) _unused: Option<T>,
+    pub(crate) _unused: PhantomData<T>,
 }
 
 impl<T> ContactList<T>

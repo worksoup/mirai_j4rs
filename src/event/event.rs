@@ -1,3 +1,4 @@
+use std::marker::PhantomData;
 use contact_derive::GetInstanceDerive;
 use j4rs::{prelude::*, InvocationArg};
 use j4rs::{Instance, Jvm};
@@ -14,10 +15,10 @@ pub struct EventChannel<E>
 {
     pub(crate) jvm: Jvm,
     pub(crate) instance: Instance,
-    pub(crate) _unused: Option<E>,
+    pub(crate) _unused: PhantomData<E>,
 }
 
-#[call_from_java("rt.lea.Lumia.onEvent")]
+#[call_from_java("rt.lea.LumiaConsumer.onEvent")]
 fn apply_on_event(on_event_ptr: Instance, event: Instance) {
     let on_event_raw: [i8; 16] = Jvm::attach_thread().unwrap().to_rust(on_event_ptr).unwrap();
     println!("rust side 2");
@@ -50,7 +51,7 @@ impl<'a, E> EventChannel<E>
         let consumer = Jvm::attach_thread()
             .unwrap()
             .create_instance(
-                "rt.lea.Lumia",
+                "rt.lea.LumiaConsumer",
                 &[InvocationArg::try_from(on_event_ptr).unwrap()],
             )
             .unwrap();

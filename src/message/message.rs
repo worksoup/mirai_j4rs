@@ -8,6 +8,7 @@ use crate::contact::bot::{Bot, Env};
 use crate::contact::contact_trait::FileSupportedTrait;
 use crate::message::message_trait::MessageMetaDataTrait;
 use crate::message::ImageType::{APNG, BMP, GIF, JPG, PNG, UNKNOW};
+use crate::utils::MiraiRsCollectionTrait;
 use crate::{
     contact::{contact_trait::ContactTrait, group::Group},
     env::GetEnvTrait,
@@ -127,6 +128,51 @@ impl<'a, T> MessageReceipt<'a, T>
     }
 }
 
+// TODO: 需要知道 Java 或者 MessageChain 会不会返回除了以下消息之外的 SingleMessage
+// TODO: 还有一些如 Audio 等消息没有实现，需要补上。
+pub enum SingleMessage {
+    QuoteReply(QuoteReply),
+    At(At),
+    AtAll(AtAll),
+    PlainText(PlainText),
+    Face(Face),
+    Image(Image),
+    UnsupportedMessage(UnsupportedMessage),
+    FileMessage(FileMessage),
+    MusicShare(MusicShare),
+    LightApp(LightApp),
+    ForwardMessage(ForwardMessage),
+    Dice(Dice),
+    RockPaperScissors(RockPaperScissors),
+    VipFace(VipFace),
+    PokeMessage(PokeMessage),
+    // 以下这个应该不会被 MessageChain 返回吧？
+    MessageSource(MessageSource),
+}
+
+impl GetEnvTrait for SingleMessage {
+    fn get_instance(&self) -> Instance {
+        match self {
+            SingleMessage::QuoteReply(a) => a.get_instance(),
+            SingleMessage::At(a) => a.get_instance(),
+            SingleMessage::AtAll(a) => a.get_instance(),
+            SingleMessage::PlainText(a) => a.get_instance(),
+            SingleMessage::Face(a) => a.get_instance(),
+            SingleMessage::Image(a) => a.get_instance(),
+            SingleMessage::UnsupportedMessage(a) => a.get_instance(),
+            SingleMessage::FileMessage(a) => a.get_instance(),
+            SingleMessage::MusicShare(a) => a.get_instance(),
+            SingleMessage::LightApp(a) => a.get_instance(),
+            SingleMessage::ForwardMessage(a) => a.get_instance(),
+            SingleMessage::Dice(a) => a.get_instance(),
+            SingleMessage::RockPaperScissors(a) => a.get_instance(),
+            SingleMessage::VipFace(a) => a.get_instance(),
+            SingleMessage::PokeMessage(a) => a.get_instance(),
+            SingleMessage::MessageSource(a) => a.get_instance(),
+        }
+    }
+}
+
 #[derive(GetInstanceDerive)]
 pub struct MessageChain {
     pub(crate) instance: Instance,
@@ -138,11 +184,133 @@ impl CodableMessageTrait for MessageChain {}
 
 impl MessageChainTrait for MessageChain {}
 
-impl Iterator for MessageChain {
-    type Item = ();
+impl MiraiRsCollectionTrait for MessageChain {
+    type Element = SingleMessage;
+
+    fn get_size(&self) -> i32 {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "getSize", &[]).unwrap())
+            .unwrap()
+    }
+
+    fn is_empty(&self) -> bool {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "isEmpty", &[]).unwrap())
+            .unwrap()
+    }
+
+    fn contains(&self, element: &Self::Element) -> bool {
+        let jvm = Jvm::attach_thread().unwrap();
+        let element = InvocationArg::try_from(element.get_instance()).unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "contains", &[element]).unwrap())
+            .unwrap()
+    }
+
+    fn contains_all(&self, elements: Self) -> bool {
+        let jvm = Jvm::attach_thread().unwrap();
+        let elements = InvocationArg::try_from(elements.get_instance()).unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "contains", &[elements]).unwrap())
+            .unwrap()
+    }
+}
+
+impl IntoIterator for MessageChain {
+    type Item = SingleMessage;
+    type IntoIter = MessageChainIterator;
+
+    fn into_iter(self) -> Self::IntoIter {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke(&self.instance, "iterator", &[]).unwrap();
+        Self::IntoIter { instance }
+    }
+}
+
+#[derive(GetInstanceDerive)]
+pub struct MessageChainIterator {
+    instance: Instance,
+}
+
+impl Iterator for MessageChainIterator {
+    type Item = SingleMessage;
 
     fn next(&mut self) -> Option<Self::Item> {
-        todo!()
+        let jvm = Jvm::attach_thread().unwrap();
+        let has_next = jvm
+            .to_rust(jvm.invoke(&self.instance, "hasNext", &[]).unwrap())
+            .unwrap();
+        // 逻辑如下：
+        // if hasNext
+        //     return Some(next)
+        // else return None
+        if has_next {
+            let next = jvm.invoke(&self.instance, "next", &[]).unwrap();
+            let class_type: String = jvm
+                .chain(&next)
+                .unwrap()
+                .invoke("getClass", &[])
+                .unwrap()
+                .invoke("toString", &[])
+                .unwrap()
+                .to_rust()
+                .unwrap();
+            let instance = next;
+            Some(match class_type.as_str() {
+                "net.mamoe.mirai.message.data.At" => SingleMessage::At(At {
+                    id: jvm
+                        .to_rust(jvm.invoke(&instance, "getTarget", &[]).unwrap())
+                        .unwrap(),
+                    instance,
+                }),
+                "net.mamoe.mirai.message.data.AtAll" => SingleMessage::AtAll(AtAll { instance }),
+                "net.mamoe.mirai.message.data.Dice" => SingleMessage::Dice(Dice { instance }),
+                "net.mamoe.mirai.message.data.Face" => SingleMessage::Face(Face {
+                    name: jvm
+                        .to_rust(jvm.invoke(&instance, "getName", &[]).unwrap())
+                        .unwrap(),
+                    id: jvm
+                        .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
+                        .unwrap(),
+                    instance,
+                }),
+                "net.mamoe.mirai.message.data.FileMessage" => {
+                    SingleMessage::FileMessage(FileMessage { instance })
+                }
+                "net.mamoe.mirai.message.data.ForwardMessage" => {
+                    SingleMessage::ForwardMessage(ForwardMessage { instance })
+                }
+                "net.mamoe.mirai.message.data.Image" => SingleMessage::Image(Image { instance }),
+                "net.mamoe.mirai.message.data.LightApp" => {
+                    SingleMessage::LightApp(LightApp { instance })
+                }
+                "net.mamoe.mirai.message.data.MessageSource" => {
+                    SingleMessage::MessageSource(MessageSource { instance })
+                }
+                "net.mamoe.mirai.message.data.MusicShare" => {
+                    SingleMessage::MusicShare(MusicShare { instance })
+                }
+                "net.mamoe.mirai.message.data.PlainText" => SingleMessage::PlainText(PlainText {
+                    content: jvm
+                        .to_rust(jvm.invoke(&instance, "getContent", &[]).unwrap())
+                        .unwrap(),
+                    instance,
+                }),
+                "net.mamoe.mirai.message.data.PokeMessage" => {
+                    SingleMessage::PokeMessage(PokeMessage { instance })
+                }
+                "net.mamoe.mirai.message.data.QuoteReply" => {
+                    SingleMessage::QuoteReply(QuoteReply { instance })
+                }
+                "net.mamoe.mirai.message.data.RockPaperScissors" => {
+                    SingleMessage::RockPaperScissors(RockPaperScissors { instance })
+                }
+                "net.mamoe.mirai.message.data.VipFace" => {
+                    SingleMessage::VipFace(VipFace { instance })
+                }
+                _ => SingleMessage::UnsupportedMessage(UnsupportedMessage { instance }),
+            })
+        } else {
+            None
+        }
     }
 }
 
@@ -423,19 +591,19 @@ impl ImageType {
         let binding = format_name.to_uppercase();
         let format_name = binding.as_str();
         Some(match format_name {
-            "PNG" => ImageType::PNG,
-            "BMP" => ImageType::BMP,
-            "JPG" => ImageType::JPG,
-            "GIF" => ImageType::GIF,
-            "APNG" => ImageType::APNG,
-            "UNKNOW" => ImageType::UNKNOW,
-            _ => ImageType::UNKNOW,
+            "PNG" => PNG,
+            "BMP" => BMP,
+            "JPG" => JPG,
+            "GIF" => GIF,
+            "APNG" => APNG,
+            "UNKNOW" => UNKNOW,
+            _ => UNKNOW,
         })
     }
     pub fn get_format_name(&self) -> String {
         match self {
-            ImageType::APNG => String::from("png"),
-            ImageType::UNKNOW => String::from("gif"),
+            APNG => String::from("png"),
+            UNKNOW => String::from("gif"),
             _ => format!("{:?}", self).to_lowercase(),
         }
     }
@@ -636,7 +804,7 @@ pub struct AbsoluteFile {
 }
 
 #[derive(GetInstanceDerive)]
-pub struct AbsoluteFloder {
+pub struct AbsoluteFolder {
     pub(crate) instance: Instance,
 }
 

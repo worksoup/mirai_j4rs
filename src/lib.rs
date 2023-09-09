@@ -10,6 +10,7 @@ pub mod event;
 pub mod message;
 pub mod action;
 pub mod error;
+pub mod utils;
 
 #[cfg(test)]
 mod tests {
@@ -25,7 +26,7 @@ mod tests {
         fn f1() -> String {
             let x: Box<dyn Fn() -> i32> = Box::new(|| 114514);
             let y = Box::into_raw(x);
-            format!("{}", unsafe { std::mem::transmute::<_, i128>(y) })
+            format!("{}", unsafe { transmute::<_, i128>(y) })
         }
         let f1_c = f1().clone().parse::<i128>().unwrap();
         println!("{}", f1());
@@ -58,6 +59,10 @@ mod tests {
         println!("min:{integer_min},\nmax:{integer_max}");
         println!("min:{},\nmax:{}", i64::MIN, i64::MAX);
         println!("min:{},\nmax:{}", i32::MIN, i32::MAX);
+        let mut a = Vec::new();
+        a.push(1);
+        let mut a = a.iter();
+        let a = a.next();
     }
 }
 
@@ -70,11 +75,11 @@ mod env {
     }
 
     pub trait GetEnvTrait {
-        fn get_instance(&self) -> j4rs::Instance;
+        fn get_instance(&self) -> Instance;
     }
 
     pub trait GetBotTrait {
-        fn get_bot<'a>(&'a self) -> crate::contact::bot::Bot;
+        fn get_bot(&self) -> crate::contact::bot::Bot;
     }
 
     /// 通过 `j4rs::Instance` 获得当前结构体。
@@ -113,28 +118,28 @@ pub mod other {
             M,
         }
 
-        /// Mirai 中定义：
-        /// ```
-        /// public enum class AvatarSpec(@MiraiInternalApi public val size: Int) : Comparable<AvatarSpec> {
-        ///     //最高压缩等级
-        ///     SMALLEST(40),
-        ///
-        ///     //群员列表中的显示大小, 实际上是 40 px, 但会比 [SMALLEST] 好一些
-        ///     SMALL(41),
-        ///
-        ///     //联系人列表中的显示大小
-        ///     MEDIUM(100),
-        ///
-        ///     //消息列表中的显示大小
-        ///     LARGE(140),
-        ///     
-        ///     //联系人详情页面中的显示大小
-        ///     LARGEST(640),
-        ///
-        ///     //原图
-        ///     ORIGINAL(0);
-        /// }
-        /// ```
+        // Mirai 中定义：
+        // ```
+        // public enum class AvatarSpec(@MiraiInternalApi public val size: Int) : Comparable<AvatarSpec> {
+        //     //最高压缩等级
+        //     SMALLEST(40),
+        //
+        //     //群员列表中的显示大小, 实际上是 40 px, 但会比 [SMALLEST] 好一些
+        //     SMALL(41),
+        //
+        //     //联系人列表中的显示大小
+        //     MEDIUM(100),
+        //
+        //     //消息列表中的显示大小
+        //     LARGE(140),
+        //
+        //     //联系人详情页面中的显示大小
+        //     LARGEST(640),
+        //
+        //     //原图
+        //     ORIGINAL(0);
+        // }
+        // ```
         #[derive(IntoPrimitive)]
         #[repr(i32)]
         pub enum AvatarSpec {

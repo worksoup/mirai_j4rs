@@ -17,12 +17,13 @@ use contact_derive::GetInstanceDerive;
 use core::str;
 use j4rs::{ClasspathEntry, Instance, InvocationArg, JavaOpt, Jvm, JvmBuilder};
 use serde::{Deserialize, Serialize};
-use std::error::Error;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
 };
+use std::marker::PhantomData;
 use crate::action::nudges::BotNudge;
+use crate::error::MiraiRsError;
 
 #[derive(GetInstanceDerive)]
 pub struct FriendGroup {
@@ -98,11 +99,9 @@ impl Bot {
             .invoke(&self.bot, "close", &[])
             .unwrap();
     }
-    pub fn close_and_join(self, err: impl Error) {
-        let r#type = err.to_string();
-        let what = String::from(""); // TODO
-        let r#type = InvocationArg::try_from(r#type).unwrap();
-        let what = InvocationArg::try_from(what).unwrap();
+    pub fn close_and_join(self, err: MiraiRsError) {
+        let r#type = InvocationArg::try_from(err.r#type).unwrap();
+        let what = InvocationArg::try_from(err.what).unwrap();
         Jvm::attach_thread()
             .unwrap()
             .invoke(&self.bot, "closeAndJoin", &[r#type, what])
@@ -150,11 +149,10 @@ impl Bot {
             .unwrap()
             .invoke(&self.bot, "getEventChannel", &[])
             .unwrap();
-        let _unused = None;
         EventChannel {
             jvm,
             instance,
-            _unused,
+            _unused: PhantomData::default(),
         }
     }
     pub fn get_friend(&self, id: i64) -> Option<Friend> {
@@ -192,7 +190,7 @@ impl Bot {
         ContactList {
             bot: self.get_instance(),
             instance,
-            _unused: None,
+            _unused: PhantomData::default(),
         }
     }
     pub fn get_group(&self, id: i64) -> Option<Group> {
@@ -206,7 +204,7 @@ impl Bot {
         ContactList {
             bot: self.get_instance(),
             instance,
-            _unused: None,
+            _unused: PhantomData::default(),
         }
     }
     pub fn get_logger() -> MiraiLogger {
@@ -220,7 +218,7 @@ impl Bot {
         ContactList {
             bot: self.get_instance(),
             instance,
-            _unused: None,
+            _unused: PhantomData::default(),
         }
     }
     pub fn get_stranger(&self, id: i64) -> Option<Stranger> {
@@ -253,7 +251,7 @@ impl Bot {
         ContactList {
             bot: self.get_instance(),
             instance,
-            _unused: None,
+            _unused: PhantomData::default(),
         }
     }
     pub fn is_online(&self) -> bool {
@@ -524,11 +522,10 @@ impl Env {
             .unwrap()
             .static_class("net.mamoe.mirai.event.GlobalEventChannel$INSTANCE")
             .unwrap();
-        let _unused = None;
         EventChannel {
             jvm,
             instance,
-            _unused,
+            _unused: PhantomData::default(),
         }
     }
 }
@@ -1248,7 +1245,7 @@ impl BotConfiguration {
         &self,
         path: Option<&PathBuf>,
         retain: Option<i64>,
-        indentity: Option<Instance>,
+        identity: Option<Instance>,
         arg: &str,
         method_name: &str,
     ) {
@@ -1274,7 +1271,7 @@ impl BotConfiguration {
             .unwrap()
             .into_primitive()
             .unwrap();
-        if indentity.is_none() {
+        if identity.is_none() {
             Jvm::attach_thread()
                 .unwrap()
                 .invoke(
@@ -1292,7 +1289,7 @@ impl BotConfiguration {
                     &[
                         InvocationArg::try_from(path).unwrap(),
                         InvocationArg::try_from(retain).unwrap(),
-                        InvocationArg::try_from(indentity.unwrap()).unwrap(),
+                        InvocationArg::try_from(identity.unwrap()).unwrap(),
                     ],
                 )
                 .unwrap();
@@ -1301,7 +1298,7 @@ impl BotConfiguration {
     fn redirect_log_to_file(
         &self,
         path: Option<&PathBuf>,
-        indentity: Option<Instance>,
+        identity: Option<Instance>,
         arg: &str,
         method_name: &str,
     ) {
@@ -1319,7 +1316,7 @@ impl BotConfiguration {
                 )
                 .unwrap()
         };
-        if indentity.is_none() {
+        if identity.is_none() {
             Jvm::attach_thread()
                 .unwrap()
                 .invoke(
@@ -1336,7 +1333,7 @@ impl BotConfiguration {
                     method_name,
                     &[
                         InvocationArg::try_from(path).unwrap(),
-                        InvocationArg::try_from(indentity.unwrap()).unwrap(),
+                        InvocationArg::try_from(identity.unwrap()).unwrap(),
                     ],
                 )
                 .unwrap();
@@ -1347,19 +1344,19 @@ impl BotConfiguration {
         &self,
         path: Option<&PathBuf>,
         retain: Option<i64>,
-        indentity: Option<Instance>,
+        identity: Option<Instance>,
     ) {
         self.redirect_log_to_directory(
             path,
             retain,
-            indentity,
+            identity,
             "logs",
             "redirectBotLogToDirectory",
         );
     }
     /// 重定向 Bot 日志到指定文件。日志将会逐行追加到此文件。若文件不存在将会自动创建。
-    pub fn redirect_bot_log_to_file(&self, path: Option<&PathBuf>, indentity: Option<Instance>) {
-        self.redirect_log_to_file(path, indentity, "mirai.log", "redirectBotLogToFile");
+    pub fn redirect_bot_log_to_file(&self, path: Option<&PathBuf>, identity: Option<Instance>) {
+        self.redirect_log_to_file(path, identity, "mirai.log", "redirectBotLogToFile");
     }
     /// 重定向网络日志到指定目录。若目录不存在将会自动创建。
     /// 默认目录路径为 `$workingDir/logs/`.
@@ -1367,12 +1364,12 @@ impl BotConfiguration {
         &self,
         path: Option<&PathBuf>,
         retain: Option<i64>,
-        indentity: Option<Instance>,
+        identity: Option<Instance>,
     ) {
         self.redirect_log_to_directory(
             path,
             retain,
-            indentity,
+            identity,
             "logs",
             "redirectNetworkLogToDirectory",
         );
@@ -1382,9 +1379,9 @@ impl BotConfiguration {
     pub fn redirect_network_log_to_file(
         &self,
         path: Option<&PathBuf>,
-        indentity: Option<Instance>,
+        identity: Option<Instance>,
     ) {
-        self.redirect_log_to_file(path, indentity, "mirai.log", "redirectNetworkLogToFile");
+        self.redirect_log_to_file(path, identity, "mirai.log", "redirectNetworkLogToFile");
     }
     // 用来复制的模板。
     // 暂时无用。
@@ -1559,10 +1556,10 @@ impl BotBuilder {
         self,
         path: Option<&PathBuf>,
         retain: Option<i64>,
-        indentity: Option<Instance>,
+        identity: Option<Instance>,
     ) -> Self {
         if let Some(config) = &self.config {
-            config.redirect_bot_log_to_directory(path, retain, indentity);
+            config.redirect_bot_log_to_directory(path, retain, identity);
         }
         self
     }
@@ -1570,10 +1567,10 @@ impl BotBuilder {
     pub fn redirect_bot_log_to_file(
         self,
         path: Option<&PathBuf>,
-        indentity: Option<Instance>,
+        identity: Option<Instance>,
     ) -> Self {
         if let Some(config) = &self.config {
-            config.redirect_bot_log_to_file(path, indentity);
+            config.redirect_bot_log_to_file(path, identity);
         }
         self
     }
@@ -1583,10 +1580,10 @@ impl BotBuilder {
         self,
         path: Option<&PathBuf>,
         retain: Option<i64>,
-        indentity: Option<Instance>,
+        identity: Option<Instance>,
     ) -> Self {
         if let Some(config) = &self.config {
-            config.redirect_network_log_to_directory(path, retain, indentity);
+            config.redirect_network_log_to_directory(path, retain, identity);
         }
         self
     }
@@ -1595,10 +1592,10 @@ impl BotBuilder {
     pub fn redirect_network_log_to_file(
         self,
         path: Option<&PathBuf>,
-        indentity: Option<Instance>,
+        identity: Option<Instance>,
     ) -> Self {
         if let Some(config) = &self.config {
-            config.redirect_network_log_to_file(path, indentity);
+            config.redirect_network_log_to_file(path, identity);
         }
         self
     }

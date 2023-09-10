@@ -77,6 +77,8 @@
 
 # 使用方法：
 
+可以参考 [demo.md](./demo.md).
+
 在 `Cargo.toml` 中添加：
 
  ``` toml

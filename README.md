@@ -120,7 +120,7 @@ fn main(){
     // 以下语句中的两参数均为 `Vec<String>` 类型。
     let env = mirai_j4rs::contact::bot::Env::new(jar_paths, java_opts);
     // env 和 config 中各有一部分配置项。
-    // env 中一般一些集成进去的插件（暂时只有 fix-protocol-version 插件）的功能。
+    // env 中一般是一些集成进去的插件（暂时只有 fix-protocol-version 插件）的功能。
     env.fix_protocol_version_fetch(MiraiProtocol::A, "latest".to_string());
     // 而 config 则是由 BotConfiguration 类提供的配置项。
     let config = env.new_bot_configuration();

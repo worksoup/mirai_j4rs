@@ -1,8 +1,10 @@
 use crate::contact::group::Group;
 use crate::env::GetEnvTrait;
+use crate::message::FileMessage;
+use crate::utils::get_bytes_md5_and_cast_to_i8_16;
 use contact_derive::GetInstanceDerive;
 use j4rs::{Instance, InvocationArg, Jvm};
-use crate::message::FileMessage;
+use std::hash::Hash;
 
 pub trait AbsoluteFileFolder: Sized + GetEnvTrait {
     fn delete(&self) -> bool {
@@ -159,18 +161,83 @@ pub struct AbsoluteFile {
 }
 
 impl AbsoluteFile {
-    pub fn get_expiry_time(&self) -> i64 { todo!() }
-    pub fn get_md5(&self) -> [i8; 16] { todo!() }
-    pub fn get_sha1(&self) -> [i8; 16] { todo!() }
-    pub fn get_size(&self) -> i64 { todo!() }
-    pub fn get_url(&self) -> String { todo!() }
-    pub fn move_to(&self, remote_path: &AbsoluteFolder) -> bool { todo!() }
-    pub fn to_message(&self) -> FileMessage { todo!() }
+    /// 文件到期时间戳，单位为秒。
+    pub fn get_expiry_time(&self) -> i64 {
+        todo!()
+    }
+    /// 文件内容 MD5.
+    pub fn get_md5(&self) -> [i8; 16] {
+        let jvm = Jvm::attach_thread().unwrap();
+        get_bytes_md5_and_cast_to_i8_16(jvm, &self.instance)
+    }
+    /// 文件内容 SHA-1. 我记着是 20 位来着，记着测试。TODO: 测试
+    pub fn get_sha1(&self) -> [i8; 20] {
+        let jvm = Jvm::attach_thread().unwrap();
+        let bytes = jvm.invoke(&self.instance, "getSha1", &[]).unwrap();
+        let instance = jvm
+            .invoke_static(
+                "org.apache.commons.lang3.ArrayUtils",
+                "toObject",
+                &[InvocationArg::try_from(bytes).unwrap()],
+            )
+            .unwrap();
+        let instance = jvm
+            .invoke_static(
+                "java.util.Array",
+                "stream",
+                &[InvocationArg::try_from(instance).unwrap()],
+            )
+            .unwrap();
+        jvm.chain(&instance)
+            .unwrap()
+            .invoke("toList", &[])
+            .unwrap()
+            .to_rust()
+            .unwrap()
+    }
+    /// 文件大小 (占用空间), 单位 byte.
+    pub fn get_size(&self) -> i64 {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.chain(&self.instance)
+            .unwrap()
+            .invoke("getSize", &[])
+            .unwrap()
+            .to_rust()
+            .unwrap()
+    }
+    pub fn get_url(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.chain(&self.instance)
+            .unwrap()
+            .invoke("getUrl", &[])
+            .unwrap()
+            .to_rust()
+            .unwrap()
+    }
+    pub fn move_to(&self, remote_folder: &AbsoluteFolder) -> bool {
+        let jvm = Jvm::attach_thread().unwrap();
+        let folder = InvocationArg::try_from(remote_folder.get_instance()).unwrap();
+        jvm.chain(&self.instance)
+            .unwrap()
+            .invoke("moveTo", &[folder])
+            .unwrap()
+            .to_rust()
+            .unwrap()
+    }
+    /// 得到 AbsoluteFile 所对应的 FileMessage.
+    /// 注: 在 上传文件 时就已经发送了文件消息, FileMessage 不可手动发送
+    pub fn to_message(&self) -> FileMessage {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke(&self.instance, "refreshed", &[]).unwrap();
+        FileMessage { instance }
+    }
 }
 
 impl AbsoluteFileFolder for AbsoluteFile {
     fn refreshed(&self) -> Self {
-        todo!()
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke(&self.instance, "refreshed", &[]).unwrap();
+        AbsoluteFile { instance }
     }
 }
 
@@ -179,11 +246,39 @@ pub struct AbsoluteFolder {
     pub(crate) instance: Instance,
 }
 
-impl AbsoluteFolder {}
+impl AbsoluteFolder {
+    pub fn children(&self) { todo!() }
+    pub fn children_stream(&self) -> AbsoluteFolder { todo!() }
+    pub fn create_folder(&self, folder_name: &str) -> AbsoluteFolder { todo!() }
+    pub fn files(&self) { todo!() }
+    pub fn files_stream(&self) { todo!() }
+    pub fn folders(&self) { todo!() }
+    pub fn folders_stream(&self) { todo!() }
+    pub fn get_contents_count(&self) -> i32 { todo!() }
+    pub fn is_empty(&self) -> bool { todo!() }
+    pub fn resolve_all(&self, path: &str) { todo!() }
+    pub fn resolve_all_stream(&self, path: &str) { todo!() }
+    pub fn resolve_file_by_id(&self, id: &str, deep: bool) { todo!() }
+    pub fn resolve_files(&self, path: &str) { todo!() }
+    pub fn resolve_files_stream(&self, path: &str) { todo!() }
+    pub fn resolve_folder(&self, path: &str) { todo!() }
+    pub fn resolve_folder_by_id(&self, id: &str) { todo!() }
+    /// 上传新文件。
+    pub fn upload_new_file() -> Self {
+        todo!()
+    }
+
+    /// 上传新文件，传入的 callback 可以获取到当前上传文件的进度。
+    pub fn upload_new_file_with_progression_callback() -> Self {
+        todo!()
+    }
+}
 
 impl AbsoluteFileFolder for AbsoluteFolder {
     fn refreshed(&self) -> Self {
-        todo!()
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke(&self.instance, "refreshed", &[]).unwrap();
+        AbsoluteFolder { instance }
     }
 }
 
@@ -193,7 +288,7 @@ pub struct RemoteFiles {
 }
 
 impl RemoteFiles {
-    /// 该函数返回 FileSupported, 但是目前应该只有 Group 的吧？.
+    /// 该函数返回 FileSupported, 但是目前应该只有 Group 的吧？
     pub fn get_contact(&self) -> Group {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm.invoke(&self.instance, "getContact", &[]).unwrap();
@@ -213,8 +308,12 @@ impl RemoteFiles {
     }
 
     /// 上传新文件。
-    pub fn upload_new_file() { todo!() }
+    pub fn upload_new_file() -> AbsoluteFolder {
+        todo!()
+    }
 
     /// 上传新文件，传入的 callback 可以获取到当前上传文件的进度。
-    pub fn upload_new_file_with_progression_callback() { todo!() }
+    pub fn upload_new_file_with_progression_callback() -> AbsoluteFolder {
+        todo!()
+    }
 }

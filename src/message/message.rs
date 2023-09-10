@@ -6,7 +6,7 @@ use super::message_trait::{
 };
 use crate::contact::bot::{Bot, Env};
 use crate::contact::contact_trait::FileSupportedTrait;
-use crate::message::message_trait:: MessageMetaDataTrait;
+use crate::message::message_trait::MessageMetaDataTrait;
 use crate::message::ImageType::{APNG, BMP, GIF, JPG, PNG, UNKNOW};
 use crate::utils::MiraiRsCollectionTrait;
 use crate::{
@@ -745,27 +745,7 @@ impl Image {
     }
     pub fn get_md5(&self) -> [i8; 16] {
         let jvm = Jvm::attach_thread().unwrap();
-        let bytes = jvm.invoke(&self.instance, "getMd5", &[]).unwrap();
-        let instance = jvm
-            .invoke_static(
-                "org.apache.commons.lang3.ArrayUtils",
-                "toObject",
-                &[InvocationArg::try_from(bytes).unwrap()],
-            )
-            .unwrap();
-        let instance = jvm
-            .invoke_static(
-                "java.util.Array",
-                "stream",
-                &[InvocationArg::try_from(instance).unwrap()],
-            )
-            .unwrap();
-        jvm.chain(&instance)
-            .unwrap()
-            .invoke("toList", &[])
-            .unwrap()
-            .to_rust()
-            .unwrap()
+        crate::utils::get_bytes_md5_and_cast_to_i8_16(jvm, &self.instance)
     }
     pub fn get_size(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
@@ -876,7 +856,7 @@ impl MessageContentTrait for UnsupportedMessage {}
 
 #[derive(GetInstanceDerive)]
 pub struct FileMessage {
-    instance: Instance,
+    pub(crate) instance: Instance,
 }
 
 impl FileMessage {

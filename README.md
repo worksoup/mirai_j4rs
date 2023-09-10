@@ -22,7 +22,7 @@
 - [x] `At` 提及群员
 - [x] `AtAll` 提及全体成员
 - [x] `Face` 表情消息
-- [x] `FileMessage` 文件消息
+- [x] `FileMessage` 群文件消息
 - [ ] `ForwardMessage` 合并转发
 - [x] `Image`（包括自定义表情）
 - [ ] `LightApp` 小程序

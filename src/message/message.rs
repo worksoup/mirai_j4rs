@@ -6,7 +6,7 @@ use super::message_trait::{
 };
 use crate::contact::bot::{Bot, Env};
 use crate::contact::contact_trait::FileSupportedTrait;
-use crate::message::message_trait::{AbsoluteFileFloder, MessageMetaDataTrait};
+use crate::message::message_trait:: MessageMetaDataTrait;
 use crate::message::ImageType::{APNG, BMP, GIF, JPG, PNG, UNKNOW};
 use crate::utils::MiraiRsCollectionTrait;
 use crate::{
@@ -14,6 +14,7 @@ use crate::{
     env::GetEnvTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
+use crate::file::AbsoluteFile;
 
 #[derive(GetInstanceDerive)]
 pub struct QuoteReply {
@@ -377,7 +378,6 @@ impl Iterator for MessageChainIterator {
                     SingleMessage::UnsupportedMessage(UnsupportedMessage { instance })
                 }
             }
-            ;
             Some(instance_to_single_message_enum(&jvm, next))
         } else {
             None
@@ -873,27 +873,6 @@ impl MessageTrait for UnsupportedMessage {}
 impl SingleMessageTrait for UnsupportedMessage {}
 
 impl MessageContentTrait for UnsupportedMessage {}
-
-#[derive(GetInstanceDerive)]
-pub struct AbsoluteFile {
-    pub(crate) instance: Instance,
-}
-
-impl AbsoluteFileFloder for AbsoluteFile {
-    fn refreshed(&self) -> Self {
-        todo!()
-    }
-}
-
-#[derive(GetInstanceDerive)]
-pub struct AbsoluteFolder {
-    pub(crate) instance: Instance,
-}
-
-#[derive(GetInstanceDerive)]
-pub struct RemoteFiles {
-    pub(crate) instance: Instance,
-}
 
 #[derive(GetInstanceDerive)]
 pub struct FileMessage {

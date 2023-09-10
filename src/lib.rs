@@ -11,6 +11,7 @@ pub mod message;
 pub mod action;
 pub mod error;
 pub mod utils;
+pub mod file;
 
 #[cfg(test)]
 mod tests {}

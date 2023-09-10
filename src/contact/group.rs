@@ -13,6 +13,7 @@ use contact_derive::{GetBotDerive, GetInstanceDerive};
 use j4rs::{Instance, InvocationArg, Jvm};
 use std::collections::HashMap;
 use std::marker::PhantomData;
+use crate::contact::contact_trait::FileSupportedTrait;
 
 pub struct GroupSettings {
     instance: Instance,
@@ -109,6 +110,8 @@ pub struct Group {
     pub(crate) instance: Instance,
     pub(crate) id: i64,
 }
+
+impl FileSupportedTrait for Group {}
 
 pub struct GroupActive {
     instance: Instance,

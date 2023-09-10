@@ -46,7 +46,7 @@ pub fn get_class_type_derive(input: TokenStream) -> TokenStream {
                 Jvm::attach_thread()
                     .unwrap()
                     .invoke_static(
-                        "rt.lea.Utils",
+                        "rt.lea.LumiaUtils",
                         "forName",
                         &[j4rs::InvocationArg::try_from(
                             #name::get_class_name(),

@@ -14,10 +14,10 @@ j4rs_derive = { git = "https://github.com/astonbitecode/j4rs.git" }
 const_unit_poc = "*" # 该依赖的引入是一个巨大的错误。why: 这个应该交由用户处理。TODO: 移除。
 num_enum = "*"
 serde = { version = "*", features = ["derive"] }
-directories = "5.0"
 toml = "0.7"
 serde_json = "1.0"
 rand = "*"
+# directories = "5.0"
 # num_cpus = "^1.15"
 # rust-crypto = "^0.2"
 # ring = "^0.16"

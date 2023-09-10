@@ -13,58 +13,7 @@ pub mod error;
 pub mod utils;
 
 #[cfg(test)]
-mod tests {
-    use crate::{
-        contact::bot::Env,
-        message::{FaceEnum, ImageType},
-    };
-    use j4rs::Jvm;
-    use std::mem::transmute;
-
-    #[test]
-    fn it_works() {
-        fn f1() -> String {
-            let x: Box<dyn Fn() -> i32> = Box::new(|| 114514);
-            let y = Box::into_raw(x);
-            format!("{}", unsafe { transmute::<_, i128>(y) })
-        }
-        let f1_c = f1().clone().parse::<i128>().unwrap();
-        println!("{}", f1());
-        let f1: Box<dyn Fn() -> i32> = unsafe { Box::from_raw(transmute(f1_c)) };
-        println!("裸指针大小：{}", std::mem::size_of::<*const &u8>());
-        println!("{}", f1());
-        drop(f1);
-        let f1: Box<dyn Fn() -> i32> = unsafe { Box::from_raw(transmute(f1_c)) };
-        println!("{}", f1());
-        let my_enum = FaceEnum::右太极;
-        let name = format!("{:?}", my_enum);
-        println!("{}", name);
-        println!("{}", ImageType::PNG.get_format_name());
-        assert_eq!(2 + 2, 4);
-    }
-
-    #[test]
-    fn how_is_it_in_java() {
-        let _env = Env::new(&vec!["../../MiraiRS.jar".to_string()],
-                            &vec!["-Djava.library.path=/home/leart/Works/Mirai/MiraiRS/rust_side/mirai_j4rs/target/release".to_string()]);
-        let jvm = Jvm::attach_thread().unwrap();
-        let integer_min = jvm
-            .static_class_field("java.lang.Integer", "MIN_VALUE")
-            .unwrap();
-        let integer_max = jvm
-            .static_class_field("java.lang.Integer", "MAX_VALUE")
-            .unwrap();
-        let integer_min: i64 = jvm.to_rust(integer_min).unwrap();
-        let integer_max: i64 = jvm.to_rust(integer_max).unwrap();
-        println!("min:{integer_min},\nmax:{integer_max}");
-        println!("min:{},\nmax:{}", i64::MIN, i64::MAX);
-        println!("min:{},\nmax:{}", i32::MIN, i32::MAX);
-        let mut a = Vec::new();
-        a.push(1);
-        let mut a = a.iter();
-        let a = a.next();
-    }
-}
+mod tests {}
 
 mod env {
     use crate::contact::contact_trait::ContactOrBotTrait;
@@ -118,42 +67,21 @@ pub mod other {
             M,
         }
 
-        // Mirai 中定义：
-        // ```
-        // public enum class AvatarSpec(@MiraiInternalApi public val size: Int) : Comparable<AvatarSpec> {
-        //     //最高压缩等级
-        //     SMALLEST(40),
-        //
-        //     //群员列表中的显示大小, 实际上是 40 px, 但会比 [SMALLEST] 好一些
-        //     SMALL(41),
-        //
-        //     //联系人列表中的显示大小
-        //     MEDIUM(100),
-        //
-        //     //消息列表中的显示大小
-        //     LARGE(140),
-        //
-        //     //联系人详情页面中的显示大小
-        //     LARGEST(640),
-        //
-        //     //原图
-        //     ORIGINAL(0);
-        // }
-        // ```
         #[derive(IntoPrimitive)]
         #[repr(i32)]
         pub enum AvatarSpec {
+            /// SMALLEST(40), 最高压缩等级。
             XS = 40,
-            //SMALLEST(40),
+            /// SMALL(41), 群员列表中的显示大小, 实际上是 40 px, 但会比 `SMALLEST` 好一些。
             S = 41,
-            //SMALL(41),
+            /// MEDIUM(100), 联系人列表中的显示大小。
             M = 100,
-            //MEDIUM(100),
+            /// LARGE(140), 消息列表中的显示大小。
             L = 140,
-            //LARGE(140),
+            /// LARGEST(640), 联系人详情页面中的显示大小。
             XL = 640,
-            //LARGEST(640),
-            ORIGINAL = 0, //ORIGINAL(0);
+            /// ORIGINAL(0), 原图。
+            ORIGINAL = 0,
         }
     }
 

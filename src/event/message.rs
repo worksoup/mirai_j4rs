@@ -1,7 +1,5 @@
+use crate::contact::{group::Group, AnonymousMember, Friend, Member, NormalMember};
 use crate::event::event_trait::{MessageEventTrait, MiraiEventTrait};
-use crate::{
-    contact::{group::Group, AnonymousMember, Friend, Member, NormalMember},
-};
 use contact_derive::{GetClassTypeDerive, GetInstanceDerive};
 use j4rs::{Instance, Jvm};
 
@@ -52,10 +50,9 @@ impl MessageEventTrait for GroupMessageEvent {
         let special_title: String = jvm
             .to_rust(
                 jvm.invoke(
-                    // 下面两行之所以转换是因为 java 中这个函数似乎返回了 `net.mamoe.mirai.contact.User`, 是没有 `getSpecialTitle` 这个函数的。
+                    // 下面之所以转换是因为 java 中这个函数似乎返回了 `net.mamoe.mirai.contact.User`, 是没有 `getSpecialTitle` 这个方法的。
                     &jvm.cast(&instance, "net.mamoe.mirai.contact.Member")
                         .unwrap(),
-                    // &instance,
                     "getSpecialTitle",
                     &[],
                 )
@@ -107,7 +104,13 @@ impl MiraiEventTrait for FriendMessageEvent {
 impl MessageEventTrait for FriendMessageEvent {
     type UserItem = Friend;
     fn get_sender(&self) -> Self::UserItem {
-        todo!()
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke(&self.instance, "getSender", &[]).unwrap();
+        let bot = jvm.invoke(&instance, "getBot", &[]).unwrap();
+        let id = jvm
+            .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
+            .unwrap();
+        Friend { bot, instance, id }
     }
     type ContactItem = Friend;
 

@@ -88,35 +88,6 @@ pub trait CodableMessageTrait: MessageTrait {
     }
 }
 
-impl<Codable> MessageTrait for Codable
-    where
-        Codable: CodableMessageTrait,
-{
-    default fn to_content(&self) -> String {
-        MessageTrait::to_content(self)
-    }
-    default fn to_string(&self) -> String {
-        MessageTrait::to_string(self)
-    }
-    default fn equals_to_message<T: MessageTrait>(
-        &self,
-        message: T,
-        ignore_case: bool,
-        strict: bool,
-    ) -> bool {
-        MessageTrait::equals_to_message(self, message, ignore_case, strict)
-    }
-    default fn equals_to_string<T: MessageTrait>(&self, message: T, ignore_case: bool) -> bool {
-        MessageTrait::equals_to_string(self, message, ignore_case)
-    }
-    default fn plus<T>(&self, message: T) -> MessageChain
-        where
-            T: MessageTrait,
-    {
-        MessageTrait::plus(self, message)
-    }
-}
-
 pub trait SingleMessageTrait: MessageTrait {}
 
 pub trait MessageChainTrait
@@ -216,7 +187,7 @@ pub trait ConstrainSingleTrait
     }
 }
 
-pub trait MarketFace
+pub trait MarketFaceTrait
     where
         Self: ConstrainSingleTrait + MessageContentTrait,
 {

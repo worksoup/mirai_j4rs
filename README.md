@@ -2,7 +2,8 @@
 
 **ɒiM_J is Mirai_J4rs.**
 
-使用 [`j4rs`](https://crates.io/crates/j4rs) 库简易(陋)地封装了一下 [`Mirai`](https://docs.mirai.mamoe.net/), api 基本与 `Mirai` 保持一致。
+使用 [`j4rs`](https://crates.io/crates/j4rs) 库简易(陋)地封装了一下 [`Mirai`](https://docs.mirai.mamoe.net/), api
+基本与 `Mirai` 保持一致。
 
 一直都是自己的其他项目在用，所以完全没有什么设计可言，也没有完全覆盖 `Mirai` 的功能。
 
@@ -14,25 +15,28 @@
 
 **消息相关**
 
-- [x] `PlainText` 文本消息
+- [x] `At` 提及群员
+- [x] `AtAll` 提及全体成员
 - [x] `Face` 表情消息
-- [ ] `MarketFace` 市场表情
-    - [ ] `VipFace` Vip表情
-    - [ ] `PokeFace`  
+- [x] `FileMessage` 文件消息
+- [ ] `ForwardMessage` 合并转发
+- [x] `Image`（包括自定义表情）
+- [ ] `LightApp` 小程序
+- [x] `MarketFaceTrait` 市场表情
     - [x] `Dice` 🎲
-    - [x] `RockPaperScissors` 石头剪刀布
+    - [x] `RockPaperScissors` ✊✌🤚
+    - [x] `MarketFace` 其他市场表情
 - [x] `Nudge` 戳一戳
     - [x] `BotNudge`
-    - [x] `MemberNudge`
     - [x] `FriendNudge`
-- [x] `Image`（包括自定义表情）
+    - [x] `MemberNudge`
+- [ ] `PokeFace` 放大招等
+- [x] `PlainText` 文本消息
+- [x] `QuoteReply` 回复消息
+- [ ] `VipFace` Vip表情
 - [ ] XML，JSON 等富文本消息
 - [ ] 长消息（5000 字符 + 50 图片）
-- [x] `QuoteReply` 回复消息
-- [ ] 合并转发
 - [ ] 撤回
-- [ ] 提及群员
-- [ ] 提及全体成员
 - [ ] 语音
 - [ ] 闪照
 - [ ] 撤回群员消息

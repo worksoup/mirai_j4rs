@@ -1,4 +1,3 @@
-use std::marker::PhantomData;
 use contact_derive::GetInstanceDerive;
 use j4rs::{prelude::*, InvocationArg};
 use j4rs::{Instance, Jvm};
@@ -9,13 +8,10 @@ use crate::env::GetClassTypeTrait;
 use crate::event::event_trait::MiraiEventTrait;
 
 //需要由Env构造。
-pub struct EventChannel<E>
-    where
-        E: MiraiEventTrait,
+pub struct EventChannel
 {
     pub(crate) jvm: Jvm,
     pub(crate) instance: Instance,
-    pub(crate) _unused: PhantomData<E>,
 }
 
 #[call_from_java("rt.lea.LumiaConsumer.onEvent")]
@@ -29,11 +25,9 @@ fn apply_on_event(on_event_ptr: Instance, event: Instance) {
     };
 }
 
-impl<'a, E> EventChannel<E>
-    where
-        E: MiraiEventTrait,
+impl EventChannel
 {
-    fn subscribe_internal(
+    fn subscribe_internal<E: MiraiEventTrait>(
         &self,
         call_from_java_raw_list: [i8; 16],
     ) -> (Instance, Instance, [i8; 16]) {
@@ -57,7 +51,7 @@ impl<'a, E> EventChannel<E>
             .unwrap();
         (class_type, consumer, call_from_java_raw_list)
     }
-    fn subscribe_internal_0_1(on_event: &'a Box<dyn Fn(E) -> ()>) -> [i8; 16] {
+    fn subscribe_internal_0_1<'a, E: MiraiEventTrait>(on_event: &'a Box<dyn Fn(E) -> ()>) -> [i8; 16] {
         let call_from_java: Box<dyn Fn(AbstractEvent) -> ()> = Box::new(|e: AbstractEvent| {
             let e: E = e.get::<E>();
             on_event(e);
@@ -65,7 +59,7 @@ impl<'a, E> EventChannel<E>
         let call_from_java_raw: *mut dyn Fn(AbstractEvent) = Box::into_raw(call_from_java);
         unsafe { transmute::<_, [i8; 16]>(call_from_java_raw) }
     }
-    fn subscribe_internal_0_2(on_event: Box<dyn FnOnce(E) -> ()>) -> [i8; 16] {
+    fn subscribe_internal_0_2<E: MiraiEventTrait>(on_event: Box<dyn FnOnce(E) -> ()>) -> [i8; 16] {
         let call_from_java: Box<dyn FnOnce(AbstractEvent) -> ()> =
             Box::new(move |e: AbstractEvent| {
                 let e: E = e.get::<E>();
@@ -74,21 +68,21 @@ impl<'a, E> EventChannel<E>
         let call_from_java_raw: *mut dyn FnOnce(AbstractEvent) = Box::into_raw(call_from_java);
         unsafe { transmute::<_, [i8; 16]>(call_from_java_raw) }
     }
-    fn subscribe_internal_1_1(
+    fn subscribe_internal_1_1<E: MiraiEventTrait>(
         &self,
         on_event: &Box<dyn Fn(E) -> ()>,
     ) -> (Instance, Instance, [i8; 16]) {
         let call_from_java_raw_list = Self::subscribe_internal_0_1(on_event);
-        self.subscribe_internal(call_from_java_raw_list)
+        self.subscribe_internal::<E>(call_from_java_raw_list)
     }
-    fn subscribe_internal_1_2(
+    fn subscribe_internal_1_2<E: MiraiEventTrait>(
         &self,
         on_event: Box<dyn FnOnce(E) -> ()>,
     ) -> (Instance, Instance, [i8; 16]) {
         let call_from_java_raw_list = Self::subscribe_internal_0_2(on_event);
-        self.subscribe_internal(call_from_java_raw_list)
+        self.subscribe_internal::<E>(call_from_java_raw_list)
     }
-    pub fn subscribe(&'a self, on_event: &'a Box<dyn Fn(E) -> ()>) -> Listener<E> {
+    pub fn subscribe<'a, E: MiraiEventTrait>(&'a self, on_event: &'a Box<dyn Fn(E) -> ()>) -> Listener<E> {
         let (class_type, consumer, call_from_java) = self.subscribe_internal_1_1(on_event);
         let listener = Jvm::attach_thread()
             .unwrap()
@@ -107,7 +101,7 @@ impl<'a, E> EventChannel<E>
             _on_event: OnEvent::Fn(on_event),
         }
     }
-    pub fn subscribe_always(&'a self, on_event: &'a Box<dyn Fn(E) -> ()>) -> Listener<E> {
+    pub fn subscribe_always<'a, E: MiraiEventTrait>(&'a self, on_event: &'a Box<dyn Fn(E) -> ()>) -> Listener<E> {
         let (class_type, consumer, call_from_java) = self.subscribe_internal_1_1(on_event);
         let listener = Jvm::attach_thread()
             .unwrap()
@@ -126,7 +120,7 @@ impl<'a, E> EventChannel<E>
             _on_event: OnEvent::Fn(on_event),
         }
     }
-    pub fn subscribe_once(&self, on_event: Box<dyn FnOnce(E) -> ()>) -> Listener<E> {
+    pub fn subscribe_once<E: MiraiEventTrait>(&self, on_event: Box<dyn FnOnce(E) -> ()>) -> Listener<E> {
         let (class_type, consumer, call_from_java) = self.subscribe_internal_1_2(on_event);
         let listener = Jvm::attach_thread()
             .unwrap()

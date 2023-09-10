@@ -8,6 +8,8 @@ use crate::env::{GetBotTrait, GetEnvTrait};
 use crate::{env::FromInstance, other::enums::AvatarSpec};
 use contact_derive::{GetBotDerive, GetInstanceDerive};
 use j4rs::{Instance, InvocationArg, Jvm};
+use crate::contact::contact_trait::FileSupportedTrait;
+use crate::message::message_trait::MessageHashCodeTrait;
 
 pub struct ContactList<T>
     where
@@ -18,11 +20,17 @@ pub struct ContactList<T>
     pub(crate) _unused: PhantomData<T>,
 }
 
+impl<T: ContactTrait + FromInstance> GetEnvTrait for ContactList<T> {
+    fn get_instance(&self) -> Instance {
+        todo!()
+    }
+}
+
 impl<T> ContactList<T>
     where
         T: ContactTrait + FromInstance,
 {
-    pub fn contains(&self, contact: impl ContactTrait) -> bool {
+    pub fn contains(&self, contact: T) -> bool {
         Jvm::attach_thread()
             .unwrap()
             .to_rust(
@@ -84,17 +92,6 @@ impl<T> ContactList<T>
             )
             .unwrap()
     }
-    pub fn hash_code(&self) -> i32 {
-        Jvm::attach_thread()
-            .unwrap()
-            .to_rust(
-                Jvm::attach_thread()
-                    .unwrap()
-                    .invoke(&self.instance, "hashCode", &[])
-                    .unwrap(),
-            )
-            .unwrap()
-    }
     pub fn is_empty(&self) -> bool {
         Jvm::attach_thread()
             .unwrap()
@@ -118,6 +115,9 @@ impl<T> ContactList<T>
             .unwrap()
     }
 }
+
+impl<T: ContactTrait + FromInstance> MessageHashCodeTrait for ContactList<T> {}
+// TODO: impl MiraiRsCollectionTrait fot ContactList<_>{}
 
 #[derive(GetBotDerive, GetInstanceDerive)]
 pub struct Friend {

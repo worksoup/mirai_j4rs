@@ -1,12 +1,12 @@
 use contact_derive::GetInstanceDerive;
 
 use super::message_trait::{
-    CodableMessageTrait, ConstrainSingleTrait, MarketFace, MessageChainTrait, MessageContentTrait,
-    MessageHashCodeTrait, MessageTrait, RichMessageTrait, SingleMessageTrait,
+    CodableMessageTrait, ConstrainSingleTrait, MarketFaceTrait, MessageChainTrait,
+    MessageContentTrait, MessageHashCodeTrait, MessageTrait, RichMessageTrait, SingleMessageTrait,
 };
 use crate::contact::bot::{Bot, Env};
 use crate::contact::contact_trait::FileSupportedTrait;
-use crate::message::message_trait::MessageMetaDataTrait;
+use crate::message::message_trait::{AbsoluteFileFloder, MessageMetaDataTrait};
 use crate::message::ImageType::{APNG, BMP, GIF, JPG, PNG, UNKNOW};
 use crate::utils::MiraiRsCollectionTrait;
 use crate::{
@@ -131,44 +131,46 @@ impl<'a, T> MessageReceipt<'a, T>
 // TODO: 需要知道 Java 或者 MessageChain 会不会返回除了以下消息之外的 SingleMessage
 // TODO: 还有一些如 Audio 等消息没有实现，需要补上。
 pub enum SingleMessage {
-    QuoteReply(QuoteReply),
     At(At),
     AtAll(AtAll),
-    PlainText(PlainText),
-    Face(Face),
-    Image(Image),
-    UnsupportedMessage(UnsupportedMessage),
-    FileMessage(FileMessage),
-    MusicShare(MusicShare),
-    LightApp(LightApp),
-    ForwardMessage(ForwardMessage),
     Dice(Dice),
-    RockPaperScissors(RockPaperScissors),
-    VipFace(VipFace),
-    PokeMessage(PokeMessage),
-    // 以下这个应该不会被 MessageChain 返回吧？
+    Face(Face),
+    FileMessage(FileMessage),
+    ForwardMessage(ForwardMessage),
+    Image(Image),
+    LightApp(LightApp),
+    MarketFace(MarketFace),
     MessageSource(MessageSource),
+    MusicShare(MusicShare),
+    PlainText(PlainText),
+    PokeMessage(PokeMessage),
+    QuoteReply(QuoteReply),
+    RockPaperScissors(RockPaperScissors),
+    UnsupportedMessage(UnsupportedMessage),
+    VipFace(VipFace),
+    // 以下这个应该不会被 MessageChain 返回吧？
 }
 
 impl GetEnvTrait for SingleMessage {
     fn get_instance(&self) -> Instance {
         match self {
-            SingleMessage::QuoteReply(a) => a.get_instance(),
             SingleMessage::At(a) => a.get_instance(),
             SingleMessage::AtAll(a) => a.get_instance(),
-            SingleMessage::PlainText(a) => a.get_instance(),
-            SingleMessage::Face(a) => a.get_instance(),
-            SingleMessage::Image(a) => a.get_instance(),
-            SingleMessage::UnsupportedMessage(a) => a.get_instance(),
-            SingleMessage::FileMessage(a) => a.get_instance(),
-            SingleMessage::MusicShare(a) => a.get_instance(),
-            SingleMessage::LightApp(a) => a.get_instance(),
-            SingleMessage::ForwardMessage(a) => a.get_instance(),
             SingleMessage::Dice(a) => a.get_instance(),
-            SingleMessage::RockPaperScissors(a) => a.get_instance(),
-            SingleMessage::VipFace(a) => a.get_instance(),
-            SingleMessage::PokeMessage(a) => a.get_instance(),
+            SingleMessage::Face(a) => a.get_instance(),
+            SingleMessage::FileMessage(a) => a.get_instance(),
+            SingleMessage::ForwardMessage(a) => a.get_instance(),
+            SingleMessage::Image(a) => a.get_instance(),
+            SingleMessage::LightApp(a) => a.get_instance(),
+            SingleMessage::MarketFace(a) => a.get_instance(),
             SingleMessage::MessageSource(a) => a.get_instance(),
+            SingleMessage::MusicShare(a) => a.get_instance(),
+            SingleMessage::PlainText(a) => a.get_instance(),
+            SingleMessage::PokeMessage(a) => a.get_instance(),
+            SingleMessage::QuoteReply(a) => a.get_instance(),
+            SingleMessage::RockPaperScissors(a) => a.get_instance(),
+            SingleMessage::UnsupportedMessage(a) => a.get_instance(),
+            SingleMessage::VipFace(a) => a.get_instance(),
         }
     }
 }
@@ -179,6 +181,8 @@ pub struct MessageChain {
 }
 
 impl MessageChain {}
+
+impl MessageTrait for MessageChain {}
 
 impl CodableMessageTrait for MessageChain {}
 
@@ -253,61 +257,128 @@ impl Iterator for MessageChainIterator {
                 .unwrap()
                 .to_rust()
                 .unwrap();
-            let instance = next;
-            Some(match class_type.as_str() {
-                "net.mamoe.mirai.message.data.At" => SingleMessage::At(At {
-                    id: jvm
-                        .to_rust(jvm.invoke(&instance, "getTarget", &[]).unwrap())
-                        .unwrap(),
-                    instance,
-                }),
-                "net.mamoe.mirai.message.data.AtAll" => SingleMessage::AtAll(AtAll { instance }),
-                "net.mamoe.mirai.message.data.Dice" => SingleMessage::Dice(Dice { instance }),
-                "net.mamoe.mirai.message.data.Face" => SingleMessage::Face(Face {
-                    name: jvm
-                        .to_rust(jvm.invoke(&instance, "getName", &[]).unwrap())
-                        .unwrap(),
-                    id: jvm
-                        .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
-                        .unwrap(),
-                    instance,
-                }),
-                "net.mamoe.mirai.message.data.FileMessage" => {
+            println!("消息类型：{class_type}");
+            fn instance_to_single_message_enum(jvm: &Jvm, instance: Instance) -> SingleMessage {
+                let is_instance_of = |instance: &Instance, class_name: &str| -> bool {
+                    let instance = jvm.clone_instance(instance).unwrap();
+                    let instance = InvocationArg::try_from(instance).unwrap();
+                    let class_name = InvocationArg::try_from(class_name).unwrap();
+                    jvm.to_rust(
+                        jvm.invoke_static(
+                            "rt.lea.LumiaUtils",
+                            "isInstanceOf",
+                            &[instance, class_name],
+                        )
+                            .unwrap(),
+                    )
+                        .unwrap()
+                };
+                if is_instance_of(&instance, "net.mamoe.mirai.message.data.At") {
+                    let instance = jvm
+                        .cast(&instance, "net.mamoe.mirai.message.data.At")
+                        .unwrap();
+                    SingleMessage::At(At {
+                        id: jvm
+                            .to_rust(jvm.invoke(&instance, "getTarget", &[]).unwrap())
+                            .unwrap(),
+                        instance,
+                    })
+                } else if is_instance_of(&instance, "net.mamoe.mirai.message.data.AtAll") {
+                    let instance = jvm
+                        .cast(&instance, "net.mamoe.mirai.message.data.AtAll")
+                        .unwrap();
+                    SingleMessage::AtAll(AtAll { instance })
+                } else if is_instance_of(&instance, "net.mamoe.mirai.message.data.Dice") {
+                    let instance = jvm
+                        .cast(&instance, "net.mamoe.mirai.message.data.Dice")
+                        .unwrap();
+                    SingleMessage::Dice(Dice { instance })
+                } else if is_instance_of(&instance, "net.mamoe.mirai.message.data.Face") {
+                    let instance = jvm
+                        .cast(&instance, "net.mamoe.mirai.message.data.Face")
+                        .unwrap();
+                    SingleMessage::Face(Face {
+                        name: jvm
+                            .to_rust(jvm.invoke(&instance, "getName", &[]).unwrap())
+                            .unwrap(),
+                        id: jvm
+                            .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
+                            .unwrap(),
+                        instance,
+                    })
+                } else if is_instance_of(&instance, "net.mamoe.mirai.message.data.FileMessage") {
+                    let instance = jvm
+                        .cast(&instance, "net.mamoe.mirai.message.data.FileMessage")
+                        .unwrap();
                     SingleMessage::FileMessage(FileMessage { instance })
-                }
-                "net.mamoe.mirai.message.data.ForwardMessage" => {
+                } else if is_instance_of(&instance, "net.mamoe.mirai.message.data.ForwardMessage") {
+                    let instance = jvm
+                        .cast(&instance, "net.mamoe.mirai.message.data.ForwardMessage")
+                        .unwrap();
                     SingleMessage::ForwardMessage(ForwardMessage { instance })
-                }
-                "net.mamoe.mirai.message.data.Image" => SingleMessage::Image(Image { instance }),
-                "net.mamoe.mirai.message.data.LightApp" => {
+                } else if is_instance_of(&instance, "net.mamoe.mirai.message.data.Image") {
+                    let instance = jvm
+                        .cast(&instance, "net.mamoe.mirai.message.data.Image")
+                        .unwrap();
+                    SingleMessage::Image(Image { instance })
+                } else if is_instance_of(&instance, "net.mamoe.mirai.message.data.LightApp") {
+                    let instance = jvm
+                        .cast(&instance, "net.mamoe.mirai.message.data.LightApp")
+                        .unwrap();
                     SingleMessage::LightApp(LightApp { instance })
-                }
-                "net.mamoe.mirai.message.data.MessageSource" => {
+                } else if is_instance_of(&instance, "net.mamoe.mirai.message.data.MessageSource") {
+                    let instance = jvm
+                        .cast(&instance, "net.mamoe.mirai.message.data.MessageSource")
+                        .unwrap();
                     SingleMessage::MessageSource(MessageSource { instance })
-                }
-                "net.mamoe.mirai.message.data.MusicShare" => {
+                } else if is_instance_of(&instance, "net.mamoe.mirai.message.data.MarketFace") {
+                    if is_instance_of(&instance, "net.mamoe.mirai.message.data.RockPaperScissors") {
+                        let instance = jvm
+                            .cast(&instance, "net.mamoe.mirai.message.data.RockPaperScissors")
+                            .unwrap();
+                        SingleMessage::RockPaperScissors(RockPaperScissors { instance })
+                    } else {
+                        let instance = jvm
+                            .cast(&instance, "net.mamoe.mirai.message.data.MarketFace")
+                            .unwrap();
+                        SingleMessage::MarketFace(MarketFace { instance })
+                    }
+                } else if is_instance_of(&instance, "net.mamoe.mirai.message.data.MusicShare") {
+                    let instance = jvm
+                        .cast(&instance, "net.mamoe.mirai.message.data.MusicShare")
+                        .unwrap();
                     SingleMessage::MusicShare(MusicShare { instance })
-                }
-                "net.mamoe.mirai.message.data.PlainText" => SingleMessage::PlainText(PlainText {
-                    content: jvm
-                        .to_rust(jvm.invoke(&instance, "getContent", &[]).unwrap())
-                        .unwrap(),
-                    instance,
-                }),
-                "net.mamoe.mirai.message.data.PokeMessage" => {
+                } else if is_instance_of(&instance, "net.mamoe.mirai.message.data.PlainText") {
+                    let instance = jvm
+                        .cast(&instance, "net.mamoe.mirai.message.data.PlainText")
+                        .unwrap();
+                    SingleMessage::PlainText(PlainText {
+                        content: jvm
+                            .to_rust(jvm.invoke(&instance, "getContent", &[]).unwrap())
+                            .unwrap(),
+                        instance,
+                    })
+                } else if is_instance_of(&instance, "net.mamoe.mirai.message.data.PokeMessage") {
+                    let instance = jvm
+                        .cast(&instance, "net.mamoe.mirai.message.data.PokeMessage")
+                        .unwrap();
                     SingleMessage::PokeMessage(PokeMessage { instance })
-                }
-                "net.mamoe.mirai.message.data.QuoteReply" => {
+                } else if is_instance_of(&instance, "net.mamoe.mirai.message.data.QuoteReply") {
+                    let instance = jvm
+                        .cast(&instance, "net.mamoe.mirai.message.data.QuoteReply")
+                        .unwrap();
                     SingleMessage::QuoteReply(QuoteReply { instance })
-                }
-                "net.mamoe.mirai.message.data.RockPaperScissors" => {
-                    SingleMessage::RockPaperScissors(RockPaperScissors { instance })
-                }
-                "net.mamoe.mirai.message.data.VipFace" => {
+                } else if is_instance_of(&instance, "net.mamoe.mirai.message.data.VipFace") {
+                    let instance = jvm
+                        .cast(&instance, "net.mamoe.mirai.message.data.VipFace")
+                        .unwrap();
                     SingleMessage::VipFace(VipFace { instance })
+                } else {
+                    SingleMessage::UnsupportedMessage(UnsupportedMessage { instance })
                 }
-                _ => SingleMessage::UnsupportedMessage(UnsupportedMessage { instance }),
-            })
+            }
+            ;
+            Some(instance_to_single_message_enum(&jvm, next))
         } else {
             None
         }
@@ -348,6 +419,9 @@ impl At {
                     .unwrap(),
             )
             .unwrap()
+    }
+    pub fn get_target(&self) -> i64 {
+        self.id
     }
 }
 
@@ -779,6 +853,8 @@ impl Image {
     }
 }
 
+impl MessageTrait for Image {}
+
 impl CodableMessageTrait for Image {}
 
 impl SingleMessageTrait for Image {}
@@ -801,6 +877,12 @@ impl MessageContentTrait for UnsupportedMessage {}
 #[derive(GetInstanceDerive)]
 pub struct AbsoluteFile {
     pub(crate) instance: Instance,
+}
+
+impl AbsoluteFileFloder for AbsoluteFile {
+    fn refreshed(&self) -> Self {
+        todo!()
+    }
 }
 
 #[derive(GetInstanceDerive)]
@@ -865,10 +947,30 @@ impl FileMessage {
         contact: FileSupported,
     ) -> AbsoluteFile {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "toAbsoluteFile", &[]).unwrap();
+        // let instance = InvocationArg::try_from(self.get_instance()).unwrap();
+        let contact = InvocationArg::try_from(
+            jvm.cast(
+                &contact.get_instance(),
+                "net.mamoe.mirai.contact.FileSupported",
+            )
+                .unwrap(),
+        )
+            .unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "toAbsoluteFile", &[contact])
+            .unwrap();
+        // let instance = jvm
+        //     .invoke_static(
+        //         "rt.lea.LumiaUtils",
+        //         "callToAbsoluteFile",
+        //         &[instance, contact],
+        //     )
+        //     .unwrap();
         AbsoluteFile { instance }
     }
 }
+
+impl MessageTrait for FileMessage {}
 
 impl SingleMessageTrait for FileMessage {}
 
@@ -883,6 +985,8 @@ pub struct MusicShare {
     instance: Instance,
 }
 
+impl MessageTrait for MusicShare {}
+
 impl SingleMessageTrait for MusicShare {}
 
 impl MessageContentTrait for MusicShare {}
@@ -895,6 +999,8 @@ impl CodableMessageTrait for MusicShare {}
 pub struct LightApp {
     instance: Instance,
 }
+
+impl MessageTrait for LightApp {}
 
 impl SingleMessageTrait for LightApp {}
 
@@ -943,10 +1049,10 @@ impl Dice {
             .unwrap();
         Self { instance }
     }
-    fn equals() {
+    pub fn equals() {
         todo!()
     }
-    pub fn get_value(&self) {
+    pub fn get_value(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(&self.instance)
             .unwrap()
@@ -962,6 +1068,8 @@ impl Dice {
     }
 }
 
+impl MessageTrait for Dice {}
+
 impl SingleMessageTrait for Dice {}
 
 impl MessageContentTrait for Dice {}
@@ -972,7 +1080,7 @@ impl CodableMessageTrait for Dice {}
 
 impl MessageHashCodeTrait for Dice {}
 
-impl MarketFace for Dice {}
+impl MarketFaceTrait for Dice {}
 
 #[derive(GetInstanceDerive)]
 pub struct RockPaperScissors {
@@ -1027,6 +1135,8 @@ impl RockPaperScissors {
     }
 }
 
+impl MessageTrait for RockPaperScissors {}
+
 impl SingleMessageTrait for RockPaperScissors {}
 
 impl MessageContentTrait for RockPaperScissors {}
@@ -1037,7 +1147,7 @@ impl CodableMessageTrait for RockPaperScissors {}
 
 impl MessageHashCodeTrait for RockPaperScissors {}
 
-impl MarketFace for RockPaperScissors {}
+impl MarketFaceTrait for RockPaperScissors {}
 
 // #[derive(GetEnvDerive)]
 // pub struct  {
@@ -1055,6 +1165,8 @@ pub struct VipFace {
     instance: Instance,
 }
 
+impl MessageTrait for VipFace {}
+
 impl SingleMessageTrait for VipFace {}
 
 impl MessageContentTrait for VipFace {}
@@ -1068,6 +1180,8 @@ impl CodableMessageTrait for VipFace {}
 pub struct PokeMessage {
     instance: Instance,
 }
+
+impl MessageTrait for PokeMessage {}
 
 impl SingleMessageTrait for PokeMessage {}
 
@@ -1088,3 +1202,18 @@ impl MessageTrait for MessageSource {}
 impl SingleMessageTrait for MessageSource {}
 
 impl ConstrainSingleTrait for MessageSource {}
+
+#[derive(GetInstanceDerive)]
+pub struct MarketFace {
+    pub(crate) instance: Instance,
+}
+
+impl MessageTrait for MarketFace {}
+
+impl SingleMessageTrait for MarketFace {}
+
+impl ConstrainSingleTrait for MarketFace {}
+
+impl MessageContentTrait for MarketFace {}
+
+impl MarketFaceTrait for MarketFace {}

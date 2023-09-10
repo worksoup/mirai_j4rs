@@ -140,9 +140,7 @@ impl Bot {
             instance: bot_configuration,
         }
     }
-    pub fn get_event_channel<E>(&self) -> EventChannel<E>
-        where
-            E: MiraiEventTrait,
+    pub fn get_event_channel(&self) -> EventChannel
     {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = Jvm::attach_thread()
@@ -152,7 +150,6 @@ impl Bot {
         EventChannel {
             jvm,
             instance,
-            _unused: PhantomData::default(),
         }
     }
     pub fn get_friend(&self, id: i64) -> Option<Friend> {
@@ -513,9 +510,7 @@ impl Env {
         todo!("should be 'MiraiList<Bot>' which has not been implemented yet")
     }
     //默认是global的。
-    pub fn event_channel<E>(&self) -> EventChannel<E>
-        where
-            E: MiraiEventTrait,
+    pub fn event_channel(&self) -> EventChannel
     {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = Jvm::attach_thread()
@@ -525,7 +520,6 @@ impl Env {
         EventChannel {
             jvm,
             instance,
-            _unused: PhantomData::default(),
         }
     }
 }
@@ -1415,20 +1409,14 @@ struct EnvConfig {
 }
 
 impl BotBuilder {
-    fn internal_new_env() -> Env {
+    fn internal_new_env(config_dir: &Path) -> Env {
         let default_base_config = BaseConfig {
             config_file: "env_config.toml".to_string(),
         };
-        let proj_dir = directories::ProjectDirs::from("rt", "lea", "mirai_j4rs");
-        let dir = if let Some(proj_dir) = &proj_dir {
-            proj_dir.config_dir()
-        } else {
-            Path::new(".")
-        };
-        if let Err(_) = std::fs::metadata(dir) {
-            let _ = std::fs::create_dir_all(dir);
+        if let Err(_) = std::fs::metadata(config_dir) {
+            let _ = std::fs::create_dir_all(config_dir);
         }
-        let mut dir_tmp = dir.to_path_buf();
+        let mut dir_tmp = config_dir.to_path_buf();
         dir_tmp.push("base_config.toml");
         // 如果 `base_config.toml` 不存在则创建一个默认的。
         if let Ok(base_config_file) = std::fs::metadata(&dir_tmp) {
@@ -1450,19 +1438,20 @@ impl BotBuilder {
         let env = Env::new(&env_config.jar_paths, &env_config.java_opts);
         env
     }
-    pub fn new() -> Self {
-        let env = Self::internal_new_env();
-        let config = Some(env.new_bot_configuration());
-        Self {
-            env,
-            config,
-            id: None,
-            password: None,
-            password_md5: None,
-        }
-    }
-    pub fn new_without_bot_configuration() -> Self {
-        let env = Self::internal_new_env();
+    // pub fn new() -> Self {
+    //     let config_dir = Path::new(".");
+    //     let env = Self::internal_new_env(config_dir);
+    //     let config = Some(env.new_bot_configuration());
+    //     Self {
+    //         env,
+    //         config,
+    //         id: None,
+    //         password: None,
+    //         password_md5: None,
+    //     }
+    // }
+    pub fn new(config_dir: &Path) -> Self {
+        let env = Self::internal_new_env(config_dir);
         Self {
             env,
             config: None,
@@ -1484,9 +1473,13 @@ impl BotBuilder {
         self
     }
     /// 在被挤下线时自动重连。
-    pub fn auto_reconnect_on_force_offline(self) -> Self {
+    pub fn auto_reconnect_on_force_offline(mut self) -> Self {
         if let Some(config) = &self.config {
             config.auto_reconnect_on_force_offline();
+        } else {
+            let config = self.env.new_bot_configuration();
+            config.auto_reconnect_on_force_offline();
+            self.config = Some(config);
         }
         self
     }
@@ -1496,25 +1489,37 @@ impl BotBuilder {
     ///     account.secrets 保存账号的会话信息。
     ///     它可加速登录过程，也可能可以减少出现验证码的次数。
     ///     如果遇到一段时间后无法接收消息通知等同步问题时可尝试禁用。
-    pub fn disable_account_secretes(self) -> Self {
+    pub fn disable_account_secretes(mut self) -> Self {
         if let Some(config) = &self.config {
             config.disable_account_secretes();
+        } else {
+            let config = self.env.new_bot_configuration();
+            config.disable_account_secretes();
+            self.config = Some(config);
         }
         self
     }
     /// 禁用好友列表和群成员列表的缓存。
     /// ~应该~**不**是默认行为。
-    pub fn disable_contact_cache(self) -> Self {
+    pub fn disable_contact_cache(mut self) -> Self {
         if let Some(config) = &self.config {
             config.disable_contact_cache();
+        } else {
+            let config = self.env.new_bot_configuration();
+            config.disable_contact_cache();
+            self.config = Some(config);
         }
         self
     }
     /// 启用好友列表和群成员列表的缓存。
     /// ~应该~是默认行为。
-    pub fn enable_contact_cache(self) -> Self {
+    pub fn enable_contact_cache(mut self) -> Self {
         if let Some(config) = &self.config {
             config.enable_contact_cache();
+        } else {
+            let config = self.env.new_bot_configuration();
+            config.enable_contact_cache();
+            self.config = Some(config);
         }
         self
     }
@@ -1523,79 +1528,111 @@ impl BotBuilder {
     /// 在传入 None 参数的情况下，如果 device.json 文件不存在的话，
     /// Mirai 似乎会发出警告，然后随机生成一个设备信息。
     /// TODO: 测试传入参数的行为。
-    pub fn file_based_device_info(self, path: Option<&PathBuf>) -> Self {
+    pub fn file_based_device_info(mut self, path: Option<&PathBuf>) -> Self {
         if let Some(config) = &self.config {
             config.file_based_device_info(path);
+        } else {
+            let config = self.env.new_bot_configuration();
+            config.file_based_device_info(path);
+            self.config = Some(config);
         }
         self
     }
     /// 不显示 Bot 日志。不推荐。
-    pub fn no_bot_log(self) -> Self {
+    pub fn no_bot_log(mut self) -> Self {
         if let Some(config) = &self.config {
             config.no_bot_log();
+        } else {
+            let config = self.env.new_bot_configuration();
+            config.no_bot_log();
+            self.config = Some(config);
         }
         self
     }
     /// 不显示网络日志。不推荐。
-    pub fn no_network_log(self) -> Self {
+    pub fn no_network_log(mut self) -> Self {
         if let Some(config) = &self.config {
             config.no_network_log();
+        } else {
+            let config = self.env.new_bot_configuration();
+            config.no_network_log();
+            self.config = Some(config);
         }
         self
     }
     /// 使用随机设备信息。
     /// 注意该函数~应该~不会持久化当前随机信息。
-    pub fn random_device_info(self) -> Self {
+    pub fn random_device_info(mut self) -> Self {
         if let Some(config) = &self.config {
             config.random_device_info();
+        } else {
+            let config = self.env.new_bot_configuration();
+            config.random_device_info();
+            self.config = Some(config);
         }
         self
     }
     /// 重定向 Bot 日志到指定目录。若目录不存在将会自动创建。
     pub fn redirect_bot_log_to_directory(
-        self,
+        mut self,
         path: Option<&PathBuf>,
         retain: Option<i64>,
         identity: Option<Instance>,
     ) -> Self {
         if let Some(config) = &self.config {
             config.redirect_bot_log_to_directory(path, retain, identity);
+        } else {
+            let config = self.env.new_bot_configuration();
+            config.redirect_bot_log_to_directory(path, retain, identity);
+            self.config = Some(config);
         }
         self
     }
     /// 重定向 Bot 日志到指定文件。日志将会逐行追加到此文件。若文件不存在将会自动创建。
     pub fn redirect_bot_log_to_file(
-        self,
+        mut self,
         path: Option<&PathBuf>,
         identity: Option<Instance>,
     ) -> Self {
         if let Some(config) = &self.config {
             config.redirect_bot_log_to_file(path, identity);
+        } else {
+            let config = self.env.new_bot_configuration();
+            config.redirect_bot_log_to_file(path, identity);
+            self.config = Some(config);
         }
         self
     }
     /// 重定向网络日志到指定目录。若目录不存在将会自动创建。
     /// 默认目录路径为工作目录下的 `logs/` 文件夹。
     pub fn redirect_network_log_to_directory(
-        self,
+        mut self,
         path: Option<&PathBuf>,
         retain: Option<i64>,
         identity: Option<Instance>,
     ) -> Self {
         if let Some(config) = &self.config {
             config.redirect_network_log_to_directory(path, retain, identity);
+        } else {
+            let config = self.env.new_bot_configuration();
+            config.redirect_network_log_to_directory(path, retain, identity);
+            self.config = Some(config);
         }
         self
     }
     /// 重定向网络日志到指定文件。默认文件路径为工作目录下的 `mirai.log`.
     /// 日志将会逐行追加到此文件。若文件不存在将会自动创建。
     pub fn redirect_network_log_to_file(
-        self,
+        mut self,
         path: Option<&PathBuf>,
         identity: Option<Instance>,
     ) -> Self {
         if let Some(config) = &self.config {
             config.redirect_network_log_to_file(path, identity);
+        } else {
+            let config = self.env.new_bot_configuration();
+            config.redirect_network_log_to_file(path, identity);
+            self.config = Some(config);
         }
         self
     }

@@ -1,7 +1,11 @@
-use contact_derive::GetInstanceDerive;
-use j4rs::{Instance, InvocationArg, Jvm};
+pub(crate) mod internal;
+pub mod ffi;
+
 use crate::env::GetEnvTrait;
 use crate::message::message_trait::SingleMessageTrait;
+use j4rs::{Instance, InvocationArg, Jvm};
+use std::cmp::Ordering;
+use std::marker::PhantomData;
 
 pub trait MiraiRsCollectionTrait {
     type Element;
@@ -13,27 +17,103 @@ pub trait MiraiRsCollectionTrait {
 
 pub trait MiraiRsIterableTrait: Iterator {}
 
+pub struct FileFolderStream<T> {
+    instance: Instance,
+    _unused: PhantomData<T>,
+}
 
-pub(crate) fn get_bytes_md5_and_cast_to_i8_16(jvm: Jvm, instance: &Instance) -> [i8; 16] {
-    let bytes = jvm.invoke(&instance, "getMd5", &[]).unwrap();
-    let instance = jvm
-        .invoke_static(
-            "org.apache.commons.lang3.ArrayUtils",
-            "toObject",
-            &[InvocationArg::try_from(bytes).unwrap()],
-        )
-        .unwrap();
-    let instance = jvm
-        .invoke_static(
-            "java.util.Array",
-            "stream",
-            &[InvocationArg::try_from(instance).unwrap()],
-        )
-        .unwrap();
-    jvm.chain(&instance)
-        .unwrap()
-        .invoke("toList", &[])
-        .unwrap()
-        .to_rust()
-        .unwrap()
+impl<T> GetEnvTrait for FileFolderStream<T> {
+    fn get_instance(&self) -> j4rs::Instance {
+        Jvm::attach_thread()
+            .unwrap()
+            .clone_instance(&self.instance)
+            .unwrap()
+    }
+}
+
+impl<T> FileFolderStream<T> {
+    pub fn sorted_by<F>(&self, mut compare: F)
+        where
+            F: FnMut(&T, &T) -> Ordering,
+    {
+        todo!()
+    }
+    // 我觉得我可以直接假定没有重复文件。
+    // pub fn distinct(&self) {
+    //     ()
+    // }
+    pub fn close(self) {
+        todo!()
+    }
+    pub fn filter<P>(&self, predicate: P) -> FileFolderStream<T>
+        where
+            P: FnMut(&T) -> bool,
+    {
+        todo!()
+    }
+
+    pub fn map<B, F>(&self, f: F) -> FileFolderStream<B>
+        where
+            F: FnMut(T) -> B,
+    {
+        todo!()
+    }
+
+    pub fn for_each<F>(&self, f: F)
+        where
+            F: FnMut(T),
+    {
+        todo!()
+    }
+
+    pub fn count(&self) -> i64 {
+        todo!()
+    }
+    pub fn collect<B: FromIterator<T>>(&self) -> B {
+        todo!()
+    }
+    pub fn find_first<P>(&self, predicate: P) -> Option<T>
+        where
+            P: FnMut(&T) -> bool,
+    {
+        todo!()
+    }
+    pub fn find_any<P>(&self, predicate: P) -> Option<T>
+        where
+            P: FnMut(&T) -> bool,
+    {
+        todo!()
+    }
+
+    pub fn flat_map<U, F>(&self, f: F) -> FileFolderStream<U>
+        where
+            F: FnMut(T) -> FileFolderStream<U>,
+    {
+        todo!()
+    }
+
+    pub fn skip(&self, n: i64) -> FileFolderStream<T> {
+        todo!()
+    }
+
+    pub fn limit(&self, max_size: i64) -> FileFolderStream<T> {
+        todo!()
+    }
+
+    pub fn max_by<F>(&self, compare: F) -> Option<T>
+        where
+            F: FnMut(&T, &T) -> Ordering,
+    {
+        todo!()
+    }
+
+    pub fn min_by<F>(&self, compare: F) -> Option<T>
+        where
+            F: FnMut(&T, &T) -> Ordering,
+    {
+        todo!()
+    }
+    pub fn to_vec(&self) -> Vec<T> {
+        todo!()
+    }
 }

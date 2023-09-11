@@ -745,7 +745,7 @@ impl Image {
     }
     pub fn get_md5(&self) -> [i8; 16] {
         let jvm = Jvm::attach_thread().unwrap();
-        crate::utils::get_bytes_md5_and_cast_to_i8_16(jvm, &self.instance)
+        crate::utils::internal::get_bytes_md5_and_cast_to_i8_16(jvm, &self.instance)
     }
     pub fn get_size(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();

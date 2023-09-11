@@ -5,16 +5,62 @@
 #![feature(impl_trait_in_assoc_type)]
 #![feature(specialization)]
 
-pub mod contact;
-pub mod event;
-pub mod message;
 pub mod action;
+pub mod contact;
 pub mod error;
-pub mod utils;
+pub mod event;
 pub mod file;
+pub mod message;
+pub mod utils;
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use std::rc::Rc;
+    use crate::env::FromInstance;
+    use crate::utils::ffi::Consumer;
+    use j4rs::{ClasspathEntry, Instance, InvocationArg, Jvm, JvmBuilder};
+
+    fn get_a_jvm_for_test() -> Jvm {
+        JvmBuilder::new()
+            .classpath_entry(ClasspathEntry::new(
+                "/run/media/leart/5A98CD5F98CD3A71/Users/15102/Works/Mirai/MiraiRS/jvm_side.jar",
+            ))
+            .build()
+            .unwrap()
+    }
+
+    #[test]
+    fn closure_to_consumer_works() {
+        struct X {
+            instance: Instance,
+        }
+        impl X {
+            fn fuck(&self) -> String {
+                let jvm = Jvm::attach_thread().unwrap();
+                jvm.chain(&self.instance)
+                    .unwrap()
+                    .invoke("getClass", &[])
+                    .unwrap()
+                    .invoke("toString", &[])
+                    .unwrap()
+                    .to_rust()
+                    .unwrap()
+            }
+        }
+        impl FromInstance for X {
+            fn from_instance(instance: Instance) -> Self {
+                X { instance }
+            }
+        }
+        let jvm = get_a_jvm_for_test();
+        let a = 2;
+        let consumer = Consumer::new(|x: X| {
+            println!("a = {a}\nThe class name is `{}`.", x.fuck());
+        });
+        let test_instance = InvocationArg::try_from(true).unwrap();
+        consumer.accept(test_instance);
+    }
+}
 
 mod env {
     use crate::contact::contact_trait::ContactOrBotTrait;
@@ -33,12 +79,17 @@ mod env {
     }
 
     /// 通过 `j4rs::Instance` 获得当前结构体。
-    pub trait FromInstance
+    pub trait ContactFromInstance
         where
             Self: GetEnvTrait + ContactOrBotTrait,
     {
         type Item: GetEnvTrait + ContactOrBotTrait;
         fn from_instance(bot: Instance, instance: Instance, id: i64) -> Self::Item;
+    }
+
+    /// 通过 `j4rs::Instance` 获得当前结构体。
+    pub trait FromInstance {
+        fn from_instance(instance: Instance) -> Self;
     }
 }
 

@@ -2,6 +2,7 @@ use contact_derive::{GetClassTypeDerive, GetInstanceDerive};
 use j4rs::{Instance, Jvm};
 
 use crate::{contact::bot::Bot, env::GetClassTypeTrait};
+use crate::env::FromInstance;
 use crate::event::event_trait::{BotEventTrait, BotOfflineEventTrait};
 
 use super::event_trait::MiraiEventTrait;
@@ -15,10 +16,13 @@ impl BotOnlineEvent {
     fn get_class_name() -> String { "net.mamoe.mirai.event.events.BotOnlineEvent".to_string() }
 }
 
-impl MiraiEventTrait for BotOnlineEvent {
+impl FromInstance for BotOnlineEvent {
     fn from_instance(instance: Instance) -> Self {
         BotOnlineEvent { instance }
     }
+}
+
+impl MiraiEventTrait for BotOnlineEvent {
     fn cancel(&self) {
         let _ = Jvm::attach_thread()
             .unwrap()

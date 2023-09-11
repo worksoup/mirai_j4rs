@@ -2,6 +2,7 @@ use crate::contact::{group::Group, AnonymousMember, Friend, Member, NormalMember
 use crate::event::event_trait::{MessageEventTrait, MiraiEventTrait};
 use contact_derive::{GetClassTypeDerive, GetInstanceDerive};
 use j4rs::{Instance, Jvm};
+use crate::env::FromInstance;
 
 #[derive(GetInstanceDerive, GetClassTypeDerive)]
 pub struct GroupMessageEvent {
@@ -20,12 +21,14 @@ impl GroupMessageEvent {
     }
 }
 
-// 这个特征实现了一个 event 所需要的函数。
-impl MiraiEventTrait for GroupMessageEvent {
+impl FromInstance for GroupMessageEvent {
     fn from_instance(instance: Instance) -> Self {
         GroupMessageEvent { instance }
     }
 }
+
+// 这个特征实现了一个 event 所需要的函数。
+impl MiraiEventTrait for GroupMessageEvent {}
 
 // 实现了 message 所需要的函数。
 impl MessageEventTrait for GroupMessageEvent {
@@ -95,11 +98,13 @@ impl FriendMessageEvent {
     }
 }
 
-impl MiraiEventTrait for FriendMessageEvent {
+impl FromInstance for FriendMessageEvent {
     fn from_instance(instance: Instance) -> Self {
         FriendMessageEvent { instance }
     }
 }
+
+impl MiraiEventTrait for FriendMessageEvent {}
 
 impl MessageEventTrait for FriendMessageEvent {
     type UserItem = Friend;

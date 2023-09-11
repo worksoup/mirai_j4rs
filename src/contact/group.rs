@@ -4,7 +4,7 @@ use super::{
     ContactList, NormalMember,
 };
 use crate::{
-    env::FromInstance,
+    env::ContactFromInstance,
     env::GetEnvTrait,
     message::{MessageChain, MessageSource},
     other::enums::AvatarSpec,
@@ -587,7 +587,7 @@ impl GroupActive {
     }
 }
 
-impl FromInstance for Group {
+impl ContactFromInstance for Group {
     type Item = Group;
     fn from_instance(bot: Instance, instance: Instance, id: i64) -> Group {
         Group { bot, instance, id }

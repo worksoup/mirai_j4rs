@@ -1,12 +1,13 @@
+use std::cmp::Ordering;
 use crate::contact::group::Group;
 use crate::env::GetEnvTrait;
 use crate::message::FileMessage;
-use crate::utils::get_bytes_md5_and_cast_to_i8_16;
 use contact_derive::GetInstanceDerive;
 use j4rs::{Instance, InvocationArg, Jvm};
 use std::hash::Hash;
+use std::iter::{Filter, FlatMap, Map, Peekable, Skip, SkipWhile, Take, TakeWhile};
 
-pub trait AbsoluteFileFolder: Sized + GetEnvTrait {
+pub trait AbsoluteFileFolderTrait: Sized + GetEnvTrait {
     fn delete(&self) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(&self.get_instance())
@@ -39,7 +40,7 @@ pub trait AbsoluteFileFolder: Sized + GetEnvTrait {
     {
         todo!()
     }
-    fn get_extension<T: AbsoluteFileFolder>(file_or_folder: T) -> String {
+    fn get_extension<T: AbsoluteFileFolderTrait>(file_or_folder: T) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(&file_or_folder.get_instance())
             .unwrap()
@@ -75,7 +76,7 @@ pub trait AbsoluteFileFolder: Sized + GetEnvTrait {
             .to_rust()
             .unwrap()
     }
-    fn get_name_without_extension<T: AbsoluteFileFolder>(file_or_folder: T) -> String {
+    fn get_name_without_extension<T: AbsoluteFileFolderTrait>(file_or_folder: T) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(&file_or_folder.get_instance())
             .unwrap()
@@ -163,12 +164,18 @@ pub struct AbsoluteFile {
 impl AbsoluteFile {
     /// 文件到期时间戳，单位为秒。
     pub fn get_expiry_time(&self) -> i64 {
-        todo!()
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.chain(&self.instance)
+            .unwrap()
+            .invoke("getExpiryTime", &[])
+            .unwrap()
+            .to_rust()
+            .unwrap()
     }
     /// 文件内容 MD5.
     pub fn get_md5(&self) -> [i8; 16] {
         let jvm = Jvm::attach_thread().unwrap();
-        get_bytes_md5_and_cast_to_i8_16(jvm, &self.instance)
+        crate::utils::internal::get_bytes_md5_and_cast_to_i8_16(jvm, &self.instance)
     }
     /// 文件内容 SHA-1. 我记着是 20 位来着，记着测试。TODO: 测试
     pub fn get_sha1(&self) -> [i8; 20] {
@@ -233,7 +240,7 @@ impl AbsoluteFile {
     }
 }
 
-impl AbsoluteFileFolder for AbsoluteFile {
+impl AbsoluteFileFolderTrait for AbsoluteFile {
     fn refreshed(&self) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm.invoke(&self.instance, "refreshed", &[]).unwrap();
@@ -241,28 +248,75 @@ impl AbsoluteFileFolder for AbsoluteFile {
     }
 }
 
+
+pub enum AbsoluteFileFolder {
+    AbsoluteFile(AbsoluteFile),
+    AbsoluteFolder(AbsoluteFolder),
+}
+
+impl GetEnvTrait for AbsoluteFileFolder {
+    fn get_instance(&self) -> Instance {
+        match self {
+            AbsoluteFileFolder::AbsoluteFile(a) => { a.get_instance() }
+            AbsoluteFileFolder::AbsoluteFolder(a) => { a.get_instance() }
+        }
+    }
+}
+
+impl AbsoluteFileFolderTrait for AbsoluteFileFolder {
+    fn refreshed(&self) -> Self {
+        match self {
+            AbsoluteFileFolder::AbsoluteFile(a) => { AbsoluteFileFolder::AbsoluteFile(a.refreshed()) }
+            AbsoluteFileFolder::AbsoluteFolder(a) => { AbsoluteFileFolder::AbsoluteFolder(a.refreshed()) }
+        }
+    }
+}
+
+/// # 绝对目录标识。
+/// 精确表示一个远程目录。不会受同名文件或目录的影响。
+/// Mirai 中有些方法会返回 Flow 或 Stream, 后者的方法名称有 Stream 后缀，
+/// 这里包装的全部都是 Stream 版本，哪怕没有后缀。这些方法会返回一个迭代器，以此模拟其操作。
 #[derive(GetInstanceDerive)]
 pub struct AbsoluteFolder {
     pub(crate) instance: Instance,
 }
 
 impl AbsoluteFolder {
-    pub fn children(&self) { todo!() }
-    pub fn children_stream(&self) -> AbsoluteFolder { todo!() }
-    pub fn create_folder(&self, folder_name: &str) -> AbsoluteFolder { todo!() }
-    pub fn files(&self) { todo!() }
-    pub fn files_stream(&self) { todo!() }
-    pub fn folders(&self) { todo!() }
-    pub fn folders_stream(&self) { todo!() }
-    pub fn get_contents_count(&self) -> i32 { todo!() }
-    pub fn is_empty(&self) -> bool { todo!() }
-    pub fn resolve_all(&self, path: &str) { todo!() }
-    pub fn resolve_all_stream(&self, path: &str) { todo!() }
-    pub fn resolve_file_by_id(&self, id: &str, deep: bool) { todo!() }
-    pub fn resolve_files(&self, path: &str) { todo!() }
-    pub fn resolve_files_stream(&self, path: &str) { todo!() }
-    pub fn resolve_folder(&self, path: &str) { todo!() }
-    pub fn resolve_folder_by_id(&self, id: &str) { todo!() }
+    pub fn children(&self) {
+        // let a: AbsoluteFileFolderIterator;
+        // let mut k: Vec<i64> = a.collect();
+        todo!()
+    }
+    pub fn create_folder(&self, folder_name: &str) -> AbsoluteFolder {
+        todo!()
+    }
+    pub fn files(&self) {
+        todo!()
+    }
+    pub fn folders(&self) {
+        todo!()
+    }
+    pub fn get_contents_count(&self) -> i32 {
+        todo!()
+    }
+    pub fn is_empty(&self) -> bool {
+        todo!()
+    }
+    pub fn resolve_all(&self, path: &str) {
+        todo!()
+    }
+    pub fn resolve_file_by_id(&self, id: &str, deep: bool) {
+        todo!()
+    }
+    pub fn resolve_files(&self, path: &str) {
+        todo!()
+    }
+    pub fn resolve_folder(&self, path: &str) {
+        todo!()
+    }
+    pub fn resolve_folder_by_id(&self, id: &str) {
+        todo!()
+    }
     /// 上传新文件。
     pub fn upload_new_file() -> Self {
         todo!()
@@ -274,7 +328,7 @@ impl AbsoluteFolder {
     }
 }
 
-impl AbsoluteFileFolder for AbsoluteFolder {
+impl AbsoluteFileFolderTrait for AbsoluteFolder {
     fn refreshed(&self) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm.invoke(&self.instance, "refreshed", &[]).unwrap();

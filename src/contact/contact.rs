@@ -4,31 +4,34 @@ use super::bot::{Bot, Env};
 use super::contact_trait::{
     ContactOrBotTrait, ContactTrait, MemberTrait, UserOrBotTrait, UserTrait,
 };
+use crate::contact::contact_trait::FileSupportedTrait;
 use crate::env::{GetBotTrait, GetEnvTrait};
-use crate::{env::FromInstance, other::enums::AvatarSpec};
+use crate::message::message_trait::MessageHashCodeTrait;
+use crate::{env::ContactFromInstance, other::enums::AvatarSpec};
 use contact_derive::{GetBotDerive, GetInstanceDerive};
 use j4rs::{Instance, InvocationArg, Jvm};
-use crate::contact::contact_trait::FileSupportedTrait;
-use crate::message::message_trait::MessageHashCodeTrait;
 
 pub struct ContactList<T>
-    where
-        T: ContactTrait + FromInstance,
+where
+    T: ContactTrait + ContactFromInstance,
 {
     pub(crate) bot: Instance,
     pub(crate) instance: Instance,
     pub(crate) _unused: PhantomData<T>,
 }
 
-impl<T: ContactTrait + FromInstance> GetEnvTrait for ContactList<T> {
+impl<T: ContactTrait + ContactFromInstance> GetEnvTrait for ContactList<T> {
     fn get_instance(&self) -> Instance {
-        todo!()
+        Jvm::attach_thread()
+            .unwrap()
+            .clone_instance(&self.instance)
+            .unwrap()
     }
 }
 
 impl<T> ContactList<T>
-    where
-        T: ContactTrait + FromInstance,
+where
+    T: ContactTrait + ContactFromInstance,
 {
     pub fn contains(&self, contact: T) -> bool {
         Jvm::attach_thread()
@@ -116,7 +119,7 @@ impl<T> ContactList<T>
     }
 }
 
-impl<T: ContactTrait + FromInstance> MessageHashCodeTrait for ContactList<T> {}
+impl<T: ContactTrait + ContactFromInstance> MessageHashCodeTrait for ContactList<T> {}
 // TODO: impl MiraiRsCollectionTrait fot ContactList<_>{}
 
 #[derive(GetBotDerive, GetInstanceDerive)]
@@ -126,7 +129,7 @@ pub struct Friend {
     pub(crate) id: i64,
 }
 
-impl FromInstance for Friend {
+impl ContactFromInstance for Friend {
     type Item = Friend;
     fn from_instance(bot: Instance, instance: Instance, id: i64) -> Friend {
         Friend { bot, instance, id }
@@ -164,7 +167,7 @@ pub struct Stranger {
     pub(crate) id: i64,
 }
 
-impl FromInstance for Stranger {
+impl ContactFromInstance for Stranger {
     type Item = Stranger;
     fn from_instance(bot: Instance, instance: Instance, id: i64) -> Stranger {
         Stranger { bot, instance, id }
@@ -201,7 +204,7 @@ pub struct OtherClient {
     instance: Instance,
 }
 
-impl FromInstance for OtherClient {
+impl ContactFromInstance for OtherClient {
     type Item = OtherClient;
     fn from_instance(bot: Instance, instance: Instance, _id: i64) -> OtherClient {
         OtherClient { bot, instance }
@@ -219,7 +222,7 @@ pub struct NormalMember {
     pub(crate) id: i64,
 }
 
-impl FromInstance for NormalMember {
+impl ContactFromInstance for NormalMember {
     type Item = NormalMember;
     fn from_instance(bot: Instance, instance: Instance, id: i64) -> NormalMember {
         NormalMember { bot, instance, id }

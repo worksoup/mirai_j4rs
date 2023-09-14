@@ -15,43 +15,53 @@ pub mod utils;
 
 #[cfg(test)]
 mod tests {
-    use std::rc::Rc;
-    use crate::env::FromInstance;
-    use crate::utils::ffi::Consumer;
+    use std::cmp::Ordering;
+    use crate::env::{FromInstance, GetEnvTrait};
+    use crate::utils::ffi::{Comparator, Consumer, Function};
+    use contact_derive::GetInstanceDerive;
     use j4rs::{ClasspathEntry, Instance, InvocationArg, Jvm, JvmBuilder};
+    use std::rc::Rc;
+    use std::thread::sleep;
+
+    #[derive(GetInstanceDerive)]
+    struct X {
+        instance: Instance,
+    }
+
+    impl X {
+        fn fuck(&self) -> String {
+            let jvm = Jvm::attach_thread().unwrap();
+            jvm.chain(&self.instance)
+                .unwrap()
+                .invoke("getClass", &[])
+                .unwrap()
+                .invoke("toString", &[])
+                .unwrap()
+                .to_rust()
+                .unwrap()
+        }
+    }
+
+    impl FromInstance for X {
+        fn from_instance(instance: Instance) -> Self {
+            X { instance }
+        }
+    }
 
     fn get_a_jvm_for_test() -> Jvm {
-        JvmBuilder::new()
+        match JvmBuilder::new()
             .classpath_entry(ClasspathEntry::new(
                 "/run/media/leart/5A98CD5F98CD3A71/Users/15102/Works/Mirai/MiraiRS/jvm_side.jar",
             ))
             .build()
-            .unwrap()
+        {
+            Ok(jvm) => jvm,
+            Err(_) => Jvm::attach_thread().unwrap(),
+        }
     }
 
     #[test]
     fn closure_to_consumer_works() {
-        struct X {
-            instance: Instance,
-        }
-        impl X {
-            fn fuck(&self) -> String {
-                let jvm = Jvm::attach_thread().unwrap();
-                jvm.chain(&self.instance)
-                    .unwrap()
-                    .invoke("getClass", &[])
-                    .unwrap()
-                    .invoke("toString", &[])
-                    .unwrap()
-                    .to_rust()
-                    .unwrap()
-            }
-        }
-        impl FromInstance for X {
-            fn from_instance(instance: Instance) -> Self {
-                X { instance }
-            }
-        }
         let jvm = get_a_jvm_for_test();
         let a = 2;
         let consumer = Consumer::new(|x: X| {
@@ -59,6 +69,36 @@ mod tests {
         });
         let test_instance = InvocationArg::try_from(true).unwrap();
         consumer.accept(test_instance);
+    }
+
+    #[test]
+    fn closure_to_function_works() {
+        let jvm = get_a_jvm_for_test();
+        let a = 2;
+        let function = Function::new(|x: X| -> X {
+            println!("a = {a}\nThe class name is `{}`.", x.fuck());
+            x
+        });
+        let test_instance = InvocationArg::try_from(true).unwrap();
+        let x = function.apply(test_instance);
+        println!("a = {a}\nThe class name is `{}`.", x.fuck());
+    }
+
+    #[test]
+    fn closure_to_comparator_works() {
+        let jvm = get_a_jvm_for_test();
+        let a = 2;
+        let comparator = Comparator::new(move |x1: &X, x2: &X| -> Ordering {
+            let val1: i32 = jvm.to_rust(x1.get_instance()).unwrap();
+            let val2: i32 = jvm.to_rust(x2.get_instance()).unwrap();
+            val1.cmp(&val2)
+        });
+        // println!("sleep");
+        // sleep(std::time::Duration::from_millis(10000));
+        let test_instance1 = InvocationArg::try_from(22).unwrap();
+        let test_instance2 = InvocationArg::try_from(55).unwrap();
+        let x = comparator.compare(test_instance1, test_instance2);
+        println!("a = {a}\nThe ordering is `{:?}`.", x);
     }
 }
 

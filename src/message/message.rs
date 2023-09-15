@@ -1016,7 +1016,8 @@ impl ForwardMessageBuilder {
     pub fn set_display_strategy(self, title: String, brief: String, source: String, preview: Vec<String>, summary: String) -> Self { todo!() }
 }
 
-// TODO: RawForwardMessage
+// TODO: RawForwardMessage is necessary for set_display_strategy.
+// TODO: to_forward_message for message and chain, etc.
 #[derive(GetInstanceDerive)]
 pub struct ForwardMessage {
     instance: Instance,

@@ -1,5 +1,5 @@
-use std::hint::unreachable_unchecked;
 use contact_derive::GetInstanceDerive;
+use std::hint::unreachable_unchecked;
 
 use super::message_trait::{
     CodableMessageTrait, ConstrainSingleTrait, MarketFaceTrait, MessageChainTrait,
@@ -7,6 +7,7 @@ use super::message_trait::{
 };
 use crate::contact::bot::{Bot, Env};
 use crate::contact::contact_trait::FileSupportedTrait;
+use crate::env::FromInstance;
 use crate::file::AbsoluteFile;
 use crate::message::message_trait::MessageMetaDataTrait;
 use crate::message::ImageType::{APNG, BMP, GIF, JPG, PNG, UNKNOW};
@@ -17,7 +18,6 @@ use crate::{
     env::GetEnvTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use crate::env::FromInstance;
 
 #[derive(GetInstanceDerive)]
 pub struct QuoteReply {
@@ -69,16 +69,16 @@ impl Clone for MessageSource {
 impl MessageTrait for QuoteReply {}
 
 pub struct MessageReceipt<'a, T>
-    where
-        T: ContactTrait,
+where
+    T: ContactTrait,
 {
     instance: Instance,
     target: &'a T,
 }
 
 impl<'a, T> MessageReceipt<'a, T>
-    where
-        T: ContactTrait,
+where
+    T: ContactTrait,
 {
     pub(crate) fn new(instance: Instance, target: &'a T) -> Self {
         MessageReceipt { instance, target }
@@ -805,7 +805,7 @@ impl Image {
             jvm.invoke(&self.instance, "isUpload", &[bot, md5, size])
                 .unwrap(),
         )
-            .unwrap()
+        .unwrap()
     }
     /// TODO: 此函数为重载，还未实现。
     pub fn todo_is_uploaded() -> () {}
@@ -901,9 +901,9 @@ impl FileMessage {
                 &contact.get_instance(),
                 "net.mamoe.mirai.contact.FileSupported",
             )
-                .unwrap(),
+            .unwrap(),
         )
-            .unwrap();
+        .unwrap();
         let instance = jvm
             .invoke(&self.instance, "toAbsoluteFile", &[contact])
             .unwrap();
@@ -963,30 +963,83 @@ pub struct ForwardMessage {
     instance: Instance,
 }
 
+#[derive(GetInstanceDerive)]
+pub struct ForwardMessageNode {
+    instance: Instance,
+}
+
+impl ForwardMessageNode {
+    pub fn get_sender_id(&self) -> i64 {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "getSenderId", &[]).unwrap())
+            .unwrap()
+    }
+    pub fn get_time(&self) -> i64 {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "getTime", &[]).unwrap())
+            .unwrap()
+    }
+    pub fn get_sender_name(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "getSenderName", &[]).unwrap())
+            .unwrap()
+    }
+    pub fn get_message_chain(&self) -> MessageChain {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke(&self.instance, "getMessageChain", &[]).unwrap();
+        MessageChain { instance }
+    }
+
+    pub fn to_string(&self) {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "toString", &[]).unwrap())
+            .unwrap()
+    }
+}
+
+impl MessageHashCodeTrait for ForwardMessageNode {}
+
 impl ForwardMessage {
     pub fn get_brief(&self) -> String {
-        todo!()
+        let jvm = Jvm::attach_thread().unwrap();
+        let brief = jvm.invoke(&self.instance, "getBrief", &[]).unwrap();
+        jvm.to_rust(brief).unwrap()
     }
-    pub fn get_key(&self) {
-        todo!()
-    }
-    pub fn get_node_vector(&self) {
-        todo!()
+    pub fn get_node_vector(&self) -> Vec<ForwardMessageNode> {
+        let jvm = Jvm::attach_thread().unwrap();
+        let mut node_vector = Vec::new();
+        let list = jvm.invoke(&self.instance, "getNodeList", &[]).unwrap();
+        while {
+            let has_next = jvm.invoke(&list, "hasNext", &[]).unwrap();
+            jvm.to_rust(has_next).unwrap()
+        } {
+            let next = jvm.invoke(&list, "next", &[]).unwrap();
+            node_vector.push(ForwardMessageNode { instance: next })
+        }
+        node_vector
     }
     pub fn get_preview(&self) -> String {
-        todo!()
+        let jvm = Jvm::attach_thread().unwrap();
+        let preview = jvm.invoke(&self.instance, "getPreview", &[]).unwrap();
+        jvm.to_rust(preview).unwrap()
     }
     pub fn equals() {
         todo!()
     }
-    pub fn get_source() -> String {
-        todo!()
+    pub fn get_source(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "getSource", &[]).unwrap())
+            .unwrap()
     }
     pub fn get_summary(&self) {
-        todo!()
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "getSummary", &[]).unwrap())
+            .unwrap()
     }
     pub fn get_title(&self) -> String {
-        todo!()
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "getTitle", &[]).unwrap())
+            .unwrap()
     }
 }
 
@@ -1175,10 +1228,10 @@ impl FromInstance for PokeMessage {
     fn from_instance(instance: Instance) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let t: (i32, i32) = (
-            jvm.to_rust(
-                jvm.invoke(&instance, "getPokeType", &[]).unwrap()).unwrap(),
-            jvm.to_rust(
-                jvm.invoke(&instance, "getId", &[]).unwrap()).unwrap(),
+            jvm.to_rust(jvm.invoke(&instance, "getPokeType", &[]).unwrap())
+                .unwrap(),
+            jvm.to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
+                .unwrap(),
         );
         match t {
             (a, -1) => match a {
@@ -1188,24 +1241,22 @@ impl FromInstance for PokeMessage {
                 4 => PokeMessage::心碎,
                 5 => PokeMessage::六六六,
                 6 => PokeMessage::放大招,
-                _ => unsafe { unreachable_unchecked() }
+                _ => unsafe { unreachable_unchecked() },
             },
-            (126, b) => {
-                match b {
-                    2011 => PokeMessage::宝贝球,
-                    2009 => PokeMessage::让你皮,
-                    2007 => PokeMessage::玫瑰花,
-                    2006 => PokeMessage::召唤术,
-                    2005 => PokeMessage::结印,
-                    2004 => PokeMessage::手雷,
-                    2003 => PokeMessage::勾引,
-                    2002 => PokeMessage::碎屏,
-                    2001 => PokeMessage::抓一下,
-                    2000 => PokeMessage::敲门,
-                    _ => unsafe { unreachable_unchecked() }
-                }
-            }
-            _ => unsafe { unreachable_unchecked() }
+            (126, b) => match b {
+                2011 => PokeMessage::宝贝球,
+                2009 => PokeMessage::让你皮,
+                2007 => PokeMessage::玫瑰花,
+                2006 => PokeMessage::召唤术,
+                2005 => PokeMessage::结印,
+                2004 => PokeMessage::手雷,
+                2003 => PokeMessage::勾引,
+                2002 => PokeMessage::碎屏,
+                2001 => PokeMessage::抓一下,
+                2000 => PokeMessage::敲门,
+                _ => unsafe { unreachable_unchecked() },
+            },
+            _ => unsafe { unreachable_unchecked() },
         }
     }
 }
@@ -1307,7 +1358,7 @@ impl GetEnvTrait for PokeMessage {
             "net.mamoe.mirai.message.data.PokeMessage",
             &[name, poke_type, id],
         )
-            .unwrap()
+        .unwrap()
     }
 }
 

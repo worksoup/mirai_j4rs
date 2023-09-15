@@ -119,34 +119,34 @@ impl<T, F: Fn(T) -> ()> Drop for Consumer<T, F>
     }
 }
 
-// // #[call_from_java("rt.lea.LumiaComparator.nativeCompare")]
-// // fn lumia_comparator_compare(
-// //     comparator_as_i8_16: Instance,
-// //     val1: Instance,
-// //     val2: Instance,
-// // ) -> Result<Instance, String> {
-// //     let comparator_raw: [i8; 16] = Jvm::attach_thread()
-// //         .unwrap()
-// //         .to_rust(comparator_as_i8_16)
-// //         .unwrap();
-// //     println!(
-// //         "lumia_comparator_compare, in {}, {}:{}",
-// //         file! {},
-// //         line!(),
-// //         column!()
-// //     );
-// //     println!("comparator_raw: {:?}", comparator_raw);
-// //     let comparator: *mut dyn Fn(InstanceWrapper, InstanceWrapper) -> i32 =
-// //         unsafe { transmute(comparator_raw) };
-// //     let ordering = unsafe {
-// //         (*comparator)(
-// //             InstanceWrapper::from_instance(val1),
-// //             InstanceWrapper::from_instance(val2),
-// //         )
-// //     };
-// //     let ordering = InvocationArg::try_from(ordering).map_err(|error| format!("{}", error))?;
-// //     Instance::try_from(ordering).map_err(|error| format!("{}", error))
-// // }
+// #[call_from_java("rt.lea.LumiaComparator.nativeCompare")]
+// fn lumia_comparator_compare(
+//     comparator_as_i8_16: Instance,
+//     val1: Instance,
+//     val2: Instance,
+// ) -> Result<Instance, String> {
+//     let comparator_raw: [i8; 16] = Jvm::attach_thread()
+//         .unwrap()
+//         .to_rust(comparator_as_i8_16)
+//         .unwrap();
+//     println!(
+//         "lumia_comparator_compare, in {}, {}:{}",
+//         file! {},
+//         line!(),
+//         column!()
+//     );
+//     println!("comparator_raw: {:?}", comparator_raw);
+//     let comparator: *mut dyn Fn(InstanceWrapper, InstanceWrapper) -> i32 =
+//         unsafe { transmute(comparator_raw) };
+//     let ordering = unsafe {
+//         (*comparator)(
+//             InstanceWrapper::from_instance(val1),
+//             InstanceWrapper::from_instance(val2),
+//         )
+//     };
+//     let ordering = InvocationArg::try_from(ordering).map_err(|error| format!("{}", error))?;
+//     Instance::try_from(ordering).map_err(|error| format!("{}", error))
+// }
 //
 // struct PairForComparator<T>
 //     where

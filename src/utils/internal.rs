@@ -32,3 +32,19 @@ pub(crate) fn i8_16_to_bytes_16<E>(jvm: &Jvm, array: [i8; 16]) -> Instance {
     jvm.create_java_array("java.lang.Byte", &i8vector)
         .unwrap()
 }
+
+pub(crate) fn is_instance_of(instance: &Instance, class_name: &str) -> bool {
+    let jvm = Jvm::attach_thread().unwrap();
+    let instance = jvm.clone_instance(instance).unwrap();
+    let instance = InvocationArg::try_from(instance).unwrap();
+    let class_name = InvocationArg::try_from(class_name).unwrap();
+    jvm.to_rust(
+        jvm.invoke_static(
+            "rt.lea.LumiaUtils",
+            "isInstanceOf",
+            &[instance, class_name],
+        )
+            .unwrap(),
+    )
+        .unwrap()
+}

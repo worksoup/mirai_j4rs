@@ -34,7 +34,7 @@
     - [x] `BotNudge`
     - [x] `FriendNudge`
     - [x] `MemberNudge`
-- [ ] `PokeFace` 放大招等
+- [x] `PokeMessage` 放大招等
 - [x] `PlainText` 文本消息
 - [x] `QuoteReply` 回复消息
 - [ ] `VipFace` Vip表情

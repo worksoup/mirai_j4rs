@@ -1,8 +1,10 @@
-pub(crate) mod internal;
 pub mod ffi;
+pub(crate) mod internal;
 
 use crate::env::GetEnvTrait;
+use crate::file::{AbsoluteFile, AbsoluteFileFolder, AbsoluteFolder};
 use crate::message::message_trait::SingleMessageTrait;
+use crate::utils::internal::is_instance_of;
 use j4rs::{Instance, InvocationArg, Jvm};
 use std::cmp::Ordering;
 use std::marker::PhantomData;
@@ -32,11 +34,33 @@ impl<T> GetEnvTrait for FileFolderStream<T> {
 }
 
 impl<T> FileFolderStream<T> {
-    pub fn sorted_by<F>(&self, mut compare: F)
-        where
-            F: FnMut(&T, &T) -> Ordering,
+    pub fn sorted_array_by<F>(&self, mut compare: F) -> Vec<AbsoluteFileFolder>
+    where
+        F: FnMut(&T, &T) -> Ordering,
     {
-        todo!()
+        let jvm = Jvm::attach_thread().unwrap();
+        let mut array = Vec::new();
+        let instance = jvm.invoke(&self.instance, "toList", &[]).unwrap();
+        loop {
+            let has_next: bool = jvm
+                .to_rust(jvm.invoke(&instance, "hasNxt", &[]).unwrap())
+                .unwrap();
+            if has_next {
+                let next = jvm.invoke(&instance, "next", &[]).unwrap();
+                if is_instance_of(&next, "net.mamoe.mirai.contact.file.AbsoluteFile") {
+                    array.push(AbsoluteFileFolder::AbsoluteFile(AbsoluteFile {
+                        instance: next,
+                    }))
+                } else {
+                    array.push(AbsoluteFileFolder::AbsoluteFolder(AbsoluteFolder {
+                        instance: next,
+                    }))
+                }
+            } else {
+                break;
+            }
+        }
+        array
     }
     // 我觉得我可以直接假定没有重复文件。
     // pub fn distinct(&self) {
@@ -46,22 +70,22 @@ impl<T> FileFolderStream<T> {
         todo!()
     }
     pub fn filter<P>(&self, predicate: P) -> FileFolderStream<T>
-        where
-            P: FnMut(&T) -> bool,
+    where
+        P: FnMut(&T) -> bool,
     {
         todo!()
     }
 
     pub fn map<B, F>(&self, f: F) -> FileFolderStream<B>
-        where
-            F: FnMut(T) -> B,
+    where
+        F: FnMut(T) -> B,
     {
         todo!()
     }
 
     pub fn for_each<F>(&self, f: F)
-        where
-            F: FnMut(T),
+    where
+        F: FnMut(T),
     {
         todo!()
     }
@@ -73,21 +97,21 @@ impl<T> FileFolderStream<T> {
         todo!()
     }
     pub fn find_first<P>(&self, predicate: P) -> Option<T>
-        where
-            P: FnMut(&T) -> bool,
+    where
+        P: FnMut(&T) -> bool,
     {
         todo!()
     }
     pub fn find_any<P>(&self, predicate: P) -> Option<T>
-        where
-            P: FnMut(&T) -> bool,
+    where
+        P: FnMut(&T) -> bool,
     {
         todo!()
     }
 
     pub fn flat_map<U, F>(&self, f: F) -> FileFolderStream<U>
-        where
-            F: FnMut(T) -> FileFolderStream<U>,
+    where
+        F: FnMut(T) -> FileFolderStream<U>,
     {
         todo!()
     }
@@ -101,15 +125,15 @@ impl<T> FileFolderStream<T> {
     }
 
     pub fn max_by<F>(&self, compare: F) -> Option<T>
-        where
-            F: FnMut(&T, &T) -> Ordering,
+    where
+        F: FnMut(&T, &T) -> Ordering,
     {
         todo!()
     }
 
     pub fn min_by<F>(&self, compare: F) -> Option<T>
-        where
-            F: FnMut(&T, &T) -> Ordering,
+    where
+        F: FnMut(&T, &T) -> Ordering,
     {
         todo!()
     }

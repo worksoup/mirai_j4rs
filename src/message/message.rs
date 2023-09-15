@@ -6,15 +6,16 @@ use super::message_trait::{
 };
 use crate::contact::bot::{Bot, Env};
 use crate::contact::contact_trait::FileSupportedTrait;
+use crate::file::AbsoluteFile;
 use crate::message::message_trait::MessageMetaDataTrait;
 use crate::message::ImageType::{APNG, BMP, GIF, JPG, PNG, UNKNOW};
+use crate::utils::internal::is_instance_of;
 use crate::utils::MiraiRsCollectionTrait;
 use crate::{
     contact::{contact_trait::ContactTrait, group::Group},
     env::GetEnvTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use crate::file::AbsoluteFile;
 
 #[derive(GetInstanceDerive)]
 pub struct QuoteReply {
@@ -260,20 +261,6 @@ impl Iterator for MessageChainIterator {
                 .unwrap();
             println!("消息类型：{class_type}");
             fn instance_to_single_message_enum(jvm: &Jvm, instance: Instance) -> SingleMessage {
-                let is_instance_of = |instance: &Instance, class_name: &str| -> bool {
-                    let instance = jvm.clone_instance(instance).unwrap();
-                    let instance = InvocationArg::try_from(instance).unwrap();
-                    let class_name = InvocationArg::try_from(class_name).unwrap();
-                    jvm.to_rust(
-                        jvm.invoke_static(
-                            "rt.lea.LumiaUtils",
-                            "isInstanceOf",
-                            &[instance, class_name],
-                        )
-                            .unwrap(),
-                    )
-                        .unwrap()
-                };
                 if is_instance_of(&instance, "net.mamoe.mirai.message.data.At") {
                     let instance = jvm
                         .cast(&instance, "net.mamoe.mirai.message.data.At")
@@ -974,6 +961,33 @@ pub struct ForwardMessage {
     instance: Instance,
 }
 
+impl ForwardMessage {
+    pub fn get_brief(&self) -> String {
+        todo!()
+    }
+    pub fn get_key(&self) {
+        todo!()
+    }
+    pub fn get_node_vector(&self) {
+        todo!()
+    }
+    pub fn get_preview(&self) -> String {
+        todo!()
+    }
+    pub fn equals() {
+        todo!()
+    }
+    pub fn get_source() -> String {
+        todo!()
+    }
+    pub fn get_summary(&self) {
+        todo!()
+    }
+    pub fn get_title(&self) -> String {
+        todo!()
+    }
+}
+
 impl MessageTrait for ForwardMessage {}
 
 impl SingleMessageTrait for ForwardMessage {}
@@ -981,6 +995,8 @@ impl SingleMessageTrait for ForwardMessage {}
 impl MessageContentTrait for ForwardMessage {}
 
 impl ConstrainSingleTrait for ForwardMessage {}
+
+impl MessageHashCodeTrait for ForwardMessage {}
 
 #[derive(GetInstanceDerive)]
 pub struct Dice {
@@ -1134,13 +1150,142 @@ impl ConstrainSingleTrait for VipFace {}
 
 impl CodableMessageTrait for VipFace {}
 
-// TODO
-#[derive(GetInstanceDerive)]
-pub struct PokeMessage {
-    instance: Instance,
+pub enum PokeMessage {
+    戳一戳,
+    比心,
+    点赞,
+    心碎,
+    六六六,
+    放大招,
+    宝贝球,
+    玫瑰花,
+    召唤术,
+    让你皮,
+    结印,
+    手雷,
+    勾引,
+    抓一下,
+    碎屏,
+    敲门,
 }
 
-impl MessageTrait for PokeMessage {}
+impl PokeMessage {
+    fn name__poke_type__id(&self) -> (&str, i32, i32) {
+        // match self {
+        //     PokeMessage::戳一戳 => ("戳一戳", 1, -1),
+        //     PokeMessage::比心 => ("比心", 2, -1),
+        //     PokeMessage::点赞 => ("点赞", 3, -1),
+        //     PokeMessage::心碎 => ("心碎", 4, -1),
+        //     PokeMessage::六六六 => ("666", 5, -1),
+        //     PokeMessage::放大招 => ("放大招", 6, -1),
+        //     PokeMessage::宝贝球 => ("宝贝球", 126, 2011),
+        //     PokeMessage::让你皮 => ("让你皮", 126, 2009),
+        //     PokeMessage::玫瑰花 => ("玫瑰花", 126, 2007),
+        //     PokeMessage::召唤术 => ("召唤术", 126, 2006),
+        //     PokeMessage::结印 => ("结印", 126, 2005),
+        //     PokeMessage::手雷 => ("手雷", 126, 2004),
+        //     PokeMessage::勾引 => ("勾引", 126, 2003),
+        //     PokeMessage::碎屏 => ("碎屏", 126, 2002),
+        //     PokeMessage::抓一下 => ("抓一下", 126, 2001),
+        //     PokeMessage::敲门 => ("敲门", 126, 2000),
+        // }
+        (self.get_name(), self.get_poke_type(), self.get_id())
+    }
+    pub fn get_name(&self) -> &str {
+        match self {
+            PokeMessage::戳一戳 => "戳一戳",
+            PokeMessage::比心 => "比心",
+            PokeMessage::点赞 => "点赞",
+            PokeMessage::心碎 => "心碎",
+            PokeMessage::六六六 => "666",
+            PokeMessage::放大招 => "放大招",
+            PokeMessage::宝贝球 => "宝贝球",
+            PokeMessage::让你皮 => "让你皮",
+            PokeMessage::玫瑰花 => "玫瑰花",
+            PokeMessage::召唤术 => "召唤术",
+            PokeMessage::结印 => "结印",
+            PokeMessage::手雷 => "手雷",
+            PokeMessage::勾引 => "勾引",
+            PokeMessage::碎屏 => "碎屏",
+            PokeMessage::抓一下 => "抓一下",
+            PokeMessage::敲门 => "敲门",
+        }
+    }
+    pub fn get_poke_type(&self) -> i32 {
+        match self {
+            PokeMessage::戳一戳 => 1,
+            PokeMessage::比心 => 2,
+            PokeMessage::点赞 => 3,
+            PokeMessage::心碎 => 4,
+            PokeMessage::六六六 => 5,
+            PokeMessage::放大招 => 6,
+            PokeMessage::宝贝球
+            | PokeMessage::让你皮
+            | PokeMessage::玫瑰花
+            | PokeMessage::召唤术
+            | PokeMessage::结印
+            | PokeMessage::手雷
+            | PokeMessage::勾引
+            | PokeMessage::碎屏
+            | PokeMessage::抓一下
+            | PokeMessage::敲门 => 126,
+        }
+    }
+    pub fn get_id(&self) -> i32 {
+        match self {
+            PokeMessage::戳一戳
+            | PokeMessage::比心
+            | PokeMessage::点赞
+            | PokeMessage::心碎
+            | PokeMessage::六六六
+            | PokeMessage::放大招 => -1,
+            PokeMessage::宝贝球 => 2011,
+            PokeMessage::让你皮 => 2009,
+            PokeMessage::玫瑰花 => 2007,
+            PokeMessage::召唤术 => 2006,
+            PokeMessage::结印 => 2005,
+            PokeMessage::手雷 => 2004,
+            PokeMessage::勾引 => 2003,
+            PokeMessage::碎屏 => 2002,
+            PokeMessage::抓一下 => 2001,
+            PokeMessage::敲门 => 2000,
+        }
+    }
+}
+
+impl GetEnvTrait for PokeMessage {
+    fn get_instance(&self) -> Instance {
+        let jvm = Jvm::attach_thread().unwrap();
+        let (name, poke_type, id) = self.name__poke_type__id();
+        let (name, poke_type, id) = (
+            InvocationArg::try_from(name).unwrap(),
+            InvocationArg::try_from(poke_type).unwrap(),
+            InvocationArg::try_from(id).unwrap(),
+        );
+        jvm.create_instance(
+            "net.mamoe.mirai.message.data.PokeMessage",
+            &[name, poke_type, id],
+        )
+            .unwrap()
+    }
+}
+
+impl MessageTrait for PokeMessage {
+    fn to_content(&self) -> String {
+        String::from("[戳一戳]")
+    }
+
+    fn to_string(&self) -> String {
+        let mut str = String::from("[mirai:poke");
+        str.push_str(self.get_name());
+        str.push(',');
+        str.push_str(self.get_poke_type().to_string().as_str());
+        str.push(',');
+        str.push_str(self.get_id().to_string().as_str());
+        str.push(']');
+        str
+    }
+}
 
 impl SingleMessageTrait for PokeMessage {}
 
@@ -1149,6 +1294,8 @@ impl MessageContentTrait for PokeMessage {}
 impl ConstrainSingleTrait for PokeMessage {}
 
 impl CodableMessageTrait for PokeMessage {}
+
+impl MessageHashCodeTrait for PokeMessage {}
 
 // TODO
 #[derive(GetInstanceDerive)]

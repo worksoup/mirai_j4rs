@@ -6,7 +6,7 @@ use super::message_trait::{
     MessageContentTrait, MessageHashCodeTrait, MessageTrait, RichMessageTrait, SingleMessageTrait,
 };
 use crate::contact::bot::{Bot, Env};
-use crate::contact::contact_trait::FileSupportedTrait;
+use crate::contact::contact_trait::{FileSupportedTrait, UserOrBotTrait};
 use crate::env::FromInstance;
 use crate::file::AbsoluteFile;
 use crate::message::message_trait::MessageMetaDataTrait;
@@ -69,16 +69,16 @@ impl Clone for MessageSource {
 impl MessageTrait for QuoteReply {}
 
 pub struct MessageReceipt<'a, T>
-where
-    T: ContactTrait,
+    where
+        T: ContactTrait,
 {
     instance: Instance,
     target: &'a T,
 }
 
 impl<'a, T> MessageReceipt<'a, T>
-where
-    T: ContactTrait,
+    where
+        T: ContactTrait,
 {
     pub(crate) fn new(instance: Instance, target: &'a T) -> Self {
         MessageReceipt { instance, target }
@@ -805,7 +805,7 @@ impl Image {
             jvm.invoke(&self.instance, "isUpload", &[bot, md5, size])
                 .unwrap(),
         )
-        .unwrap()
+            .unwrap()
     }
     /// TODO: 此函数为重载，还未实现。
     pub fn todo_is_uploaded() -> () {}
@@ -901,9 +901,9 @@ impl FileMessage {
                 &contact.get_instance(),
                 "net.mamoe.mirai.contact.FileSupported",
             )
-            .unwrap(),
+                .unwrap(),
         )
-        .unwrap();
+            .unwrap();
         let instance = jvm
             .invoke(&self.instance, "toAbsoluteFile", &[contact])
             .unwrap();
@@ -958,6 +958,65 @@ impl RichMessageTrait for LightApp {}
 
 impl CodableMessageTrait for LightApp {}
 
+#[derive(GetInstanceDerive)]
+pub struct ForwardMessageBuilder {
+    instance: Instance,
+}
+
+pub trait ForwaedMessageBuilderAddByUserAndMessageTrait: Sized {
+    fn add(self, user_or_bot: impl UserOrBotTrait, message: impl MessageTrait, time: i32);
+}
+
+impl ForwaedMessageBuilderAddByUserAndMessageTrait for ForwardMessageBuilder {
+    fn add(self, user_or_bot: impl UserOrBotTrait, message: impl MessageTrait, time: i32) {
+        self.add__user_or_bot__message(user_or_bot, message, time);
+    }
+}
+
+pub trait ForwaedMessageBuilderAddByIdNameAndMessageTrait: Sized {
+    fn add(self, sender_id: i64, sender_name: &str, message: impl MessageTrait, time: i32);
+}
+
+impl ForwaedMessageBuilderAddByIdNameAndMessageTrait for ForwardMessageBuilder {
+    fn add(self, sender_id: i64, sender_name: &str, message: impl MessageTrait, time: i32) {
+        self.add__sender_id__sender_name__message(sender_id, sender_name, message, time);
+    }
+}
+
+impl ForwardMessageBuilder {
+    pub fn new(contact: impl ContactTrait) -> Self {
+        let jvm = Jvm::attach_thread().unwrap();
+        let contact = contact.get_instance();
+        let contact = InvocationArg::try_from(contact).unwrap();
+        let instance = jvm
+            .create_instance(
+                "net.mamoe.mirai.message.data.ForwardMessageBuilder",
+                &[contact],
+            )
+            .unwrap();
+        Self { instance }
+    }
+    fn add__user_or_bot__message(self, user_or_bot: impl UserOrBotTrait, message: impl MessageTrait, time: i32) -> Self {
+        let jvm = Jvm::attach_thread().unwrap();
+        let user_or_bot = InvocationArg::try_from(user_or_bot.get_instance()).unwrap();
+        let message = InvocationArg::try_from(message.get_instance()).unwrap();
+        let time = InvocationArg::try_from(time).unwrap().into_primitive().unwrap();
+        let _ = jvm.invoke(&self.instance, "add", &[user_or_bot, message, time]).unwrap();
+        self
+    }
+    fn add__sender_id__sender_name__message(self, sender_id: i64, sender_name: &str, message: impl MessageTrait, time: i32) -> Self {
+        let jvm = Jvm::attach_thread().unwrap();
+        let sender_id = InvocationArg::try_from(sender_id).unwrap().into_primitive().unwrap();
+        let sender_name = InvocationArg::try_from(sender_name).unwrap();
+        let message = InvocationArg::try_from(message.get_instance()).unwrap();
+        let time = InvocationArg::try_from(time).unwrap().into_primitive().unwrap();
+        let _ = jvm.invoke(&self.instance, "add", &[sender_id, sender_name, message, time]).unwrap();
+        self
+    }
+    pub fn set_display_strategy(self, title: String, brief: String, source: String, preview: Vec<String>, summary: String) -> Self { todo!() }
+}
+
+// TODO: RawForwardMessage
 #[derive(GetInstanceDerive)]
 pub struct ForwardMessage {
     instance: Instance,
@@ -1358,7 +1417,7 @@ impl GetEnvTrait for PokeMessage {
             "net.mamoe.mirai.message.data.PokeMessage",
             &[name, poke_type, id],
         )
-        .unwrap()
+            .unwrap()
     }
 }
 

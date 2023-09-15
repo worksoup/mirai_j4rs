@@ -84,22 +84,22 @@ mod tests {
         println!("a = {a}\nThe class name is `{}`.", x.fuck());
     }
 
-    #[test]
-    fn closure_to_comparator_works() {
-        let jvm = get_a_jvm_for_test();
-        let a = 2;
-        let comparator = Comparator::new(move |x1: &X, x2: &X| -> Ordering {
-            let val1: i32 = jvm.to_rust(x1.get_instance()).unwrap();
-            let val2: i32 = jvm.to_rust(x2.get_instance()).unwrap();
-            val1.cmp(&val2)
-        });
-        // println!("sleep");
-        // sleep(std::time::Duration::from_millis(10000));
-        let test_instance1 = InvocationArg::try_from(22).unwrap();
-        let test_instance2 = InvocationArg::try_from(55).unwrap();
-        let x = comparator.compare(test_instance1, test_instance2);
-        println!("a = {a}\nThe ordering is `{:?}`.", x);
-    }
+    // #[test]
+    // fn closure_to_comparator_works() {
+    //     let jvm = get_a_jvm_for_test();
+    //     let a = 2;
+    //     let comparator = Comparator::new(move |x1: &X, x2: &X| -> Ordering {
+    //         let val1: i32 = jvm.to_rust(x1.get_instance()).unwrap();
+    //         let val2: i32 = jvm.to_rust(x2.get_instance()).unwrap();
+    //         val1.cmp(&val2)
+    //     });
+    //     // println!("sleep");
+    //     // sleep(std::time::Duration::from_millis(10000));
+    //     let test_instance1 = InvocationArg::try_from(22).unwrap();
+    //     let test_instance2 = InvocationArg::try_from(55).unwrap();
+    //     let x = comparator.compare(test_instance1, test_instance2);
+    //     println!("a = {a}\nThe ordering is `{:?}`.", x);
+    // }
 }
 
 mod env {

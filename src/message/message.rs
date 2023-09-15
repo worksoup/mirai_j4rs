@@ -1,3 +1,4 @@
+use std::hint::unreachable_unchecked;
 use contact_derive::GetInstanceDerive;
 
 use super::message_trait::{
@@ -16,6 +17,7 @@ use crate::{
     env::GetEnvTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
+use crate::env::FromInstance;
 
 #[derive(GetInstanceDerive)]
 pub struct QuoteReply {
@@ -350,7 +352,7 @@ impl Iterator for MessageChainIterator {
                     let instance = jvm
                         .cast(&instance, "net.mamoe.mirai.message.data.PokeMessage")
                         .unwrap();
-                    SingleMessage::PokeMessage(PokeMessage { instance })
+                    SingleMessage::PokeMessage(PokeMessage::from_instance(instance))
                 } else if is_instance_of(&instance, "net.mamoe.mirai.message.data.QuoteReply") {
                     let instance = jvm
                         .cast(&instance, "net.mamoe.mirai.message.data.QuoteReply")
@@ -1167,6 +1169,45 @@ pub enum PokeMessage {
     抓一下,
     碎屏,
     敲门,
+}
+
+impl FromInstance for PokeMessage {
+    fn from_instance(instance: Instance) -> Self {
+        let jvm = Jvm::attach_thread().unwrap();
+        let t: (i32, i32) = (
+            jvm.to_rust(
+                jvm.invoke(&instance, "getPokeType", &[]).unwrap()).unwrap(),
+            jvm.to_rust(
+                jvm.invoke(&instance, "getId", &[]).unwrap()).unwrap(),
+        );
+        match t {
+            (a, -1) => match a {
+                1 => PokeMessage::戳一戳,
+                2 => PokeMessage::比心,
+                3 => PokeMessage::点赞,
+                4 => PokeMessage::心碎,
+                5 => PokeMessage::六六六,
+                6 => PokeMessage::放大招,
+                _ => unsafe { unreachable_unchecked() }
+            },
+            (126, b) => {
+                match b {
+                    2011 => PokeMessage::宝贝球,
+                    2009 => PokeMessage::让你皮,
+                    2007 => PokeMessage::玫瑰花,
+                    2006 => PokeMessage::召唤术,
+                    2005 => PokeMessage::结印,
+                    2004 => PokeMessage::手雷,
+                    2003 => PokeMessage::勾引,
+                    2002 => PokeMessage::碎屏,
+                    2001 => PokeMessage::抓一下,
+                    2000 => PokeMessage::敲门,
+                    _ => unsafe { unreachable_unchecked() }
+                }
+            }
+            _ => unsafe { unreachable_unchecked() }
+        }
+    }
 }
 
 impl PokeMessage {

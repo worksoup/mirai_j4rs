@@ -17,15 +17,18 @@ pub mod utils;
 mod tests {
     use std::cmp::Ordering;
     use crate::env::{FromInstance, GetEnvTrait};
-    use crate::utils::ffi::{Comparator, Consumer, Function};
-    use contact_derive::GetInstanceDerive;
+    use crate::utils::ffi::{Comparator, Consumer, Function, Predicate};
     use j4rs::{ClasspathEntry, Instance, InvocationArg, Jvm, JvmBuilder};
-    use std::rc::Rc;
-    use std::thread::sleep;
 
-    #[derive(GetInstanceDerive)]
     struct X {
         instance: Instance,
+    }
+
+    impl crate::env::GetEnvTrait for X {
+        fn get_instance(&self) -> Instance {
+            let jvm = Jvm::attach_thread().unwrap();
+            jvm.clone_instance(&self.instance).unwrap()
+        }
     }
 
     impl X {
@@ -84,22 +87,39 @@ mod tests {
         println!("a = {a}\nThe class name is `{}`.", x.fuck());
     }
 
-    // #[test]
-    // fn closure_to_comparator_works() {
-    //     let jvm = get_a_jvm_for_test();
-    //     let a = 2;
-    //     let comparator = Comparator::new(move |x1: &X, x2: &X| -> Ordering {
-    //         let val1: i32 = jvm.to_rust(x1.get_instance()).unwrap();
-    //         let val2: i32 = jvm.to_rust(x2.get_instance()).unwrap();
-    //         val1.cmp(&val2)
-    //     });
-    //     // println!("sleep");
-    //     // sleep(std::time::Duration::from_millis(10000));
-    //     let test_instance1 = InvocationArg::try_from(22).unwrap();
-    //     let test_instance2 = InvocationArg::try_from(55).unwrap();
-    //     let x = comparator.compare(test_instance1, test_instance2);
-    //     println!("a = {a}\nThe ordering is `{:?}`.", x);
-    // }
+    #[test]
+    fn closure_to_comparator_works() {
+        let jvm = get_a_jvm_for_test();
+        let a = 2;
+        let comparator = Comparator::new(move |x1: &X, x2: &X| -> Ordering {
+            let jvm = Jvm::attach_thread().unwrap(); // jvm 不能直接捕获，否则会卡死或崩溃。
+            let x1 = x1.get_instance();
+            let x2 = x2.get_instance();
+            let val1: i32 = jvm.to_rust(x1).unwrap();
+            let val2: i32 = jvm.to_rust(x2).unwrap();
+            val1.cmp(&val2)
+        });
+        let test_instance1 = InvocationArg::try_from(22).unwrap_or_else(|err| { panic!("{}", err) });
+        let test_instance2 = InvocationArg::try_from(55).unwrap();
+        let x = comparator.compare(test_instance1, test_instance2);
+        println!("a = {a}\nThe ordering is `{:?}`.", x);
+    }
+
+    #[test]
+    fn closure_to_predicate_works() {
+        let jvm = get_a_jvm_for_test();
+        let a = 2;
+        let predicate = Predicate::new(move |x1: X| -> bool {
+            let jvm = Jvm::attach_thread().unwrap(); // jvm不能直接捕获，否则会卡死。
+            let val1: i32 = jvm.to_rust(x1.get_instance()).unwrap();
+            val1 > 0
+        });
+        // println!("sleep");
+        // sleep(std::time::Duration::from_millis(10000));
+        let test_value = InvocationArg::try_from(22).unwrap_or_else(|err| { panic!("{}", err) });
+        let x = predicate.test(test_value);
+        println!("a = {a}\n And `test_value > 0` is `{:?}`.", x);
+    }
 }
 
 mod env {

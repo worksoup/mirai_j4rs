@@ -33,9 +33,6 @@ pub fn get_bot_derive(input: TokenStream) -> TokenStream {
 }
 
 /// 获取 java 中的 Class 对象。
-/// TODO: 需要移除该宏。该宏的引入是由于 j4rs 旧版本中的 bug.
-/// `getClass` 方法属于每一个 Object, 但由于 bug, 无法通过 j4rs 直接调用之。
-/// 见 https://github.com/astonbitecode/j4rs/issues/71
 #[proc_macro_derive(GetClassTypeDerive)]
 pub fn get_class_type_derive(input: TokenStream) -> TokenStream {
     let ast: &syn::DeriveInput = &syn::parse(input).unwrap();

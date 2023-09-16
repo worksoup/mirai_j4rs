@@ -48,3 +48,14 @@ pub(crate) fn is_instance_of(instance: &Instance, class_name: &str) -> bool {
     )
         .unwrap()
 }
+
+pub(crate) fn java_println(val: &Instance) {
+    let jvm = Jvm::attach_thread().unwrap();
+    let _ = jvm
+        .invoke(
+            &jvm.static_class_field("java.lang.System", "out").unwrap(),
+            "println",
+            &[InvocationArg::try_from(jvm.clone_instance(val).unwrap()).unwrap()],
+        )
+        .unwrap();
+}

@@ -1,5 +1,5 @@
 use crate::env::{FromInstance, GetEnvTrait};
-use crate::utils::internal::i8_16_to_bytes_16;
+use crate::utils::internal::{i8_16_to_bytes_16, java_println};
 use contact_derive::GetInstanceDerive;
 use j4rs::errors::J4RsError;
 use j4rs::{prelude::*, Instance, InvocationArg, Jvm};
@@ -119,180 +119,153 @@ impl<T, F: Fn(T) -> ()> Drop for Consumer<T, F>
     }
 }
 
-// #[call_from_java("rt.lea.LumiaComparator.nativeCompare")]
-// fn lumia_comparator_compare(
-//     comparator_as_i8_16: Instance,
-//     val1: Instance,
-//     val2: Instance,
-// ) -> Result<Instance, String> {
-//     let comparator_raw: [i8; 16] = Jvm::attach_thread()
-//         .unwrap()
-//         .to_rust(comparator_as_i8_16)
-//         .unwrap();
-//     println!(
-//         "lumia_comparator_compare, in {}, {}:{}",
-//         file! {},
-//         line!(),
-//         column!()
-//     );
-//     println!("comparator_raw: {:?}", comparator_raw);
-//     let comparator: *mut dyn Fn(InstanceWrapper, InstanceWrapper) -> i32 =
-//         unsafe { transmute(comparator_raw) };
-//     let ordering = unsafe {
-//         (*comparator)(
-//             InstanceWrapper::from_instance(val1),
-//             InstanceWrapper::from_instance(val2),
-//         )
-//     };
-//     let ordering = InvocationArg::try_from(ordering).map_err(|error| format!("{}", error))?;
-//     Instance::try_from(ordering).map_err(|error| format!("{}", error))
-// }
-//
-// struct PairForComparator<T>
-//     where
-//         T: FromInstance,
-// {
-//     val1: T,
-//     val2: T,
-// }
-//
-// impl<T> PairForComparator<T>
-//     where
-//         T: FromInstance, {
-//     pub fn get_pair(self) -> (T, T) {
-//         (self.val1, self.val2)
-//     }
-// }
-//
-// impl<T> FromInstance for PairForComparator<T>
-//     where
-//         T: FromInstance,
-// {
-//     fn from_instance(instance: Instance) -> Self {
-//         let jvm = Jvm::attach_thread().unwrap();
-//         let val1 = jvm
-//             .invoke(
-//                 &instance,
-//                 "get",
-//                 &[InvocationArg::try_from(0)
-//                     .unwrap()
-//                     .into_primitive()
-//                     .unwrap()],
-//             )
-//             .unwrap();
-//         let val2 = jvm
-//             .invoke(
-//                 &instance,
-//                 "get",
-//                 &[InvocationArg::try_from(1)
-//                     .unwrap()
-//                     .into_primitive()
-//                     .unwrap()],
-//             )
-//             .unwrap();
-//         let val1 = T::from_instance(val1);
-//         let val2 = T::from_instance(val2);
-//         Self { val1, val2 }
-//     }
-// }
-//
-// struct IntHolderForComparator {
-//     int: i32,
-// }
-//
-// impl GetEnvTrait for IntHolderForComparator {
-//     fn get_instance(&self) -> Instance {
-//         todo!()
-//     }
-// }
-//
-// impl FromInstance for IntHolderForComparator {
-//     fn from_instance(instance: Instance) -> Self {
-//         todo!()
-//     }
-// }
-//
-// pub(crate) struct Comparator<T, F>
-//     where
-//         T: FromInstance,
-//         F: Fn(&T, &T) -> Ordering,
-// {
-//     closure: F,
-//     instance: Option<Instance>,
-//     internal_closure_raw: Option<[i8; 16]>,
-//     _t: PhantomData<T>,
-// }
-//
-// impl<T, F> Comparator<T, F>
-//     where
-//         T: FromInstance,
-//         F: Fn(&T, &T) -> Ordering + 'static,
-// {
-//     // fn internal_closure_as_i8_16(closure_ref: Rc<dyn Fn(PairForComparator<T>) -> IntHolderForComparator>) -> [i8; 16] {
-//     //     let call_from_java = Box::new(|value: InstanceWrapper| -> Instance {
-//     //         let value = value.get::<PairForComparator<T>>();
-//     //         let value = closure_ref(value);
-//     //         value.get_instance()
-//     //     });
-//     //     let call_from_java_raw: *mut dyn Fn(InstanceWrapper) -> Instance =
-//     //         Box::into_raw(call_from_java);
-//     //     unsafe { transmute::<_, [i8; 16]>(call_from_java_raw) }
-//     // }
-//     fn internal_function_instance_from_i8_16(call_from_java_raw_as_i8_16: [i8; 16]) -> Instance {
-//         let jvm = Jvm::attach_thread().unwrap();
-//         let call_from_java_raw_as_java_bytes =
-//             i8_16_to_bytes_16::<PairForComparator<T>>(&jvm, call_from_java_raw_as_i8_16);
-//         jvm
-//             .create_instance(
-//                 "rt.lea.LumiaFunction",
-//                 &[InvocationArg::try_from(call_from_java_raw_as_java_bytes).unwrap()],
-//             )
-//             .unwrap()
-//     }
-//     pub fn new(closure: F) -> Pin<Box<Comparator<T, F>>> {
-//         let jvm = Jvm::attach_thread().unwrap();
-//         let mut comparator: Comparator<T, F> =
-//             Comparator {
-//                 closure,
-//                 instance: None,
-//                 internal_closure_raw: None,
-//                 _t: Default::default(),
-//             };
-//         let closure_ref = &comparator.closure;
-//         let call_from_java = Box::new(|value: InstanceWrapper| -> Instance {
-//             let value = value.get::<PairForComparator<T>>();
-//             let (val1, val2) = value.get_pair();
-//             let ordering = closure_ref(&val1, &val2);
-//             let value = match ordering {
-//                 Ordering::Less => IntHolderForComparator { int: -1 },
-//                 Ordering::Equal => IntHolderForComparator { int: 0 },
-//                 Ordering::Greater => IntHolderForComparator { int: 1 },
-//             };
-//             value.get_instance()
-//         });
-//         let call_from_java_raw: *mut dyn Fn(InstanceWrapper) -> Instance =
-//             Box::into_raw(call_from_java);
-//         let call_from_java_as_i8_16 = unsafe { transmute::<_, [i8; 16]>(call_from_java_raw) };
-//         comparator.internal_closure_raw = Some(call_from_java_as_i8_16);
-//         let lumia_function = Self::internal_function_instance_from_i8_16(call_from_java_as_i8_16);
-//         let lumia_comparator = jvm
-//             .create_instance(
-//                 "rt.lea.LumiaComparator",
-//                 &[InvocationArg::try_from(lumia_function).unwrap()],
-//             )
-//             .unwrap();
-//         comparator.instance = Some(lumia_comparator);
-//         Box::pin(comparator)
-//     }
-//     pub fn compare(&self, val1: InvocationArg, val2: InvocationArg) -> Ordering {
-//         let jvm = Jvm::attach_thread().unwrap();
-//         let result = jvm
-//             .invoke(&self.instance.as_ref().unwrap(), "compare", &[val1, val2])
-//             .unwrap();
-//         let cmp_result: i32 = jvm.to_rust(result).unwrap();
-//         cmp_result.cmp(&0)
-//     }
-// }
+#[call_from_java("rt.lea.LumiaComparator.nativeCompare")]
+fn lumia_comparator_compare(
+    comparator_as_i8_16: Instance,
+    val1: Instance,
+    val2: Instance,
+) -> Result<Instance, String> {
+    let comparator_raw: [i8; 16] = Jvm::attach_thread()
+        .unwrap()
+        .to_rust(comparator_as_i8_16)
+        .unwrap();
+    println!(
+        "lumia_comparator_compare, in {}, {}:{}",
+        file! {},
+        line!(),
+        column!()
+    );
+    println!("comparator_raw: {:?}", comparator_raw);
+    let comparator: *mut dyn Fn(InstanceWrapper, InstanceWrapper) -> i32 =
+        unsafe { transmute(comparator_raw) };
+    let ordering = unsafe {
+        (*comparator)(
+            InstanceWrapper::from_instance(val1),
+            InstanceWrapper::from_instance(val2),
+        )
+    };
+    let ordering = InvocationArg::try_from(ordering).map_err(|error| format!("{}", error))?;
+    Instance::try_from(ordering).map_err(|error| format!("{}", error))
+}
+
+struct PairForComparator<T>
+    where
+        T: FromInstance,
+{
+    val1: T,
+    val2: T,
+}
+
+impl<T> PairForComparator<T>
+    where
+        T: FromInstance,
+{
+    pub fn get_pair(self) -> (T, T) {
+        (self.val1, self.val2)
+    }
+}
+
+impl<T> FromInstance for PairForComparator<T>
+    where
+        T: FromInstance,
+{
+    fn from_instance(instance: Instance) -> Self {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.cast(&instance, "java.util.List").unwrap();
+        let val1 = jvm
+            .invoke(
+                &instance,
+                "get",
+                &[InvocationArg::try_from(0)
+                    .unwrap()
+                    .into_primitive()
+                    .unwrap()],
+            )
+            .unwrap();
+        let val2 = jvm
+            .invoke(
+                &instance,
+                "get",
+                &[InvocationArg::try_from(1)
+                    .unwrap()
+                    .into_primitive()
+                    .unwrap()],
+            )
+            .unwrap();
+        let val1 = T::from_instance(val1);
+        let val2 = T::from_instance(val2);
+        Self { val1, val2 }
+    }
+}
+
+pub(crate) struct Comparator<T, F>
+    where
+        T: FromInstance,
+        F: Fn(&T, &T) -> Ordering,
+{
+    closure: F,
+    instance: Option<Instance>,
+    internal_closure_raw: Option<[i8; 16]>,
+    _t: PhantomData<T>,
+}
+
+impl<T, F> Comparator<T, F>
+    where
+        T: FromInstance,
+        F: Fn(&T, &T) -> Ordering + 'static,
+{
+    fn internal_function_instance_from_i8_16(call_from_java_raw_as_i8_16: [i8; 16]) -> Instance {
+        let jvm = Jvm::attach_thread().unwrap();
+        let call_from_java_raw_as_java_bytes =
+            i8_16_to_bytes_16::<PairForComparator<T>>(&jvm, call_from_java_raw_as_i8_16);
+        jvm.create_instance(
+            "rt.lea.LumiaFunction",
+            &[InvocationArg::try_from(call_from_java_raw_as_java_bytes).unwrap()],
+        )
+            .unwrap()
+    }
+    pub fn new(closure: F) -> Pin<Box<Comparator<T, F>>> {
+        let jvm = Jvm::attach_thread().unwrap();
+        let mut comparator: Comparator<T, F> = Comparator {
+            closure,
+            instance: None,
+            internal_closure_raw: None,
+            _t: Default::default(),
+        };
+        let closure_ref = &comparator.closure;
+        let call_from_java = Box::new(|value: InstanceWrapper| -> Instance {
+            let value = value.get::<PairForComparator<T>>();
+            let (val1, val2) = value.get_pair();
+            let ordering = closure_ref(&val1, &val2);
+            match ordering {
+                Ordering::Less => Instance::try_from(InvocationArg::try_from(-1).unwrap()).unwrap(),
+                Ordering::Equal => Instance::try_from(InvocationArg::try_from(0).unwrap()).unwrap(),
+                Ordering::Greater => Instance::try_from(InvocationArg::try_from(1).unwrap()).unwrap()
+            }
+        });
+        let call_from_java_raw: *mut dyn Fn(InstanceWrapper) -> Instance =
+            Box::into_raw(call_from_java);
+        let call_from_java_as_i8_16 = unsafe { transmute::<_, [i8; 16]>(call_from_java_raw) };
+        comparator.internal_closure_raw = Some(call_from_java_as_i8_16);
+        let lumia_function = Self::internal_function_instance_from_i8_16(call_from_java_as_i8_16);
+        let lumia_comparator = jvm
+            .create_instance(
+                "rt.lea.LumiaComparator",
+                &[InvocationArg::try_from(lumia_function).unwrap()],
+            )
+            .unwrap();
+        comparator.instance = Some(lumia_comparator);
+        Box::pin(comparator)
+    }
+    pub fn compare(&self, val1: InvocationArg, val2: InvocationArg) -> Ordering {
+        let jvm = Jvm::attach_thread().unwrap();
+        let result = jvm
+            .invoke(&self.instance.as_ref().unwrap(), "compare", &[val1, val2])
+            .unwrap();
+        let cmp_result: i32 = jvm.to_rust(result).unwrap();
+        cmp_result.cmp(&0)
+    }
+}
 
 #[call_from_java("rt.lea.LumiaFunction.nativeApply")]
 fn lumia_function_apply(
@@ -312,8 +285,7 @@ fn lumia_function_apply(
     println!("function_raw: {:?}", function_raw);
     let function: *mut dyn Fn(InstanceWrapper) -> Instance = unsafe { transmute(function_raw) };
     let value = unsafe { (*function)(InstanceWrapper::from_instance(val1)) };
-    let value = InvocationArg::try_from(value).map_err(|error| format!("{}", error))?;
-    Instance::try_from(value).map_err(|error| format!("{}", error))
+    Ok(value)
 }
 
 pub(crate) struct Function<T, F, R>
@@ -345,15 +317,16 @@ impl<T, F, R> Function<T, F, R>
             Box::into_raw(call_from_java);
         unsafe { transmute::<_, [i8; 16]>(call_from_java_raw) }
     }
-    pub(crate) fn internal_function_instance_from_i8_16(call_from_java_raw_as_i8_16: [i8; 16]) -> Instance {
+    pub(crate) fn internal_function_instance_from_i8_16(
+        call_from_java_raw_as_i8_16: [i8; 16],
+    ) -> Instance {
         let jvm = Jvm::attach_thread().unwrap();
         let call_from_java_raw_as_java_bytes =
             i8_16_to_bytes_16::<T>(&jvm, call_from_java_raw_as_i8_16);
-        jvm
-            .create_instance(
-                "rt.lea.LumiaFunction",
-                &[InvocationArg::try_from(call_from_java_raw_as_java_bytes).unwrap()],
-            )
+        jvm.create_instance(
+            "rt.lea.LumiaFunction",
+            &[InvocationArg::try_from(call_from_java_raw_as_java_bytes).unwrap()],
+        )
             .unwrap()
     }
     // pub fn new(closure: F) -> Pin<Box<Function<T, F, R>>> {
@@ -491,7 +464,7 @@ impl<T, F> Predicate<T, F>
             i8_16_to_bytes_16::<T>(&jvm, call_from_java_raw_as_i8_16);
         let instance = jvm
             .create_instance(
-                "rt.lea.LumiaFunction",
+                "rt.lea.LumiaPredicate",
                 &[InvocationArg::try_from(call_from_java_raw_as_java_bytes).unwrap()],
             )
             .unwrap();

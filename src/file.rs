@@ -283,8 +283,6 @@ pub struct AbsoluteFolder {
 
 impl AbsoluteFolder {
     pub fn children(&self) {
-        // let a: AbsoluteFileFolderIterator;
-        // let mut k: Vec<i64> = a.collect();
         todo!()
     }
     pub fn create_folder(&self, folder_name: &str) -> AbsoluteFolder {

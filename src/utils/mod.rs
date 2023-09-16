@@ -21,8 +21,8 @@ pub trait MiraiRsCollectionTrait {
 pub trait MiraiRsIterableTrait: Iterator {}
 
 pub struct FileFolderStream<T> {
-    instance: Instance,
-    _unused: PhantomData<T>,
+    pub(crate) instance: Instance,
+    pub(crate) _unused: PhantomData<T>,
 }
 
 impl<T> GetEnvTrait for FileFolderStream<T> {

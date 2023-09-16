@@ -3,6 +3,8 @@ use super::{
     contact_trait::{ContactOrBotTrait, ContactTrait},
     ContactList, NormalMember,
 };
+use crate::contact::contact_trait::FileSupportedTrait;
+use crate::env::FromInstance;
 use crate::{
     env::ContactFromInstance,
     env::GetEnvTrait,
@@ -13,7 +15,6 @@ use contact_derive::{GetBotDerive, GetInstanceDerive};
 use j4rs::{Instance, InvocationArg, Jvm};
 use std::collections::HashMap;
 use std::marker::PhantomData;
-use crate::contact::contact_trait::FileSupportedTrait;
 
 pub struct GroupSettings {
     instance: Instance,
@@ -260,8 +261,8 @@ impl<K, V> MiraiMap<K, V> {
             ) -> (K, V),
         >,
     ) -> HashMap<K, V>
-        where
-            K: Eq + PartialEq + std::hash::Hash,
+    where
+        K: Eq + PartialEq + std::hash::Hash,
     {
         let jvm = Jvm::attach_thread().unwrap();
         let java_cast =
@@ -594,6 +595,17 @@ impl ContactFromInstance for Group {
     }
 }
 
+impl FromInstance for Group {
+    fn from_instance(instance: Instance) -> Self {
+        let jvm = Jvm::attach_thread().unwrap();
+        let bot = jvm.invoke(&instance, "getBot", &[]).unwrap();
+        let id = jvm
+            .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
+            .unwrap();
+        Group { bot, instance, id }
+    }
+}
+
 impl ContactOrBotTrait for Group {
     fn get_id(&self) -> i64 {
         self.id
@@ -799,9 +811,9 @@ impl Group {
                 "setEssenceMessage",
                 &[InvocationArg::try_from(source.get_instance()).unwrap()],
             )
-                .unwrap(),
+            .unwrap(),
         )
-            .unwrap()
+        .unwrap()
     }
     // function name need to be changed.
     pub fn set_essence_message_s(group: Group, chain: MessageChain) -> bool {
@@ -815,9 +827,9 @@ impl Group {
                     InvocationArg::try_from(chain.get_instance()).unwrap(),
                 ],
             )
-                .unwrap(),
+            .unwrap(),
         )
-            .unwrap()
+        .unwrap()
     }
     pub fn set_name(&self, name: &str) {
         Jvm::attach_thread()

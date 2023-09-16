@@ -1,9 +1,10 @@
-use std::cmp::Ordering;
 use crate::contact::group::Group;
 use crate::env::GetEnvTrait;
 use crate::message::FileMessage;
+use crate::utils::FileFolderStream;
 use contact_derive::GetInstanceDerive;
 use j4rs::{Instance, InvocationArg, Jvm};
+use std::cmp::Ordering;
 use std::hash::Hash;
 use std::iter::{Filter, FlatMap, Map, Peekable, Skip, SkipWhile, Take, TakeWhile};
 
@@ -248,7 +249,6 @@ impl AbsoluteFileFolderTrait for AbsoluteFile {
     }
 }
 
-
 pub enum AbsoluteFileFolder {
     AbsoluteFile(AbsoluteFile),
     AbsoluteFolder(AbsoluteFolder),
@@ -257,8 +257,8 @@ pub enum AbsoluteFileFolder {
 impl GetEnvTrait for AbsoluteFileFolder {
     fn get_instance(&self) -> Instance {
         match self {
-            AbsoluteFileFolder::AbsoluteFile(a) => { a.get_instance() }
-            AbsoluteFileFolder::AbsoluteFolder(a) => { a.get_instance() }
+            AbsoluteFileFolder::AbsoluteFile(a) => a.get_instance(),
+            AbsoluteFileFolder::AbsoluteFolder(a) => a.get_instance(),
         }
     }
 }
@@ -266,8 +266,10 @@ impl GetEnvTrait for AbsoluteFileFolder {
 impl AbsoluteFileFolderTrait for AbsoluteFileFolder {
     fn refreshed(&self) -> Self {
         match self {
-            AbsoluteFileFolder::AbsoluteFile(a) => { AbsoluteFileFolder::AbsoluteFile(a.refreshed()) }
-            AbsoluteFileFolder::AbsoluteFolder(a) => { AbsoluteFileFolder::AbsoluteFolder(a.refreshed()) }
+            AbsoluteFileFolder::AbsoluteFile(a) => AbsoluteFileFolder::AbsoluteFile(a.refreshed()),
+            AbsoluteFileFolder::AbsoluteFolder(a) => {
+                AbsoluteFileFolder::AbsoluteFolder(a.refreshed())
+            }
         }
     }
 }
@@ -282,16 +284,21 @@ pub struct AbsoluteFolder {
 }
 
 impl AbsoluteFolder {
-    pub fn children(&self) {
+    pub fn children(&self) -> FileFolderStream<AbsoluteFileFolder> {
         todo!()
     }
     pub fn create_folder(&self, folder_name: &str) -> AbsoluteFolder {
+        let jvm = Jvm::attach_thread().unwrap();
+        let folder_name = InvocationArg::try_from(folder_name).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "createFolder", &[folder_name])
+            .unwrap();
+        AbsoluteFolder { instance }
+    }
+    pub fn files(&self) -> FileFolderStream<AbsoluteFile> {
         todo!()
     }
-    pub fn files(&self) {
-        todo!()
-    }
-    pub fn folders(&self) {
+    pub fn folders(&self) -> FileFolderStream<AbsoluteFolder> {
         todo!()
     }
     pub fn get_contents_count(&self) -> i32 {
@@ -300,28 +307,48 @@ impl AbsoluteFolder {
     pub fn is_empty(&self) -> bool {
         todo!()
     }
-    pub fn resolve_all(&self, path: &str) {
+    pub fn resolve_all(&self, path: &str) -> FileFolderStream<AbsoluteFileFolder> {
         todo!()
     }
-    pub fn resolve_file_by_id(&self, id: &str, deep: bool) {
+    pub fn resolve_file_by_id(&self, id: &str, deep: bool) -> AbsoluteFile {
         todo!()
     }
-    pub fn resolve_files(&self, path: &str) {
+    pub fn resolve_files(&self, path: &str) -> FileFolderStream<AbsoluteFile> {
         todo!()
     }
-    pub fn resolve_folder(&self, path: &str) {
+    pub fn resolve_folder(&self, path: &str) -> AbsoluteFolder {
         todo!()
     }
-    pub fn resolve_folder_by_id(&self, id: &str) {
+    pub fn resolve_folder_by_id(&self, id: &str) -> AbsoluteFolder {
         todo!()
     }
     /// 上传新文件。
-    pub fn upload_new_file() -> Self {
-        todo!()
+    pub fn upload_new_file(&self, path: &str) -> AbsoluteFile {
+        let jvm = Jvm::attach_thread().unwrap();
+        let res = jvm
+            .invoke_static(
+                "net.mamoe.mirai.utils.ExternalResource",
+                "create",
+                &[InvocationArg::try_from(
+                    jvm.create_instance("java.io.File", &[InvocationArg::try_from(path).unwrap()])
+                        .unwrap(),
+                )
+                .unwrap()],
+            )
+            .unwrap();
+        let instance = jvm
+            .invoke(
+                &self.instance,
+                "uploadNewFile",
+                &[InvocationArg::try_from(jvm.clone_instance(&res).unwrap()).unwrap()],
+            )
+            .unwrap();
+        // Mirai 文档里说要 close.
+        let _ = jvm.invoke(&res, "close", &[]);
+        AbsoluteFile { instance }
     }
-
     /// 上传新文件，传入的 callback 可以获取到当前上传文件的进度。
-    pub fn upload_new_file_with_progression_callback() -> Self {
+    pub fn upload_new_file_with_progression_callback() -> AbsoluteFile {
         todo!()
     }
 }

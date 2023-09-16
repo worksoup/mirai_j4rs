@@ -6,13 +6,12 @@ use super::{
 use crate::{
     contact::group::MiraiMap,
     env::{GetBotTrait, GetEnvTrait},
-    event::{event_trait::MiraiEventTrait, EventChannel},
+    event::EventChannel,
     other::{
         enums::{AvatarSpec, HeartbeatStrategy, MiraiProtocol},
         tools,
     },
 };
-use const_unit_poc::values::{h, ms};
 use contact_derive::GetInstanceDerive;
 use core::str;
 use j4rs::{ClasspathEntry, Instance, InvocationArg, JavaOpt, Jvm, JvmBuilder};
@@ -1228,7 +1227,7 @@ impl BotConfiguration {
             .unwrap();
     }
     /// 使用随机设备信息。
-    /// 注意该函数~应该~不会持久化当前随机信息。
+    /// 注意该函数<s>应该</s>不会持久化当前随机信息。
     pub fn random_device_info(&self) {
         Jvm::attach_thread()
             .unwrap()
@@ -1258,7 +1257,7 @@ impl BotConfiguration {
                 .unwrap()
         };
         let retain = InvocationArg::try_from(if retain.is_none() {
-            (7.0 * 24.0 * h / ms).raw_value as i64
+            7i64 * 24 * 60 * 60 * 1000
         } else {
             retain.unwrap()
         })

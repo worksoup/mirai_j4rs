@@ -1,4 +1,3 @@
-use contact_derive::GetInstanceDerive;
 use j4rs::{prelude::*, InvocationArg};
 use j4rs::{Instance, Jvm};
 use std::mem::transmute;

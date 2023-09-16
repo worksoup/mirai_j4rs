@@ -1,5 +1,5 @@
 use crate::env::{FromInstance, GetEnvTrait};
-use crate::utils::internal::{i8_16_to_bytes_16, java_println};
+use crate::utils::internal::i8_16_to_bytes_16;
 use contact_derive::GetInstanceDerive;
 use j4rs::errors::J4RsError;
 use j4rs::{prelude::*, Instance, InvocationArg, Jvm};
@@ -8,7 +8,6 @@ use std::cmp::Ordering;
 use std::marker::PhantomData;
 use std::mem::transmute;
 use std::pin::Pin;
-use std::rc::Rc;
 
 #[derive(GetInstanceDerive)]
 pub struct InstanceWrapper {

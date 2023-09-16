@@ -2,13 +2,9 @@ pub mod ffi;
 pub(crate) mod internal;
 
 use crate::env::{FromInstance, GetEnvTrait};
-use crate::file::{AbsoluteFile, AbsoluteFileFolder, AbsoluteFolder};
-use crate::message::message_trait::SingleMessageTrait;
-use crate::utils::internal::is_instance_of;
 use j4rs::{Instance, InvocationArg, Jvm};
 use std::cmp::Ordering;
 use std::marker::PhantomData;
-use contact_derive::GetInstanceDerive;
 
 pub trait MiraiRsCollectionTrait {
     type Element;
@@ -20,12 +16,12 @@ pub trait MiraiRsCollectionTrait {
 
 pub trait MiraiRsIterableTrait: Iterator {}
 
-pub struct FileFolderStream<T> {
+pub struct FileFolderStream<T: FromInstance> {
     pub(crate) instance: Instance,
     pub(crate) _unused: PhantomData<T>,
 }
 
-impl<T> GetEnvTrait for FileFolderStream<T> {
+impl<T: FromInstance> GetEnvTrait for FileFolderStream<T> {
     fn get_instance(&self) -> j4rs::Instance {
         Jvm::attach_thread()
             .unwrap()
@@ -34,33 +30,14 @@ impl<T> GetEnvTrait for FileFolderStream<T> {
     }
 }
 
-impl<T> FileFolderStream<T> {
-    pub fn sorted_array_by<F>(&self, mut compare: F) -> Vec<AbsoluteFileFolder>
+/// TODO: 暂时先用 to_vec 凑合一下吧。
+impl<T: FromInstance> FileFolderStream<T> {
+    pub fn sorted_array_by<F>(&self, mut compare: F) -> Vec<T>
         where
             F: FnMut(&T, &T) -> Ordering,
     {
-        let jvm = Jvm::attach_thread().unwrap();
-        let mut array = Vec::new();
-        let instance = jvm.invoke(&self.instance, "toList", &[]).unwrap();
-        loop {
-            let has_next: bool = jvm
-                .to_rust(jvm.invoke(&instance, "hasNxt", &[]).unwrap())
-                .unwrap();
-            if has_next {
-                let next = jvm.invoke(&instance, "next", &[]).unwrap();
-                if is_instance_of(&next, "net.mamoe.mirai.contact.file.AbsoluteFile") {
-                    array.push(AbsoluteFileFolder::AbsoluteFile(AbsoluteFile {
-                        instance: next,
-                    }))
-                } else {
-                    array.push(AbsoluteFileFolder::AbsoluteFolder(AbsoluteFolder {
-                        instance: next,
-                    }))
-                }
-            } else {
-                break;
-            }
-        }
+        let mut array = self.to_vec();
+        array.sort_by(compare);
         array
     }
     // 我觉得我可以直接假定没有重复文件。
@@ -77,7 +54,7 @@ impl<T> FileFolderStream<T> {
         todo!()
     }
 
-    pub fn map<B, F>(&self, f: F) -> FileFolderStream<B>
+    pub fn map<B: FromInstance, F>(&self, f: F) -> FileFolderStream<B>
         where
             F: FnMut(T) -> B,
     {
@@ -110,7 +87,7 @@ impl<T> FileFolderStream<T> {
         todo!()
     }
 
-    pub fn flat_map<U, F>(&self, f: F) -> FileFolderStream<U>
+    pub fn flat_map<U: FromInstance, F>(&self, f: F) -> FileFolderStream<U>
         where
             F: FnMut(T) -> FileFolderStream<U>,
     {
@@ -139,6 +116,20 @@ impl<T> FileFolderStream<T> {
         todo!()
     }
     pub fn to_vec(&self) -> Vec<T> {
-        todo!()
+        let jvm = Jvm::attach_thread().unwrap();
+        let mut array = Vec::new();
+        let instance = jvm.invoke(&self.instance, "toList", &[]).unwrap();
+        loop {
+            let has_next: bool = jvm
+                .to_rust(jvm.invoke(&instance, "hasNxt", &[]).unwrap())
+                .unwrap();
+            if has_next {
+                let next = jvm.invoke(&instance, "next", &[]).unwrap();
+                array.push(T::from_instance(next))
+            } else {
+                break;
+            }
+        }
+        array
     }
 }

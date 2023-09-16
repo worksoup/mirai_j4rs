@@ -4,7 +4,6 @@ use super::bot::{Bot, Env};
 use super::contact_trait::{
     ContactOrBotTrait, ContactTrait, MemberTrait, UserOrBotTrait, UserTrait,
 };
-use crate::contact::contact_trait::FileSupportedTrait;
 use crate::env::{GetBotTrait, GetEnvTrait};
 use crate::message::message_trait::MessageHashCodeTrait;
 use crate::{env::ContactFromInstance, other::enums::AvatarSpec};

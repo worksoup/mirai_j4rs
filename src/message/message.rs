@@ -963,21 +963,21 @@ pub struct ForwardMessageBuilder {
     instance: Instance,
 }
 
-pub trait ForwaedMessageBuilderAddByUserAndMessageTrait: Sized {
+pub trait ForwardMessageBuilderAddByUserAndMessageTrait: Sized {
     fn add(self, user_or_bot: impl UserOrBotTrait, message: impl MessageTrait, time: i32);
 }
 
-impl ForwaedMessageBuilderAddByUserAndMessageTrait for ForwardMessageBuilder {
+impl ForwardMessageBuilderAddByUserAndMessageTrait for ForwardMessageBuilder {
     fn add(self, user_or_bot: impl UserOrBotTrait, message: impl MessageTrait, time: i32) {
         self.add__user_or_bot__message(user_or_bot, message, time);
     }
 }
 
-pub trait ForwaedMessageBuilderAddByIdNameAndMessageTrait: Sized {
+pub trait ForwardMessageBuilderAddByIdNameAndMessageTrait: Sized {
     fn add(self, sender_id: i64, sender_name: &str, message: impl MessageTrait, time: i32);
 }
 
-impl ForwaedMessageBuilderAddByIdNameAndMessageTrait for ForwardMessageBuilder {
+impl ForwardMessageBuilderAddByIdNameAndMessageTrait for ForwardMessageBuilder {
     fn add(self, sender_id: i64, sender_name: &str, message: impl MessageTrait, time: i32) {
         self.add__sender_id__sender_name__message(sender_id, sender_name, message, time);
     }

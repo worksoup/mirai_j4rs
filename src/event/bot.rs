@@ -1,7 +1,7 @@
 use contact_derive::{GetClassTypeDerive, GetInstanceDerive};
 use j4rs::{Instance, Jvm};
 
-use crate::{contact::bot::Bot, env::GetClassTypeTrait};
+use crate::contact::bot::Bot;
 use crate::env::FromInstance;
 use crate::event::event_trait::{BotEventTrait, BotOfflineEventTrait};
 

@@ -24,7 +24,7 @@ mod tests {
         instance: Instance,
     }
 
-    impl crate::env::GetEnvTrait for X {
+    impl GetEnvTrait for X {
         fn get_instance(&self) -> Instance {
             let jvm = Jvm::attach_thread().unwrap();
             jvm.clone_instance(&self.instance).unwrap()
@@ -65,7 +65,7 @@ mod tests {
 
     #[test]
     fn closure_to_consumer_works() {
-        let jvm = get_a_jvm_for_test();
+        let _jvm = get_a_jvm_for_test();
         let a = 2;
         let consumer = Consumer::new(|x: X| {
             println!("a = {a}\nThe class name is `{}`.", x.fuck());
@@ -76,7 +76,7 @@ mod tests {
 
     #[test]
     fn closure_to_function_works() {
-        let jvm = get_a_jvm_for_test();
+        let _jvm = get_a_jvm_for_test();
         let a = 2;
         let function = Function::new(|x: X| -> X {
             println!("a = {a}\nThe class name is `{}`.", x.fuck());
@@ -89,7 +89,7 @@ mod tests {
 
     #[test]
     fn closure_to_comparator_works() {
-        let jvm = get_a_jvm_for_test();
+        let _jvm = get_a_jvm_for_test();
         let a = 2;
         let comparator = Comparator::new(move |x1: &X, x2: &X| -> Ordering {
             let jvm = Jvm::attach_thread().unwrap(); // jvm 不能直接捕获，否则会卡死或崩溃。
@@ -107,7 +107,7 @@ mod tests {
 
     #[test]
     fn closure_to_predicate_works() {
-        let jvm = get_a_jvm_for_test();
+        let _jvm = get_a_jvm_for_test();
         let a = 2;
         let predicate = Predicate::new(move |x1: X| -> bool {
             let jvm = Jvm::attach_thread().unwrap(); // jvm不能直接捕获，否则会卡死。

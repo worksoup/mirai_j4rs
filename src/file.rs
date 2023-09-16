@@ -1,6 +1,7 @@
 use crate::contact::group::Group;
 use crate::env::{FromInstance, GetEnvTrait};
 use crate::message::FileMessage;
+use crate::utils::internal::is_instance_of;
 use crate::utils::FileFolderStream;
 use contact_derive::GetInstanceDerive;
 use j4rs::{Instance, InvocationArg, Jvm};
@@ -35,8 +36,7 @@ pub trait AbsoluteFileFolderTrait: Sized + GetEnvTrait {
             .unwrap()
     }
     // FileSupported 当前只有 Group
-    fn get_contact(&self) -> Group
-    {
+    fn get_contact(&self) -> Group {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm.invoke(&self.get_instance(), "getContact", &[]).unwrap();
         Group::from_instance(instance)
@@ -162,6 +162,12 @@ pub struct AbsoluteFile {
     pub(crate) instance: Instance,
 }
 
+impl FromInstance for AbsoluteFile {
+    fn from_instance(instance: Instance) -> Self {
+        AbsoluteFile { instance }
+    }
+}
+
 impl AbsoluteFile {
     /// 文件到期时间戳，单位为秒。
     pub fn get_expiry_time(&self) -> i64 {
@@ -254,6 +260,16 @@ pub enum AbsoluteFileFolder {
     AbsoluteFolder(AbsoluteFolder),
 }
 
+impl FromInstance for AbsoluteFileFolder {
+    fn from_instance(instance: Instance) -> Self {
+        if is_instance_of(&instance, "net.mamoe.mirai.contact.file.AbsoluteFile") {
+            AbsoluteFileFolder::AbsoluteFile(AbsoluteFile { instance })
+        } else {
+            AbsoluteFileFolder::AbsoluteFolder(AbsoluteFolder { instance })
+        }
+    }
+}
+
 impl GetEnvTrait for AbsoluteFileFolder {
     fn get_instance(&self) -> Instance {
         match self {
@@ -283,13 +299,20 @@ pub struct AbsoluteFolder {
     pub(crate) instance: Instance,
 }
 
+impl FromInstance for AbsoluteFolder {
+    fn from_instance(instance: Instance) -> Self {
+        AbsoluteFolder { instance }
+    }
+}
+
 impl AbsoluteFolder {
     pub fn children(&self) -> FileFolderStream<AbsoluteFileFolder> {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm
-            .invoke(&self.instance, "childrenStream", &[])
-            .unwrap();
-        FileFolderStream { instance, _unused: Default::default() }
+        let instance = jvm.invoke(&self.instance, "childrenStream", &[]).unwrap();
+        FileFolderStream {
+            instance,
+            _unused: Default::default(),
+        }
     }
     pub fn create_folder(&self, folder_name: &str) -> AbsoluteFolder {
         let jvm = Jvm::attach_thread().unwrap();
@@ -301,30 +324,28 @@ impl AbsoluteFolder {
     }
     pub fn files(&self) -> FileFolderStream<AbsoluteFile> {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm
-            .invoke(&self.instance, "filesStream", &[])
-            .unwrap();
-        FileFolderStream { instance, _unused: Default::default() }
+        let instance = jvm.invoke(&self.instance, "filesStream", &[]).unwrap();
+        FileFolderStream {
+            instance,
+            _unused: Default::default(),
+        }
     }
     pub fn folders(&self) -> FileFolderStream<AbsoluteFolder> {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm
-            .invoke(&self.instance, "foldersStream", &[])
-            .unwrap();
-        FileFolderStream { instance, _unused: Default::default() }
+        let instance = jvm.invoke(&self.instance, "foldersStream", &[]).unwrap();
+        FileFolderStream {
+            instance,
+            _unused: Default::default(),
+        }
     }
     pub fn get_contents_count(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm
-            .invoke(&self.instance, "getContentsCount", &[])
-            .unwrap();
+        let instance = jvm.invoke(&self.instance, "getContentsCount", &[]).unwrap();
         jvm.to_rust(instance).unwrap()
     }
     pub fn is_empty(&self) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm
-            .invoke(&self.instance, "isEmpty", &[])
-            .unwrap();
+        let instance = jvm.invoke(&self.instance, "isEmpty", &[]).unwrap();
         jvm.to_rust(instance).unwrap()
     }
     pub fn resolve_all(&self, path: &str) -> FileFolderStream<AbsoluteFileFolder> {
@@ -333,12 +354,18 @@ impl AbsoluteFolder {
         let instance = jvm
             .invoke(&self.instance, "resolveAllStream", &[path])
             .unwrap();
-        FileFolderStream { instance, _unused: Default::default() }
+        FileFolderStream {
+            instance,
+            _unused: Default::default(),
+        }
     }
     pub fn resolve_file_by_id(&self, id: &str, deep: bool) -> AbsoluteFile {
         let jvm = Jvm::attach_thread().unwrap();
         let id = InvocationArg::try_from(id).unwrap();
-        let deep = InvocationArg::try_from(deep).unwrap().into_primitive().unwrap();
+        let deep = InvocationArg::try_from(deep)
+            .unwrap()
+            .into_primitive()
+            .unwrap();
         let instance = jvm
             .invoke(&self.instance, "resolveFileById", &[id, deep])
             .unwrap();
@@ -350,7 +377,10 @@ impl AbsoluteFolder {
         let instance = jvm
             .invoke(&self.instance, "resolveFilesStream", &[path])
             .unwrap();
-        FileFolderStream { instance, _unused: Default::default() }
+        FileFolderStream {
+            instance,
+            _unused: Default::default(),
+        }
     }
     pub fn resolve_folder(&self, path: &str) -> AbsoluteFolder {
         let jvm = Jvm::attach_thread().unwrap();
@@ -379,7 +409,7 @@ impl AbsoluteFolder {
                     jvm.create_instance("java.io.File", &[InvocationArg::try_from(path).unwrap()])
                         .unwrap(),
                 )
-                    .unwrap()],
+                .unwrap()],
             )
             .unwrap();
         let instance = jvm
@@ -443,7 +473,7 @@ impl RemoteFiles {
                     jvm.create_instance("java.io.File", &[InvocationArg::try_from(path).unwrap()])
                         .unwrap(),
                 )
-                    .unwrap()],
+                .unwrap()],
             )
             .unwrap();
         let instance = jvm
@@ -457,7 +487,6 @@ impl RemoteFiles {
         let _ = jvm.invoke(&res, "close", &[]);
         AbsoluteFile { instance }
     }
-
 
     /// 上传新文件，传入的 callback 可以获取到当前上传文件的进度。
     pub fn upload_new_file_with_progression_callback() -> AbsoluteFile {

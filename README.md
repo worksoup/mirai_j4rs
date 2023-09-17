@@ -28,7 +28,7 @@
 - [ ] `LightApp` 小程序
 - [x] `MarketFaceTrait` 市场表情
     - [x] `Dice` 🎲
-    - [x] `RockPaperScissors` ✊✌🤚
+    - [x] `RockPaperScissors` 锤子包袱剪
     - [x] `MarketFace` 其他市场表情
 - [x] `Nudge` 戳一戳
     - [x] `BotNudge`

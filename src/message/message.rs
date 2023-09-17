@@ -11,7 +11,7 @@ use crate::env::FromInstance;
 use crate::file::AbsoluteFile;
 use crate::message::message_trait::MessageMetaDataTrait;
 use crate::message::ImageType::{APNG, BMP, GIF, JPG, PNG, UNKNOW};
-use crate::utils::internal::is_instance_of;
+use crate::utils::internal::{instance_is_null, is_instance_of};
 use crate::utils::MiraiRsCollectionTrait;
 use crate::{
     contact::{contact_trait::ContactTrait, group::Group},
@@ -69,16 +69,16 @@ impl Clone for MessageSource {
 impl MessageTrait for QuoteReply {}
 
 pub struct MessageReceipt<'a, T>
-where
-    T: ContactTrait,
+    where
+        T: ContactTrait,
 {
     instance: Instance,
     target: &'a T,
 }
 
 impl<'a, T> MessageReceipt<'a, T>
-where
-    T: ContactTrait,
+    where
+        T: ContactTrait,
 {
     pub(crate) fn new(instance: Instance, target: &'a T) -> Self {
         MessageReceipt { instance, target }
@@ -805,7 +805,7 @@ impl Image {
             jvm.invoke(&self.instance, "isUpload", &[bot, md5, size])
                 .unwrap(),
         )
-        .unwrap()
+            .unwrap()
     }
     /// TODO: 此函数为重载，还未实现。
     pub fn todo_is_uploaded() -> () {}
@@ -901,9 +901,9 @@ impl FileMessage {
                 &contact.get_instance(),
                 "net.mamoe.mirai.contact.FileSupported",
             )
-            .unwrap(),
+                .unwrap(),
         )
-        .unwrap();
+            .unwrap();
         let instance = jvm
             .invoke(&self.instance, "toAbsoluteFile", &[contact])
             .unwrap();
@@ -1243,7 +1243,7 @@ impl RockPaperScissors {
                 &[InvocationArg::try_from(other.get_instance()).unwrap()],
             )
             .unwrap();
-        if Env::instance_is_null(&result) {
+        if instance_is_null(&result) {
             None
         } else {
             Some(jvm.to_rust(result).unwrap())
@@ -1455,7 +1455,7 @@ impl GetEnvTrait for PokeMessage {
             "net.mamoe.mirai.message.data.PokeMessage",
             &[name, poke_type, id],
         )
-        .unwrap()
+            .unwrap()
     }
 }
 

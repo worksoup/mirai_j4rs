@@ -33,7 +33,15 @@ pub trait BotEventTrait
     where
         Self: MiraiEventTrait,
 {
-    fn get_bot(&self) -> Bot;
+    fn get_bot(&self) -> Bot {
+        let jvm = Jvm::attach_thread().unwrap();
+        let bot =
+            jvm.invoke(&self.get_instance(), "getBot", &[]).unwrap();
+        let id = jvm
+            .to_rust(jvm.invoke(&bot, "getId", &[]).unwrap())
+            .unwrap();
+        Bot { bot, id }
+    }
 }
 
 pub trait BotOfflineEventTrait {}
@@ -77,3 +85,5 @@ pub trait MessageEventTrait
             .unwrap()
     }
 }
+
+pub trait FriendInfoChangedEvent: BotEventTrait {}

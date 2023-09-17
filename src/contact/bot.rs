@@ -24,6 +24,7 @@ use std::marker::PhantomData;
 use crate::action::nudges::BotNudge;
 use crate::env::FromInstance;
 use crate::error::MiraiRsError;
+use crate::utils::internal::instance_is_null;
 
 #[derive(GetInstanceDerive)]
 pub struct FriendGroup {
@@ -212,7 +213,7 @@ impl Bot {
                     .unwrap()],
             )
             .unwrap();
-        if Env::instance_is_null(&instance) {
+        if instance_is_null(&instance) {
             None
         } else {
             Some(Friend {
@@ -278,7 +279,7 @@ impl Bot {
                     .unwrap()],
             )
             .unwrap();
-        if Env::instance_is_null(&instance) {
+        if instance_is_null(&instance) {
             None
         } else {
             Some(Stranger {
@@ -514,27 +515,6 @@ impl Env {
             instance: bot_configuration,
         }
     }
-    pub(crate) fn instance_is_null(instance: &Instance) -> bool {
-        Jvm::attach_thread()
-            .unwrap()
-            .to_rust(
-                Jvm::attach_thread()
-                    .unwrap()
-                    .invoke_static(
-                        "java.util.Objects",
-                        "isNull",
-                        &[InvocationArg::try_from(
-                            Jvm::attach_thread()
-                                .unwrap()
-                                .clone_instance(instance)
-                                .unwrap(),
-                        )
-                            .unwrap()],
-                    )
-                    .unwrap(),
-            )
-            .unwrap()
-    }
     pub fn find_bot(&self, id: i64) -> Option<Bot> {
         let bot = self
             .jvm
@@ -547,7 +527,7 @@ impl Env {
                     .unwrap()],
             )
             .unwrap();
-        if Env::instance_is_null(&bot) {
+        if instance_is_null(&bot) {
             None
         } else {
             Some(Bot { bot, id })

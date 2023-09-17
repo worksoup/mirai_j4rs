@@ -59,3 +59,26 @@ pub(crate) fn java_println(val: &Instance) {
         )
         .unwrap();
 }
+
+
+pub(crate) fn instance_is_null(instance: &Instance) -> bool {
+    Jvm::attach_thread()
+        .unwrap()
+        .to_rust(
+            Jvm::attach_thread()
+                .unwrap()
+                .invoke_static(
+                    "java.util.Objects",
+                    "isNull",
+                    &[InvocationArg::try_from(
+                        Jvm::attach_thread()
+                            .unwrap()
+                            .clone_instance(instance)
+                            .unwrap(),
+                    )
+                        .unwrap()],
+                )
+                .unwrap(),
+        )
+        .unwrap()
+}

@@ -15,6 +15,7 @@ use contact_derive::{GetBotDerive, GetInstanceDerive};
 use j4rs::{Instance, InvocationArg, Jvm};
 use std::collections::HashMap;
 use std::marker::PhantomData;
+use crate::utils::internal::instance_is_null;
 
 pub struct GroupSettings {
     instance: Instance,
@@ -642,7 +643,7 @@ impl Group {
                     .unwrap()],
             )
             .unwrap();
-        if Env::instance_is_null(&instance) {
+        if instance_is_null(&instance) {
             None
         } else {
             Some(Group {
@@ -693,7 +694,7 @@ impl Group {
                     .unwrap()],
             )
             .unwrap();
-        if Env::instance_is_null(&instance) {
+        if instance_is_null(&instance) {
             None
         } else {
             Some(NormalMember {

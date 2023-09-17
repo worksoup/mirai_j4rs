@@ -9,6 +9,7 @@ use crate::message::message_trait::MessageHashCodeTrait;
 use crate::{env::ContactFromInstance, other::enums::AvatarSpec};
 use contact_derive::{GetBotDerive, GetInstanceDerive};
 use j4rs::{Instance, InvocationArg, Jvm};
+use crate::utils::internal::instance_is_null;
 
 pub struct ContactList<T>
     where
@@ -77,7 +78,7 @@ impl<T> ContactList<T>
                     .unwrap()],
             )
             .unwrap();
-        if Env::instance_is_null(&instance) {
+        if instance_is_null(&instance) {
             None
         } else {
             Some(T::from_instance(self.bot, instance, id))

@@ -1,7 +1,5 @@
 use contact_derive::{GetClassTypeDerive, GetInstanceDerive};
 use j4rs::{Instance, Jvm};
-
-use crate::contact::bot::Bot;
 use crate::env::FromInstance;
 use crate::event::event_trait::{BotEventTrait, BotOfflineEventTrait};
 
@@ -64,17 +62,7 @@ impl MiraiEventTrait for BotOnlineEvent {
     // }
 }
 
-impl BotEventTrait for BotOnlineEvent {
-    fn get_bot(&self) -> Bot {
-        let jvm = Jvm::attach_thread().unwrap();
-        let bot =
-            jvm.invoke(&self.instance, "getBot", &[]).unwrap();
-        let id = jvm
-            .to_rust(jvm.invoke(&bot, "getId", &[]).unwrap())
-            .unwrap();
-        Bot { bot, id }
-    }
-}
+impl BotEventTrait for BotOnlineEvent {}
 
 pub struct Active {}
 

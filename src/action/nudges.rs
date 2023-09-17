@@ -2,9 +2,9 @@ use crate::contact::bot::Bot;
 use crate::contact::contact_trait::{ContactTrait, UserOrBotTrait};
 use crate::contact::{Friend, NormalMember};
 use crate::env::GetEnvTrait;
+use crate::message::message_trait::MessageHashCodeTrait;
 use contact_derive::GetInstanceDerive;
 use j4rs::{Instance, InvocationArg, Jvm};
-use crate::message::message_trait::MessageHashCodeTrait;
 
 pub trait Nudge: GetEnvTrait {
     type UserOrBot: UserOrBotTrait;
@@ -17,13 +17,7 @@ pub trait Nudge: GetEnvTrait {
     // TODO: 该函数不符合 Mirai 定义的位置。到时候用 rust 标准库里的特征看看能不能实现一下。
     fn to_string(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm
-            .invoke(
-                &self.get_instance(),
-                "toString",
-                &[],
-            )
-            .unwrap();
+        let instance = jvm.invoke(&self.get_instance(), "toString", &[]).unwrap();
         jvm.to_rust(instance).unwrap()
     }
     // TODO: 该函数不符合 Mirai 定义的位置。
@@ -65,6 +59,19 @@ impl MessageHashCodeTrait for BotNudge {}
 #[derive(GetInstanceDerive)]
 pub struct FriendNudge {
     pub(crate) instance: Instance,
+}
+
+impl FriendNudge {
+    pub fn new(friend: Friend) -> Self {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm
+            .create_instance(
+                "",
+                &[InvocationArg::try_from(friend.get_instance()).unwrap()],
+            )
+            .unwrap();
+        Self { instance }
+    }
 }
 
 impl Nudge for FriendNudge {

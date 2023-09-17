@@ -4,12 +4,14 @@ use super::bot::{Bot, Env};
 use super::contact_trait::{
     ContactOrBotTrait, ContactTrait, MemberTrait, UserOrBotTrait, UserTrait,
 };
+use crate::action::nudges::FriendNudge;
+use crate::contact::bot::FriendGroup;
 use crate::env::{FromInstance, GetBotTrait, GetEnvTrait};
 use crate::message::message_trait::MessageHashCodeTrait;
+use crate::utils::internal::instance_is_null;
 use crate::{env::ContactFromInstance, other::enums::AvatarSpec};
 use contact_derive::{GetBotDerive, GetInstanceDerive};
 use j4rs::{Instance, InvocationArg, Jvm};
-use crate::utils::internal::instance_is_null;
 
 pub struct ContactList<T>
     where
@@ -127,6 +129,33 @@ pub struct Friend {
     pub(crate) bot: Instance,
     pub(crate) instance: Instance,
     pub(crate) id: i64,
+}
+
+impl Friend {
+    pub fn delete(&self) {
+        let jvm = Jvm::attach_thread().unwrap();
+        let _ = jvm.invoke(&self.instance, "delete", &[]).unwrap();
+    }
+    pub fn get_friend_group(&self) -> FriendGroup {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke(&self.instance, "getFriendGroup", &[]).unwrap();
+        FriendGroup { instance }
+    }
+    pub fn get_remark(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "getRemark", &[]).unwrap())
+            .unwrap()
+    }
+    pub fn nudge(&self) -> FriendNudge {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke(&self.instance, "nudge", &[]).unwrap();
+        FriendNudge { instance }
+    }
+    pub fn set_remark(&self, remark: &str) {
+        let jvm = Jvm::attach_thread().unwrap();
+        let remark = InvocationArg::try_from(remark).unwrap();
+        let _ = jvm.invoke(&self.instance, "delete", &[remark]).unwrap();
+    }
 }
 
 impl FromInstance for Friend {

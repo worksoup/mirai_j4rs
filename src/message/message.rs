@@ -69,16 +69,16 @@ impl Clone for MessageSource {
 impl MessageTrait for QuoteReply {}
 
 pub struct MessageReceipt<'a, T>
-    where
-        T: ContactTrait,
+where
+    T: ContactTrait,
 {
     instance: Instance,
     target: &'a T,
 }
 
 impl<'a, T> MessageReceipt<'a, T>
-    where
-        T: ContactTrait,
+where
+    T: ContactTrait,
 {
     pub(crate) fn new(instance: Instance, target: &'a T) -> Self {
         MessageReceipt { instance, target }
@@ -805,7 +805,7 @@ impl Image {
             jvm.invoke(&self.instance, "isUpload", &[bot, md5, size])
                 .unwrap(),
         )
-            .unwrap()
+        .unwrap()
     }
     /// TODO: 此函数为重载，还未实现。
     pub fn todo_is_uploaded() -> () {}
@@ -901,9 +901,9 @@ impl FileMessage {
                 &contact.get_instance(),
                 "net.mamoe.mirai.contact.FileSupported",
             )
-                .unwrap(),
+            .unwrap(),
         )
-            .unwrap();
+        .unwrap();
         let instance = jvm
             .invoke(&self.instance, "toAbsoluteFile", &[contact])
             .unwrap();
@@ -996,24 +996,61 @@ impl ForwardMessageBuilder {
             .unwrap();
         Self { instance }
     }
-    fn add__user_or_bot__message(self, user_or_bot: impl UserOrBotTrait, message: impl MessageTrait, time: i32) -> Self {
+    fn add__user_or_bot__message(
+        self,
+        user_or_bot: impl UserOrBotTrait,
+        message: impl MessageTrait,
+        time: i32,
+    ) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let user_or_bot = InvocationArg::try_from(user_or_bot.get_instance()).unwrap();
         let message = InvocationArg::try_from(message.get_instance()).unwrap();
-        let time = InvocationArg::try_from(time).unwrap().into_primitive().unwrap();
-        let _ = jvm.invoke(&self.instance, "add", &[user_or_bot, message, time]).unwrap();
+        let time = InvocationArg::try_from(time)
+            .unwrap()
+            .into_primitive()
+            .unwrap();
+        let _ = jvm
+            .invoke(&self.instance, "add", &[user_or_bot, message, time])
+            .unwrap();
         self
     }
-    fn add__sender_id__sender_name__message(self, sender_id: i64, sender_name: &str, message: impl MessageTrait, time: i32) -> Self {
+    fn add__sender_id__sender_name__message(
+        self,
+        sender_id: i64,
+        sender_name: &str,
+        message: impl MessageTrait,
+        time: i32,
+    ) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
-        let sender_id = InvocationArg::try_from(sender_id).unwrap().into_primitive().unwrap();
+        let sender_id = InvocationArg::try_from(sender_id)
+            .unwrap()
+            .into_primitive()
+            .unwrap();
         let sender_name = InvocationArg::try_from(sender_name).unwrap();
         let message = InvocationArg::try_from(message.get_instance()).unwrap();
-        let time = InvocationArg::try_from(time).unwrap().into_primitive().unwrap();
-        let _ = jvm.invoke(&self.instance, "add", &[sender_id, sender_name, message, time]).unwrap();
+        let time = InvocationArg::try_from(time)
+            .unwrap()
+            .into_primitive()
+            .unwrap();
+        let _ = jvm
+            .invoke(
+                &self.instance,
+                "add",
+                &[sender_id, sender_name, message, time],
+            )
+            .unwrap();
         self
     }
-    pub fn set_display_strategy(self, title: String, brief: String, source: String, preview: Vec<String>, summary: String) -> Self { todo!() }
+    pub fn set_display_strategy(
+        self,
+        title: String,
+        brief: String,
+        source: String,
+        preview: Vec<String>,
+        summary: String,
+    ) -> Self {
+        todo!()
+    }
 }
 
 // TODO: RawForwardMessage is necessary for set_display_strategy.
@@ -1418,7 +1455,7 @@ impl GetEnvTrait for PokeMessage {
             "net.mamoe.mirai.message.data.PokeMessage",
             &[name, poke_type, id],
         )
-            .unwrap()
+        .unwrap()
     }
 }
 

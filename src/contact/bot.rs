@@ -22,6 +22,7 @@ use std::{
 };
 use std::marker::PhantomData;
 use crate::action::nudges::BotNudge;
+use crate::env::FromInstance;
 use crate::error::MiraiRsError;
 
 #[derive(GetInstanceDerive)]
@@ -29,13 +30,61 @@ pub struct FriendGroup {
     pub(crate) instance: Instance,
 }
 
-// TODO: 迭代器特征
+impl FriendGroup {
+    pub fn delete(&self) -> bool {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "delete", &[]).unwrap()).unwrap()
+    }
+    pub fn rename_to(&self, new_name: &str) -> bool {
+        let jvm = Jvm::attach_thread().unwrap();
+        let new_name = InvocationArg::try_from(new_name).unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "delete", &[new_name]).unwrap()).unwrap()
+    }
+    pub fn move_in(&self, friend: Friend) -> bool {
+        let jvm = Jvm::attach_thread().unwrap();
+        let friend = InvocationArg::try_from(friend.get_instance()).unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "delete", &[friend]).unwrap()).unwrap()
+    }
+    pub fn get_name(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "getName", &[]).unwrap()).unwrap()
+    }
+    pub fn get_id(&self) -> i32 {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "getId", &[]).unwrap()).unwrap()
+    }
+    pub fn get_friends(&self) -> Vec<Friend> {
+        let mut vec = Vec::new();
+        let jvm = Jvm::attach_thread().unwrap();
+        let collection = jvm.invoke(&self.instance, "getFriends", &[]).unwrap();
+        while jvm.to_rust(jvm.invoke(&collection, "hasNext", &[]).unwrap()).unwrap() {
+            let next = jvm.invoke(&collection, "next", &[]).unwrap();
+            vec.push(Friend::from_instance(next));
+        }
+        vec
+    }
+    pub fn get_count(&self) -> i32 {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "getCount", &[]).unwrap()).unwrap()
+    }
+}
+
 #[derive(GetInstanceDerive)]
 pub struct FriendGroups {
     pub(crate) instance: Instance,
 }
 
 impl FriendGroups {
+    pub fn to_vec(&self) -> Vec<FriendGroup> {
+        let mut vec = Vec::new();
+        let jvm = Jvm::attach_thread().unwrap();
+        let collection = jvm.invoke(&self.instance, "asCollection", &[]).unwrap();
+        while jvm.to_rust(jvm.invoke(&collection, "hasNext", &[]).unwrap()).unwrap() {
+            let next = jvm.invoke(&collection, "next", &[]).unwrap();
+            vec.push(FriendGroup { instance: next });
+        }
+        vec
+    }
     pub fn create(name: String) -> FriendGroup {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
@@ -1080,14 +1129,7 @@ impl BotConfiguration {
             .unwrap();
         todo!("set_network_logger_supplier");
     }
-    // TODO: 该函数是否应当实现？
-    pub fn set_parent_coroutine_context(&self) {
-        Jvm::attach_thread()
-            .unwrap()
-            .invoke(&self.instance, "setParentCoroutineContext", &[])
-            .unwrap();
-        todo!("set_parent_coroutine_context");
-    }
+
     pub fn set_protocol(&self, protocol: MiraiProtocol) {
         Jvm::attach_thread()
             .unwrap()

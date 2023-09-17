@@ -4,15 +4,15 @@ use super::bot::{Bot, Env};
 use super::contact_trait::{
     ContactOrBotTrait, ContactTrait, MemberTrait, UserOrBotTrait, UserTrait,
 };
-use crate::env::{GetBotTrait, GetEnvTrait};
+use crate::env::{FromInstance, GetBotTrait, GetEnvTrait};
 use crate::message::message_trait::MessageHashCodeTrait;
 use crate::{env::ContactFromInstance, other::enums::AvatarSpec};
 use contact_derive::{GetBotDerive, GetInstanceDerive};
 use j4rs::{Instance, InvocationArg, Jvm};
 
 pub struct ContactList<T>
-where
-    T: ContactTrait + ContactFromInstance,
+    where
+        T: ContactTrait + ContactFromInstance,
 {
     pub(crate) bot: Instance,
     pub(crate) instance: Instance,
@@ -29,8 +29,8 @@ impl<T: ContactTrait + ContactFromInstance> GetEnvTrait for ContactList<T> {
 }
 
 impl<T> ContactList<T>
-where
-    T: ContactTrait + ContactFromInstance,
+    where
+        T: ContactTrait + ContactFromInstance,
 {
     pub fn contains(&self, contact: T) -> bool {
         Jvm::attach_thread()
@@ -126,6 +126,17 @@ pub struct Friend {
     pub(crate) bot: Instance,
     pub(crate) instance: Instance,
     pub(crate) id: i64,
+}
+
+impl FromInstance for Friend {
+    fn from_instance(instance: Instance) -> Self {
+        let jvm = Jvm::attach_thread().unwrap();
+        let bot = jvm.invoke(&instance, "getBot", &[]).unwrap();
+        let id = jvm
+            .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
+            .unwrap();
+        Friend { bot, instance, id }
+    }
 }
 
 impl ContactFromInstance for Friend {

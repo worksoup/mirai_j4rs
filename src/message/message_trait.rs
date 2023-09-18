@@ -182,7 +182,7 @@ pub trait ConstrainSingleTrait
         todo!()
     }
     fn get_content() -> () {
-        todo!("又是他妈的不知道哪儿来的")
+        todo!("该函数应为 RichMessage 的函数。")
     }
 }
 

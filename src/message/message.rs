@@ -8,6 +8,7 @@ use super::message_trait::{
 use crate::contact::bot::{Bot, Env};
 use crate::contact::contact_trait::{FileSupportedTrait, UserOrBotTrait};
 use crate::env::FromInstance;
+use crate::error::MiraiRsError;
 use crate::file::AbsoluteFile;
 use crate::message::message_trait::MessageMetaDataTrait;
 use crate::message::ImageType::{APNG, BMP, GIF, JPG, PNG, UNKNOW};
@@ -104,31 +105,29 @@ impl<'a, T> MessageReceipt<'a, T>
         let instance = jvm.invoke(&self.instance, "quote", &[]).unwrap();
         QuoteReply { instance }
     }
-    pub fn quote_reply(&self, message: impl MessageTrait) -> () {
-        // let jvm = Jvm::attach_thread().unwrap();
-        // let instance = jvm
-        //     .invoke(
-        //         &self.instance,
-        //         "quote",
-        //         &[],
-        //     )
-        //     .unwrap();
-        // Self { instance, target: &() }
-        todo!("不太好办。")
+    pub fn quote_reply(&self, message: impl MessageTrait) -> QuoteReply {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke(&self.instance, "quote", &[]).unwrap();
+        QuoteReply { instance }
     }
-    // TODO: 两个重载。
-    pub fn quote_reply_string(&self, message: String) -> () {
-        todo!("不太好办。")
+    pub fn quote_reply_string(&self, message: String) -> QuoteReply {
+        let jvm = Jvm::attach_thread().unwrap();
+        let message = InvocationArg::try_from(message).unwrap();
+        let instance = jvm.invoke(&self.instance, "quote", &[message]).unwrap();
+        QuoteReply { instance }
     }
-    // 重载。
     pub fn recall(&self) {
         Jvm::attach_thread()
             .unwrap()
             .invoke(&self.instance, "recall", &[])
             .unwrap();
     }
-    pub fn recall_in(&self) {
-        todo!("该函数是否应当实现？")
+    pub fn recall_in(&self, millis: i64) -> Result<(), MiraiRsError> {
+        let jvm = Jvm::attach_thread().unwrap();
+        let millis = InvocationArg::try_from(millis).unwrap().into_primitive().unwrap();
+        let instance = jvm.invoke(&self.instance, "recallIn", &[millis]).unwrap();
+        // TODO: 获取撤回结果并返回。
+        Ok(())
     }
 }
 
@@ -730,7 +729,7 @@ impl Image {
             .unwrap()
     }
     pub fn get_image_id_regex() {
-        todo!()
+        todo!("get_image_id_regex")
     }
     pub fn get_md5(&self) -> [i8; 16] {
         let jvm = Jvm::attach_thread().unwrap();
@@ -1049,7 +1048,7 @@ impl ForwardMessageBuilder {
         preview: Vec<String>,
         summary: String,
     ) -> Self {
-        todo!()
+        todo!("set_display_strategy")
     }
 }
 
@@ -1121,7 +1120,7 @@ impl ForwardMessage {
         jvm.to_rust(preview).unwrap()
     }
     pub fn equals() {
-        todo!()
+        todo!("低优先级")
     }
     pub fn get_source(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
@@ -1177,7 +1176,7 @@ impl Dice {
         Self { instance }
     }
     pub fn equals() {
-        todo!()
+        todo!("低优先级")
     }
     pub fn get_value(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
@@ -1232,7 +1231,7 @@ impl RockPaperScissors {
         Self::new("PAPER")
     }
     pub fn equals() {
-        todo!()
+        todo!("低优先级")
     }
     pub fn eliminates(&self, other: RockPaperScissors) -> Option<bool> {
         let jvm = Jvm::attach_thread().unwrap();
@@ -1286,7 +1285,7 @@ impl MarketFaceTrait for RockPaperScissors {}
 // impl ConstrainSingleTrait for  {}
 // impl CodableMessageTrait for  {}
 
-// TODO
+// TODO: 低优先级
 #[derive(GetInstanceDerive)]
 pub struct VipFace {
     instance: Instance,

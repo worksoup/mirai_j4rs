@@ -8,6 +8,7 @@ use crate::{
     message::{message_trait::MessageTrait, Image, MessageReceipt},
     other::enums::AvatarSpec,
 };
+use crate::contact::Friend;
 
 pub trait ContactOrBotTrait
     where
@@ -234,3 +235,15 @@ pub trait StrangerTrait
         Self: UserTrait,
 {}
 
+
+// TODO: 为 `Bot`, `Stranger`, `NormalMember`, 实现。
+// 为什么 Mirai 里实现得这么怪啊。
+pub trait AsFriend {
+    fn as_friend(&self) -> Friend;
+}
+
+// TODO: 为 `Bot`, `NormalMember`, 实现。
+// 为什么 Mirai 里实现得这么怪啊。
+pub trait AsStranger {
+    fn as_stranger(&self) -> Friend;
+}

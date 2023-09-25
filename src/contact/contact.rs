@@ -262,6 +262,43 @@ pub struct NormalMember {
     pub(crate) id: i64,
 }
 
+/// 没有实现 `asFriend` 所以如果需要此功能，暂时可以在获取 id 之后在 [Bot] 上调用 `get_friends`, 然后取 [Friend].
+impl NormalMember {
+    pub fn get_mute_time_remaining(&self) -> i32 {
+        let jvm = Jvm::attach_thread().unwrap();
+        let time = jvm.invoke(&self.instance, "getMuteTimeRemaining", &[]).unwrap();
+        jvm.to_rust(time).unwrap()
+    }
+    pub fn is_muted(&self) -> bool {
+        self.get_mute_time_remaining() != 0
+    }
+    pub fn get_join_timestamp(&self) -> i32 {
+        let jvm = Jvm::attach_thread().unwrap();
+        let time = jvm.invoke(&self.instance, "getJoinTimestamp", &[]).unwrap();
+        jvm.to_rust(time).unwrap()
+    }
+    pub fn get_last_speak_timestamp(&self) -> i32 {
+        let jvm = Jvm::attach_thread().unwrap();
+        let time = jvm.invoke(&self.instance, "getLastSpeakTimestamp", &[]).unwrap();
+        jvm.to_rust(time).unwrap()
+    }
+    pub fn unmute(&self) {
+        let jvm = Jvm::attach_thread().unwrap();
+        let _ = jvm.invoke(&self.instance, "unmute", &[]).unwrap();
+    }
+    pub fn kick(&self, message: &str, block: bool) {
+        let jvm = Jvm::attach_thread().unwrap();
+        let message = InvocationArg::try_from(message).unwrap();
+        let block = InvocationArg::try_from(block).unwrap().into_primitive().unwrap();
+        let _ = jvm.invoke(&self.instance, "unmute", &[message, block]).unwrap();
+    }
+    pub fn modify_admin(&self, op: bool) {
+        let jvm = Jvm::attach_thread().unwrap();
+        let op = InvocationArg::try_from(op).unwrap().into_primitive().unwrap();
+        let _ = jvm.invoke(&self.instance, "modifyAdmin", &[op]).unwrap();
+    }
+}
+
 impl ContactFromInstance for NormalMember {
     type Item = NormalMember;
     fn from_instance(bot: Instance, instance: Instance, id: i64) -> NormalMember {

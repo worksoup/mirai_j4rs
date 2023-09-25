@@ -28,7 +28,7 @@ fn match_single_message(msg: SingleMessage, contact: Option<Group>) {
             println!("AtAll {}", at_all.to_string())
         }
         // 🎲 和锤子包袱剪似乎被下线了，不过还能被 Mirai 接受和发送。
-        // 现在它们被 `\u0014\u0167` 和 `\u0014\u0166` 取代了。
+        // 现在它们被 `\u0014\u0166` 和 `\u0014\u0167` 取代了。
         SingleMessage::Dice(dice) => {
             println!("🎲 {}", dice.get_value())
         }

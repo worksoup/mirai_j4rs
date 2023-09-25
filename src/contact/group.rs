@@ -123,8 +123,17 @@ pub struct Announcements {
     instance: Instance,
 }
 
-pub struct MemberPermission {
-    instance: Instance,
+impl Announcements {
+    // TODO
+}
+
+#[derive(num_enum::FromPrimitive, num_enum::IntoPrimitive, Debug)]
+#[repr(i32)]
+pub enum MemberPermission {
+    Member = 0,
+    Administrator = 1,
+    #[default]
+    Owner = 2,
 }
 
 pub struct ActiveRankRecord {
@@ -262,8 +271,8 @@ impl<K, V> MiraiMap<K, V> {
             ) -> (K, V),
         >,
     ) -> HashMap<K, V>
-    where
-        K: Eq + PartialEq + std::hash::Hash,
+        where
+            K: Eq + PartialEq + std::hash::Hash,
     {
         let jvm = Jvm::attach_thread().unwrap();
         let java_cast =
@@ -750,12 +759,13 @@ impl Group {
             .unwrap()
     }
     pub fn get_bot_permission(&self) -> MemberPermission {
-        MemberPermission {
-            instance: Jvm::attach_thread()
-                .unwrap()
-                .invoke(&self.instance, "getMemberPermission", &[])
-                .unwrap(),
-        }
+        let jvm = Jvm::attach_thread()
+            .unwrap();
+        let prem = jvm
+            .invoke(&self.instance, "getMemberPermission", &[])
+            .unwrap();
+        let prem = jvm.invoke(&prem, "getLevel", &[]).unwrap();
+        MemberPermission::from(jvm.to_rust::<i32>(prem).unwrap())
     }
     pub fn get_members(self) -> ContactList<NormalMember> {
         let instance = Jvm::attach_thread()
@@ -812,9 +822,9 @@ impl Group {
                 "setEssenceMessage",
                 &[InvocationArg::try_from(source.get_instance()).unwrap()],
             )
-            .unwrap(),
+                .unwrap(),
         )
-        .unwrap()
+            .unwrap()
     }
     // function name need to be changed.
     pub fn set_essence_message_s(group: Group, chain: MessageChain) -> bool {
@@ -828,9 +838,9 @@ impl Group {
                     InvocationArg::try_from(chain.get_instance()).unwrap(),
                 ],
             )
-            .unwrap(),
+                .unwrap(),
         )
-        .unwrap()
+            .unwrap()
     }
     pub fn set_name(&self, name: &str) {
         Jvm::attach_thread()
@@ -842,4 +852,5 @@ impl Group {
             )
             .unwrap();
     }
+    // TODO: 获取精华消息。
 }

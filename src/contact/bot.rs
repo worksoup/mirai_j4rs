@@ -3,6 +3,10 @@ use super::{
     group::Group,
     ContactList, Friend, OtherClient, Stranger,
 };
+use crate::action::nudges::BotNudge;
+use crate::env::FromInstance;
+use crate::error::MiraiRsError;
+use crate::utils::internal::instance_is_null;
 use crate::{
     contact::group::MiraiMap,
     env::{GetBotTrait, GetEnvTrait},
@@ -16,15 +20,11 @@ use contact_derive::GetInstanceDerive;
 use core::str;
 use j4rs::{ClasspathEntry, Instance, InvocationArg, JavaOpt, Jvm, JvmBuilder};
 use serde::{Deserialize, Serialize};
+use std::marker::PhantomData;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
 };
-use std::marker::PhantomData;
-use crate::action::nudges::BotNudge;
-use crate::env::FromInstance;
-use crate::error::MiraiRsError;
-use crate::utils::internal::instance_is_null;
 
 #[derive(GetInstanceDerive)]
 pub struct FriendGroup {
@@ -34,31 +34,39 @@ pub struct FriendGroup {
 impl FriendGroup {
     pub fn delete(&self) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "delete", &[]).unwrap()).unwrap()
+        jvm.to_rust(jvm.invoke(&self.instance, "delete", &[]).unwrap())
+            .unwrap()
     }
     pub fn rename_to(&self, new_name: &str) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
         let new_name = InvocationArg::try_from(new_name).unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "delete", &[new_name]).unwrap()).unwrap()
+        jvm.to_rust(jvm.invoke(&self.instance, "delete", &[new_name]).unwrap())
+            .unwrap()
     }
     pub fn move_in(&self, friend: Friend) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
         let friend = InvocationArg::try_from(friend.get_instance()).unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "delete", &[friend]).unwrap()).unwrap()
+        jvm.to_rust(jvm.invoke(&self.instance, "delete", &[friend]).unwrap())
+            .unwrap()
     }
     pub fn get_name(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getName", &[]).unwrap()).unwrap()
+        jvm.to_rust(jvm.invoke(&self.instance, "getName", &[]).unwrap())
+            .unwrap()
     }
     pub fn get_id(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getId", &[]).unwrap()).unwrap()
+        jvm.to_rust(jvm.invoke(&self.instance, "getId", &[]).unwrap())
+            .unwrap()
     }
     pub fn get_friends(&self) -> Vec<Friend> {
         let mut vec = Vec::new();
         let jvm = Jvm::attach_thread().unwrap();
         let collection = jvm.invoke(&self.instance, "getFriends", &[]).unwrap();
-        while jvm.to_rust(jvm.invoke(&collection, "hasNext", &[]).unwrap()).unwrap() {
+        while jvm
+            .to_rust(jvm.invoke(&collection, "hasNext", &[]).unwrap())
+            .unwrap()
+        {
             let next = jvm.invoke(&collection, "next", &[]).unwrap();
             vec.push(Friend::from_instance(next));
         }
@@ -66,7 +74,8 @@ impl FriendGroup {
     }
     pub fn get_count(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getCount", &[]).unwrap()).unwrap()
+        jvm.to_rust(jvm.invoke(&self.instance, "getCount", &[]).unwrap())
+            .unwrap()
     }
 }
 
@@ -80,7 +89,10 @@ impl FriendGroups {
         let mut vec = Vec::new();
         let jvm = Jvm::attach_thread().unwrap();
         let collection = jvm.invoke(&self.instance, "asCollection", &[]).unwrap();
-        while jvm.to_rust(jvm.invoke(&collection, "hasNext", &[]).unwrap()).unwrap() {
+        while jvm
+            .to_rust(jvm.invoke(&collection, "hasNext", &[]).unwrap())
+            .unwrap()
+        {
             let next = jvm.invoke(&collection, "next", &[]).unwrap();
             vec.push(FriendGroup { instance: next });
         }
@@ -118,6 +130,20 @@ impl FriendGroups {
 pub struct Bot {
     pub(crate) bot: Instance,
     pub(crate) id: i64,
+}
+
+impl FromInstance for Bot {
+    fn from_instance(instance: Instance) -> Self {
+        let id = Jvm::attach_thread()
+            .unwrap()
+            .chain(&instance)
+            .unwrap()
+            .invoke("getId", &[])
+            .unwrap()
+            .to_rust()
+            .unwrap();
+        Bot { bot: instance, id }
+    }
 }
 
 impl GetEnvTrait for Bot {
@@ -189,17 +215,13 @@ impl Bot {
             instance: bot_configuration,
         }
     }
-    pub fn get_event_channel(&self) -> EventChannel
-    {
+    pub fn get_event_channel(&self) -> EventChannel {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = Jvm::attach_thread()
             .unwrap()
             .invoke(&self.bot, "getEventChannel", &[])
             .unwrap();
-        EventChannel {
-            jvm,
-            instance,
-        }
+        EventChannel { jvm, instance }
     }
     pub fn get_friend(&self, id: i64) -> Option<Friend> {
         let instance = Jvm::attach_thread()
@@ -538,17 +560,13 @@ impl Env {
         todo!("should be 'MiraiList<Bot>' which has not been implemented yet")
     }
     //默认是global的。
-    pub fn event_channel(&self) -> EventChannel
-    {
+    pub fn event_channel(&self) -> EventChannel {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = Jvm::attach_thread()
             .unwrap()
             .static_class("net.mamoe.mirai.event.GlobalEventChannel$INSTANCE")
             .unwrap();
-        EventChannel {
-            jvm,
-            instance,
-        }
+        EventChannel { jvm, instance }
     }
 }
 
@@ -642,7 +660,7 @@ impl Certificate<[u8; 16]> for Env {
                                 .create_java_array("byte", &password_md5)
                                 .unwrap(),
                         )
-                            .unwrap(),
+                        .unwrap(),
                         InvocationArg::try_from(bot_configuration.get_instance()).unwrap(),
                     ],
                 )
@@ -664,7 +682,7 @@ impl Certificate<[u8; 16]> for Env {
                                 .create_java_array("byte", &password_md5)
                                 .unwrap(),
                         )
-                            .unwrap(),
+                        .unwrap(),
                     ],
                 )
                 .unwrap()
@@ -734,7 +752,7 @@ impl BotConfiguration {
                                 .clone_instance(&bot.bot)
                                 .unwrap(),
                         )
-                            .unwrap()],
+                        .unwrap()],
                     )
                     .unwrap(),
             )
@@ -780,7 +798,7 @@ impl BotConfiguration {
                                 .clone_instance(&bot.bot)
                                 .unwrap(),
                         )
-                            .unwrap()],
+                        .unwrap()],
                     )
                     .unwrap(),
             )
@@ -1049,7 +1067,7 @@ impl BotConfiguration {
                         )
                         .unwrap(),
                 )
-                    .unwrap()],
+                .unwrap()],
             )
             .unwrap();
     }
@@ -1283,9 +1301,9 @@ impl BotConfiguration {
         } else {
             retain.unwrap()
         })
-            .unwrap()
-            .into_primitive()
-            .unwrap();
+        .unwrap()
+        .into_primitive()
+        .unwrap();
         if identity.is_none() {
             Jvm::attach_thread()
                 .unwrap()
@@ -1361,13 +1379,7 @@ impl BotConfiguration {
         retain: Option<i64>,
         identity: Option<Instance>,
     ) {
-        self.redirect_log_to_directory(
-            path,
-            retain,
-            identity,
-            "logs",
-            "redirectBotLogToDirectory",
-        );
+        self.redirect_log_to_directory(path, retain, identity, "logs", "redirectBotLogToDirectory");
     }
     /// 重定向 Bot 日志到指定文件。日志将会逐行追加到此文件。若文件不存在将会自动创建。
     pub fn redirect_bot_log_to_file(&self, path: Option<&PathBuf>, identity: Option<Instance>) {
@@ -1391,11 +1403,7 @@ impl BotConfiguration {
     }
     /// 重定向网络日志到指定文件。默认文件路径为 `$workingDir/mirai.log`.
     /// 日志将会逐行追加到此文件。若文件不存在将会自动创建。
-    pub fn redirect_network_log_to_file(
-        &self,
-        path: Option<&PathBuf>,
-        identity: Option<Instance>,
-    ) {
+    pub fn redirect_network_log_to_file(&self, path: Option<&PathBuf>, identity: Option<Instance>) {
         self.redirect_log_to_file(path, identity, "mirai.log", "redirectNetworkLogToFile");
     }
     // 用来复制的模板。
@@ -1441,7 +1449,8 @@ impl BotBuilder {
         dir_tmp.push("base_config.toml");
         // 如果 `base_config.toml` 不存在则创建一个默认的。
         if let Ok(base_config_file) = std::fs::metadata(&dir_tmp) {
-            if base_config_file.is_file() {} else {
+            if base_config_file.is_file() {
+            } else {
                 std::fs::remove_dir(&dir_tmp).unwrap();
                 let _ = std::fs::File::create(&dir_tmp).unwrap();
                 let contents = toml::to_string(&default_base_config).unwrap();

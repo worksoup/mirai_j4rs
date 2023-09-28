@@ -262,6 +262,15 @@ pub struct NormalMember {
     pub(crate) id: i64,
 }
 
+impl FromInstance for NormalMember {
+    fn from_instance(instance: Instance) -> Self {
+        let jvm = Jvm::attach_thread().unwrap();
+        let bot = jvm.invoke(&instance, "getBot", &[]).unwrap();
+        let id = jvm.to_rust(jvm.invoke(&instance, "getId", &[]).unwrap()).unwrap();
+        NormalMember { bot, instance, id }
+    }
+}
+
 /// 没有实现 `asFriend` 所以如果需要此功能，暂时可以在获取 id 之后在 [Bot] 上调用 `get_friends`, 然后取 [Friend].
 impl NormalMember {
     pub fn get_mute_time_remaining(&self) -> i32 {

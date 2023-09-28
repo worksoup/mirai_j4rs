@@ -13,9 +13,6 @@ impl GroupMessageEvent {
     // 该函数被 GetClassTypeDerive 宏使用。该宏实现了 GetClassTypeTrait。
     // 这个特征可以返回 java 中 Class 对象，监听事件的时候用。
     // 为了做泛型搞的。之后可能会改动。
-    /// 获取 java 中的类名。TODO: 需要移除该函数。该函数的引入是由于 j4rs 旧版本中的 bug.
-    /// `getClass` 方法属于每一个 Object, 但由于 bug, 无法通过 j4rs 直接调用之。
-    /// 见 https://github.com/astonbitecode/j4rs/issues/71
     fn get_class_name() -> String {
         "net.mamoe.mirai.event.events.GroupMessageEvent".to_owned()
     }

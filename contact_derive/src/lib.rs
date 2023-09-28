@@ -11,7 +11,7 @@ pub fn get_instance_derive(input: TokenStream) -> TokenStream {
     let gen = quote! {
         impl crate::env::GetEnvTrait for #name {
             fn get_instance(&self) -> j4rs::Instance{
-                Jvm::attach_thread().unwrap().clone_instance(&self.instance).unwrap()
+                j4rs::Jvm::attach_thread().unwrap().clone_instance(&self.instance).unwrap()
             }
         }
     };
@@ -40,7 +40,7 @@ pub fn get_class_type_derive(input: TokenStream) -> TokenStream {
     let gen = quote! {
         impl crate::env::GetClassTypeTrait for #name {
             fn get_class_type() -> j4rs::Instance {
-                Jvm::attach_thread()
+                j4rs::Jvm::attach_thread()
                     .unwrap()
                     .invoke_static(
                         "rt.lea.LumiaUtils",

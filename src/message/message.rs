@@ -5,7 +5,7 @@ use super::message_trait::{
     CodableMessageTrait, ConstrainSingleTrait, MarketFaceTrait, MessageChainTrait,
     MessageContentTrait, MessageHashCodeTrait, MessageTrait, RichMessageTrait, SingleMessageTrait,
 };
-use crate::contact::bot::{Bot, Env};
+use crate::contact::bot::{Bot};
 use crate::contact::contact_trait::{FileSupportedTrait, UserOrBotTrait};
 use crate::env::FromInstance;
 use crate::error::MiraiRsError;

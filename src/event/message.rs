@@ -1,8 +1,8 @@
 use crate::contact::{group::Group, AnonymousMember, Friend, Member, NormalMember};
+use crate::env::FromInstance;
 use crate::event::event_trait::{MessageEventTrait, MiraiEventTrait};
 use contact_derive::{GetClassTypeDerive, GetInstanceDerive};
 use j4rs::{Instance, Jvm};
-use crate::env::FromInstance;
 
 #[derive(GetInstanceDerive, GetClassTypeDerive)]
 pub struct GroupMessageEvent {
@@ -32,21 +32,8 @@ impl MessageEventTrait for GroupMessageEvent {
     type UserItem = Member;
 
     fn get_sender(&self) -> Self::UserItem {
-        // j4rs 旧版本中有 bug, 所以只能如下注释中的写法。见 https://github.com/astonbitecode/j4rs/issues/71
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm.invoke(&self.instance, "getSender", &[]).unwrap();
-        let bot = jvm
-            .invoke(
-                // &jvm.cast(&instance, "net.mamoe.mirai.contact.Contact")             // j4rs <= 0.17.1
-                // .unwrap(),                                                          // j4rs <= 0.17.1
-                &instance,
-                "getBot",
-                &[],
-            )
-            .unwrap();
-        let id = jvm
-            .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
-            .unwrap();
         let special_title: String = jvm
             .to_rust(
                 jvm.invoke(
@@ -62,11 +49,11 @@ impl MessageEventTrait for GroupMessageEvent {
         match special_title.as_str() {
             "匿名" => {
                 println!("匿名成员");
-                Member::AnonymousMember(AnonymousMember { bot, instance, id })
+                Member::AnonymousMember(AnonymousMember::from_instance(instance))
             }
             _ => {
                 println!("普通成员");
-                Member::NormalMember(NormalMember { bot, instance, id })
+                Member::NormalMember(NormalMember::from_instance(instance))
             }
         }
     }

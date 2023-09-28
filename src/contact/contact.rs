@@ -1,25 +1,34 @@
 use std::marker::PhantomData;
+use std::path::PathBuf;
 //联系人
-use super::bot::Bot;
 use super::contact_trait::{
     ContactOrBotTrait, ContactTrait, MemberTrait, UserOrBotTrait, UserTrait,
 };
-use crate::action::nudges::FriendNudge;
+use crate::action::nudges::{FriendNudge, MemberNudge};
 use crate::contact::bot::FriendGroup;
-use crate::env::{FromInstance, GetBotTrait, GetEnvTrait};
-use crate::message::message_trait::MessageHashCodeTrait;
+use crate::env::{FromInstance, GetEnvTrait};
+use crate::message::message_trait::{MessageHashCodeTrait, MessageTrait};
 use crate::utils::internal::instance_is_null;
 use crate::{other::enums::AvatarSpec};
-use contact_derive::{GetBotDerive, GetInstanceDerive};
+use contact_derive::{GetInstanceDerive};
 use j4rs::{Instance, InvocationArg, Jvm};
+use crate::message::{Image, MessageReceipt};
 
 pub struct ContactList<T>
     where
         T: ContactTrait + FromInstance,
 {
-    pub(crate) bot: Instance,
     pub(crate) instance: Instance,
     pub(crate) _unused: PhantomData<T>,
+}
+
+impl<T: ContactTrait + FromInstance> FromInstance for ContactList<T> {
+    fn from_instance(instance: Instance) -> Self {
+        ContactList {
+            instance,
+            _unused: PhantomData::default(),
+        }
+    }
 }
 
 impl<T: ContactTrait + FromInstance> GetEnvTrait for ContactList<T> {
@@ -124,7 +133,7 @@ impl<T> ContactList<T>
 impl<T: ContactTrait + FromInstance> MessageHashCodeTrait for ContactList<T> {}
 // TODO: impl MiraiRsCollectionTrait fot ContactList<_>{}
 
-#[derive(GetBotDerive, GetInstanceDerive)]
+#[derive(GetInstanceDerive)]
 pub struct Friend {
     pub(crate) bot: Instance,
     pub(crate) instance: Instance,
@@ -145,11 +154,6 @@ impl Friend {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.to_rust(jvm.invoke(&self.instance, "getRemark", &[]).unwrap())
             .unwrap()
-    }
-    pub fn nudge(&self) -> FriendNudge {
-        let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "nudge", &[]).unwrap();
-        FriendNudge { instance }
     }
     pub fn set_remark(&self, remark: &str) {
         let jvm = Jvm::attach_thread().unwrap();
@@ -187,7 +191,14 @@ impl ContactOrBotTrait for Friend {
     }
 }
 
-impl UserOrBotTrait for Friend {}
+impl UserOrBotTrait for Friend {
+    type NudgeType = FriendNudge;
+    fn nudge(&self) -> FriendNudge {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke(&self.instance, "nudge", &[]).unwrap();
+        FriendNudge { instance }
+    }
+}
 
 impl ContactTrait for Friend {}
 
@@ -198,16 +209,16 @@ pub struct Stranger {
     pub(crate) instance: Instance,
 }
 
-impl GetBotTrait for Stranger {
-    fn get_bot(&self) -> Bot {
-        let instance = Jvm::attach_thread().unwrap().invoke(&self.get_instance(), "getBot", &[]).unwrap();
-        Bot::from_instance(instance)
-    }
-}
+// impl GetBotTrait for Stranger {
+//     fn get_bot(&self) -> Bot {
+//         let instance = Jvm::attach_thread().unwrap().invoke(&self.get_instance(), "getBot", &[]).unwrap();
+//         Bot::from_instance(instance)
+//     }
+// }
 
 impl FromInstance for Stranger {
     fn from_instance(instance: Instance) -> Self {
-        todo!()
+        Stranger { instance }
     }
 }
 
@@ -226,7 +237,14 @@ impl ContactOrBotTrait for Stranger {
     }
 }
 
-impl UserOrBotTrait for Stranger {}
+impl UserOrBotTrait for Stranger {
+    // `StrangerNudge`
+    type NudgeType = ();
+
+    fn nudge(&self) -> Self::NudgeType {
+        todo!()
+    }
+}
 
 impl ContactTrait for Stranger {}
 
@@ -237,12 +255,12 @@ pub struct OtherClient {
     instance: Instance,
 }
 
-impl GetBotTrait for OtherClient {
-    fn get_bot(&self) -> Bot {
-        let instance = Jvm::attach_thread().unwrap().invoke(&self.get_instance(), "getBot", &[]).unwrap();
-        Bot::from_instance(instance)
-    }
-}
+// impl GetBotTrait for OtherClient {
+//     fn get_bot(&self) -> Bot {
+//         let instance = Jvm::attach_thread().unwrap().invoke(&self.get_instance(), "getBot", &[]).unwrap();
+//         Bot::from_instance(instance)
+//     }
+// }
 
 impl FromInstance for OtherClient {
     fn from_instance(instance: Instance) -> Self {
@@ -254,7 +272,7 @@ impl ContactOrBotTrait for OtherClient {}
 
 impl ContactTrait for OtherClient {}
 
-#[derive(GetInstanceDerive, GetBotDerive)]
+#[derive(GetInstanceDerive)]
 pub struct NormalMember {
     pub(crate) bot: Instance,
     pub(crate) instance: Instance,
@@ -327,24 +345,64 @@ impl ContactOrBotTrait for NormalMember {
 
 impl ContactTrait for NormalMember {}
 
-impl UserOrBotTrait for NormalMember {}
+impl UserOrBotTrait for NormalMember {
+    type NudgeType = MemberNudge;
+
+    fn nudge(&self) -> Self::NudgeType {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke(&self.instance, "nudge", &[]).unwrap();
+        Self::NudgeType { instance }
+    }
+}
 
 impl UserTrait for NormalMember {}
 
 impl MemberTrait for NormalMember {}
 
-#[derive(GetBotDerive, GetInstanceDerive)]
+#[derive(GetInstanceDerive)]
 pub struct AnonymousMember {
-    pub(crate) bot: Instance,
     pub(crate) instance: Instance,
-    pub(crate) id: i64,
 }
+
+// impl GetBotTrait for AnonymousMember {}
+
+impl AnonymousMember {
+    pub fn get_anonymous_id(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        let id = jvm.invoke(&self.instance, "getAnonymousId", &[]).unwrap();
+        jvm.to_rust(id).unwrap()
+    }
+}
+
+impl FromInstance for AnonymousMember {
+    fn from_instance(instance: Instance) -> Self {
+        Self { instance }
+    }
+}
+
+impl MemberTrait for AnonymousMember {}
 
 impl ContactOrBotTrait for AnonymousMember {}
 
-impl ContactTrait for AnonymousMember {}
+impl ContactTrait for AnonymousMember {
+    fn send_message<'a>(&self, message: impl MessageTrait) -> MessageReceipt<Self> {
+        todo!("该函数不应当使用。日后重构或为此函数添加警告。")
+    }
+    fn send_string(&self, string: &str) -> MessageReceipt<'_, Self> {
+        todo!("该函数不应当使用。日后重构或为此函数添加警告。")
+    }
+    fn upload_image_from_file(&self, path: &PathBuf) -> Image {
+        todo!("该函数不应当使用。日后重构或为此函数添加警告。")
+    }
+}
 
-impl UserOrBotTrait for AnonymousMember {}
+impl UserOrBotTrait for AnonymousMember {
+    type NudgeType = MemberNudge;
+
+    fn nudge(&self) -> Self::NudgeType {
+        todo!("该函数不应当使用。日后重构或为此函数添加警告。")
+    }
+}
 
 impl UserTrait for AnonymousMember {}
 
@@ -353,14 +411,14 @@ pub enum Member {
     AnonymousMember(AnonymousMember),
 }
 
-impl GetBotTrait for Member {
-    fn get_bot(&self) -> Bot {
-        match self {
-            Member::NormalMember(member) => member.get_bot(),
-            Member::AnonymousMember(member) => member.get_bot(),
-        }
-    }
-}
+// impl GetBotTrait for Member {
+//     fn get_bot(&self) -> Bot {
+//         match self {
+//             Member::NormalMember(member) => member.get_bot(),
+//             Member::AnonymousMember(member) => member.get_bot(),
+//         }
+//     }
+// }
 
 impl GetEnvTrait for Member {
     fn get_instance(&self) -> Instance {
@@ -375,6 +433,15 @@ impl ContactOrBotTrait for Member {}
 
 impl ContactTrait for Member {}
 
-impl UserOrBotTrait for Member {}
+impl UserOrBotTrait for Member {
+    type NudgeType = MemberNudge;
+
+    fn nudge(&self) -> Self::NudgeType {
+        match self {
+            Member::NormalMember(a) => { a.nudge() }
+            Member::AnonymousMember(a) => { a.nudge() }
+        }
+    }
+}
 
 impl UserTrait for Member {}

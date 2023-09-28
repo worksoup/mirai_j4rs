@@ -1,8 +1,6 @@
 use j4rs::{prelude::*, InvocationArg};
 use j4rs::{Instance, Jvm};
 use std::mem::transmute;
-
-use crate::env::{FromInstance, GetClassTypeTrait};
 use crate::event::event_trait::MiraiEventTrait;
 use crate::utils::ffi::InstanceWrapper;
 

@@ -18,20 +18,6 @@ pub fn get_instance_derive(input: TokenStream) -> TokenStream {
     gen.into()
 }
 
-#[proc_macro_derive(GetBotDerive)]
-pub fn get_bot_derive(input: TokenStream) -> TokenStream {
-    let ast: &syn::DeriveInput = &syn::parse(input).unwrap();
-    let name = &ast.ident;
-    let gen = quote! {
-        impl crate::env::GetBotTrait for #name {
-            fn get_bot(&self) -> crate::contact::bot::Bot {
-                Bot{bot:Jvm::attach_thread().unwrap().clone_instance(&self.bot).unwrap(),id:0}
-            }
-        }
-    };
-    gen.into()
-}
-
 /// 获取 java 中的 Class 对象。
 #[proc_macro_derive(GetClassTypeDerive)]
 pub fn get_class_type_derive(input: TokenStream) -> TokenStream {

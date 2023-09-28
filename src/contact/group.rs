@@ -10,7 +10,7 @@ use crate::{
     message::{MessageChain, MessageSource},
     other::enums::AvatarSpec,
 };
-use contact_derive::{GetBotDerive, GetInstanceDerive};
+use contact_derive::GetInstanceDerive;
 use j4rs::{Instance, InvocationArg, Jvm};
 use std::collections::HashMap;
 use std::marker::PhantomData;
@@ -105,7 +105,7 @@ impl GroupSettings {
     }
 }
 
-#[derive(GetInstanceDerive, GetBotDerive)]
+#[derive(GetInstanceDerive, )]
 pub struct Group {
     pub(crate) bot: Instance,
     pub(crate) instance: Instance,
@@ -764,7 +764,6 @@ impl Group {
             .invoke(&self.instance, "getMembers", &[])
             .unwrap();
         ContactList {
-            bot: self.bot,
             instance,
             _unused: PhantomData::default(),
         }

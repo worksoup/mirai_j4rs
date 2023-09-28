@@ -1,6 +1,6 @@
 use crate::contact::bot::Bot;
 use crate::env::{FromInstance, GetClassTypeTrait, GetEnvTrait};
-use j4rs::{Instance, Jvm};
+use j4rs::{Jvm};
 use crate::message::MessageChain;
 
 pub trait MiraiEventTrait

@@ -2,7 +2,7 @@ pub mod ffi;
 pub(crate) mod internal;
 
 use crate::env::{FromInstance, GetEnvTrait};
-use j4rs::{Instance, InvocationArg, Jvm};
+use j4rs::{Instance, Jvm};
 use std::cmp::Ordering;
 use std::marker::PhantomData;
 
@@ -22,7 +22,7 @@ pub struct FileFolderStream<T: FromInstance> {
 }
 
 impl<T: FromInstance> GetEnvTrait for FileFolderStream<T> {
-    fn get_instance(&self) -> j4rs::Instance {
+    fn get_instance(&self) -> Instance {
         Jvm::attach_thread()
             .unwrap()
             .clone_instance(&self.instance)
@@ -32,7 +32,7 @@ impl<T: FromInstance> GetEnvTrait for FileFolderStream<T> {
 
 /// TODO: 暂时先用 to_vec 凑合一下吧。
 impl<T: FromInstance> FileFolderStream<T> {
-    pub fn sorted_array_by<F>(&self, mut compare: F) -> Vec<T>
+    pub fn sorted_array_by<F>(&self, compare: F) -> Vec<T>
         where
             F: FnMut(&T, &T) -> Ordering,
     {

@@ -9,7 +9,7 @@ use crate::error::MiraiRsError;
 use crate::utils::internal::instance_is_null;
 use crate::{
     contact::group::MiraiMap,
-    env::{GetBotTrait, GetEnvTrait},
+    env::GetEnvTrait,
     event::EventChannel,
     other::{
         enums::{AvatarSpec, HeartbeatStrategy, MiraiProtocol},
@@ -20,7 +20,6 @@ use contact_derive::GetInstanceDerive;
 use core::str;
 use j4rs::{ClasspathEntry, Instance, InvocationArg, JavaOpt, Jvm, JvmBuilder};
 use serde::{Deserialize, Serialize};
-use std::marker::PhantomData;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
@@ -155,17 +154,17 @@ impl GetEnvTrait for Bot {
     }
 }
 
-impl GetBotTrait for Bot {
-    fn get_bot(&self) -> Bot {
-        Bot {
-            bot: Jvm::attach_thread()
-                .unwrap()
-                .clone_instance(&self.bot)
-                .unwrap(),
-            id: self.id,
-        }
-    }
-}
+// impl GetBotTrait for Bot {
+//     fn get_bot(&self) -> Bot {
+//         Bot {
+//             bot: Jvm::attach_thread()
+//                 .unwrap()
+//                 .clone_instance(&self.bot)
+//                 .unwrap(),
+//             id: self.id,
+//         }
+//     }
+// }
 
 impl Bot {
     pub fn close(self) {
@@ -246,15 +245,12 @@ impl Bot {
         FriendGroups { instance }
     }
     pub fn get_friends(&self) -> ContactList<Friend> {
-        let instance = Jvm::attach_thread()
-            .unwrap()
-            .invoke(&self.bot, "getFriends", &[])
-            .unwrap();
-        ContactList {
-            bot: self.get_instance(),
-            instance,
-            _unused: PhantomData::default(),
-        }
+        ContactList::from_instance(
+            Jvm::attach_thread()
+                .unwrap()
+                .invoke(&self.bot, "getFriends", &[])
+                .unwrap(),
+        )
     }
     pub fn get_group(&self, id: i64) -> Option<Group> {
         Group::new(self, id)
@@ -264,11 +260,7 @@ impl Bot {
             .unwrap()
             .invoke(&self.bot, "getGroups", &[])
             .unwrap();
-        ContactList {
-            bot: self.get_instance(),
-            instance,
-            _unused: PhantomData::default(),
-        }
+        ContactList::from_instance(instance)
     }
     pub fn get_logger() -> MiraiLogger {
         todo!("get logger")
@@ -278,11 +270,7 @@ impl Bot {
             .unwrap()
             .invoke(&self.bot, "getOtherClients", &[])
             .unwrap();
-        ContactList {
-            bot: self.get_instance(),
-            instance,
-            _unused: PhantomData::default(),
-        }
+        ContactList::from_instance(instance)
     }
     pub fn get_stranger(&self, id: i64) -> Option<Stranger> {
         let instance = Jvm::attach_thread()
@@ -307,11 +295,7 @@ impl Bot {
             .unwrap()
             .invoke(&self.bot, "getStrangers", &[])
             .unwrap();
-        ContactList {
-            bot: self.get_instance(),
-            instance,
-            _unused: PhantomData::default(),
-        }
+        ContactList::from_instance(instance)
     }
     pub fn is_online(&self) -> bool {
         Jvm::attach_thread()
@@ -335,11 +319,6 @@ impl Bot {
             .invoke(&self.bot, "login", &Vec::new())
             .unwrap();
     }
-    pub fn nudge(&self) -> BotNudge {
-        let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.bot, "nudge", &[]).unwrap();
-        BotNudge { instance }
-    }
 }
 
 impl ContactOrBotTrait for Bot {
@@ -360,7 +339,15 @@ impl ContactOrBotTrait for Bot {
     }
 }
 
-impl UserOrBotTrait for Bot {}
+impl UserOrBotTrait for Bot {
+    type NudgeType = BotNudge;
+
+    fn nudge(&self) -> BotNudge {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke(&self.bot, "nudge", &[]).unwrap();
+        BotNudge { instance }
+    }
+}
 
 pub struct MiraiLogger(Instance);
 

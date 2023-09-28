@@ -3,17 +3,22 @@ use std::path::PathBuf;
 use j4rs::{InvocationArg, Jvm};
 
 use crate::{
-    env::GetBotTrait,
     env::GetEnvTrait,
     message::{message_trait::MessageTrait, Image, MessageReceipt},
     other::enums::AvatarSpec,
 };
 use crate::contact::Friend;
+use crate::env::FromInstance;
 
 pub trait ContactOrBotTrait
     where
-        Self: Sized + GetEnvTrait + GetBotTrait,
+        Self: Sized + GetEnvTrait,
 {
+    fn get_bot(&self) -> crate::contact::bot::Bot {
+        let instance = Jvm::attach_thread().unwrap().invoke(&GetEnvTrait::get_instance(self), "getBot", &[]).unwrap();
+        crate::contact::bot::Bot::from_instance(instance)
+    }
+
     fn get_id(&self) -> i64 {
         Jvm::attach_thread()
             .unwrap()
@@ -218,7 +223,10 @@ pub trait AudioSupportedTrait
 pub trait UserOrBotTrait
     where
         Self: ContactOrBotTrait,
-{}
+{
+    type NudgeType;
+    fn nudge(&self) -> Self::NudgeType;
+}
 
 pub trait UserTrait
     where

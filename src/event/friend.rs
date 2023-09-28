@@ -1,4 +1,3 @@
-use crate::contact::bot::Env;
 use crate::contact::group::Group;
 use crate::env::{FromInstance, GetClassTypeTrait};
 use crate::event::event_trait::{BotEventTrait, FriendInfoChangedEvent, MiraiEventTrait};

@@ -1,8 +1,10 @@
-use crate::contact::group::Group;
-use crate::env::{FromInstance, GetEnvTrait};
-use crate::message::FileMessage;
-use crate::utils::internal::is_instance_of;
-use crate::utils::FileFolderStream;
+use crate::{
+    contact::group::Group,
+    env::{FromInstance, GetEnvTrait},
+    message::FileMessage,
+    utils::internal::is_instance_of,
+    utils::FileFolderStream,
+};
 use contact_derive::GetInstanceDerive;
 use j4rs::{Instance, InvocationArg, Jvm};
 
@@ -409,7 +411,7 @@ impl AbsoluteFolder {
                     jvm.create_instance("java.io.File", &[InvocationArg::try_from(path).unwrap()])
                         .unwrap(),
                 )
-                .unwrap()],
+                    .unwrap()],
             )
             .unwrap();
         let instance = jvm
@@ -473,7 +475,7 @@ impl RemoteFiles {
                     jvm.create_instance("java.io.File", &[InvocationArg::try_from(path).unwrap()])
                         .unwrap(),
                 )
-                .unwrap()],
+                    .unwrap()],
             )
             .unwrap();
         let instance = jvm

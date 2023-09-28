@@ -1,9 +1,9 @@
+use crate::{
+    env::FromInstance,
+    event::event_trait::{BotEventTrait, BotOfflineEventTrait, MiraiEventTrait},
+};
 use contact_derive::{GetClassTypeDerive, GetInstanceDerive};
 use j4rs::{Instance, Jvm};
-use crate::env::FromInstance;
-use crate::event::event_trait::{BotEventTrait, BotOfflineEventTrait};
-
-use super::event_trait::MiraiEventTrait;
 
 #[derive(GetInstanceDerive, GetClassTypeDerive)]
 pub struct BotOnlineEvent {
@@ -11,7 +11,9 @@ pub struct BotOnlineEvent {
 }
 
 impl BotOnlineEvent {
-    fn get_class_name() -> String { "net.mamoe.mirai.event.events.BotOnlineEvent".to_string() }
+    fn get_class_name() -> String {
+        "net.mamoe.mirai.event.events.BotOnlineEvent".to_string()
+    }
 }
 
 impl FromInstance for BotOnlineEvent {
@@ -88,4 +90,3 @@ pub struct BotAvatarChangedEvent {}
 pub struct BotNickChangedEvent {}
 
 pub struct NudgeEvent {}
-

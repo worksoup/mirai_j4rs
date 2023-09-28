@@ -25,16 +25,16 @@ pub mod settings {
     pub struct GroupAllowMemberInviteChangeEvent {}
 }
 
-
 pub mod member {
+    use crate::{
+        contact::NormalMember,
+        contact::{bot::Bot, group::Group},
+        env::FromInstance,
+        event::event_trait::{BotEventTrait, MiraiEventTrait},
+        message::message_trait::MessageHashCodeTrait,
+    };
     use contact_derive::{GetClassTypeDerive, GetInstanceDerive};
     use j4rs::{Instance, InvocationArg, Jvm};
-    use crate::contact::bot::Bot;
-    use crate::contact::group::Group;
-    use crate::contact::NormalMember;
-    use crate::env::FromInstance;
-    use crate::event::event_trait::{BotEventTrait, MiraiEventTrait};
-    use crate::message::message_trait::MessageHashCodeTrait;
 
     pub enum MemberJoinEvent {
         Invite,
@@ -64,7 +64,10 @@ pub mod member {
             todo!()
         }
         pub fn get_bot(&self) -> Bot {
-            let instance = Jvm::attach_thread().unwrap().invoke(&self.instance, "getBot", &[]).unwrap();
+            let instance = Jvm::attach_thread()
+                .unwrap()
+                .invoke(&self.instance, "getBot", &[])
+                .unwrap();
             Bot::from_instance(instance)
         }
         pub fn get_event_id(&self) -> i64 {
@@ -114,12 +117,18 @@ pub mod member {
         }
         pub fn ignore(&self, blacklist: bool) {
             let jvm = Jvm::attach_thread().unwrap();
-            let blacklist = InvocationArg::try_from(blacklist).unwrap().into_primitive().unwrap();
+            let blacklist = InvocationArg::try_from(blacklist)
+                .unwrap()
+                .into_primitive()
+                .unwrap();
             let _ = jvm.invoke(&self.instance, "ignore", &[blacklist]).unwrap();
         }
         pub fn reject(&self, blacklist: bool) {
             let jvm = Jvm::attach_thread().unwrap();
-            let blacklist = InvocationArg::try_from(blacklist).unwrap().into_primitive().unwrap();
+            let blacklist = InvocationArg::try_from(blacklist)
+                .unwrap()
+                .into_primitive()
+                .unwrap();
             let _ = jvm.invoke(&self.instance, "reject", &[blacklist]).unwrap();
         }
         pub fn to_string(&self) -> String {

@@ -1,8 +1,12 @@
-use crate::contact::bot::Bot;
-use crate::contact::contact_trait::{ContactTrait, UserOrBotTrait};
-use crate::contact::{Friend, NormalMember};
-use crate::env::GetEnvTrait;
-use crate::message::message_trait::MessageHashCodeTrait;
+use crate::{
+    contact::{
+        bot::Bot,
+        contact_trait::{ContactTrait, UserOrBotTrait},
+        Friend, NormalMember,
+    },
+    env::GetEnvTrait,
+    message::message_trait::MessageHashCodeTrait,
+};
 use contact_derive::GetInstanceDerive;
 use j4rs::{Instance, InvocationArg, Jvm};
 

@@ -1,20 +1,16 @@
-use super::{
-    bot::Bot,
-    contact_trait::{ContactOrBotTrait, ContactTrait},
-    ContactList, NormalMember,
-};
-use crate::contact::contact_trait::FileSupportedTrait;
-use crate::env::FromInstance;
 use crate::{
-    env::GetEnvTrait,
+    contact::{
+        bot::Bot,
+        contact_trait::{ContactOrBotTrait, ContactTrait, FileSupportedTrait},
+        ContactList, NormalMember,
+    },
+    env::{FromInstance, GetEnvTrait},
     message::{MessageChain, MessageSource},
-    utils::other::enums::AvatarSpec,
+    utils::{internal::instance_is_null, other::enums::AvatarSpec},
 };
 use contact_derive::GetInstanceDerive;
 use j4rs::{Instance, InvocationArg, Jvm};
-use std::collections::HashMap;
-use std::marker::PhantomData;
-use crate::utils::internal::instance_is_null;
+use std::{collections::HashMap, marker::PhantomData};
 
 pub struct GroupSettings {
     instance: Instance,
@@ -105,7 +101,7 @@ impl GroupSettings {
     }
 }
 
-#[derive(GetInstanceDerive, )]
+#[derive(GetInstanceDerive)]
 pub struct Group {
     pub(crate) bot: Instance,
     pub(crate) instance: Instance,
@@ -269,8 +265,8 @@ impl<K, V> MiraiMap<K, V> {
             ) -> (K, V),
         >,
     ) -> HashMap<K, V>
-        where
-            K: Eq + PartialEq + std::hash::Hash,
+    where
+        K: Eq + PartialEq + std::hash::Hash,
     {
         let jvm = Jvm::attach_thread().unwrap();
         let java_cast =
@@ -750,8 +746,7 @@ impl Group {
             .unwrap()
     }
     pub fn get_bot_permission(&self) -> MemberPermission {
-        let jvm = Jvm::attach_thread()
-            .unwrap();
+        let jvm = Jvm::attach_thread().unwrap();
         let prem = jvm
             .invoke(&self.instance, "getMemberPermission", &[])
             .unwrap();
@@ -812,9 +807,9 @@ impl Group {
                 "setEssenceMessage",
                 &[InvocationArg::try_from(source.get_instance()).unwrap()],
             )
-                .unwrap(),
+            .unwrap(),
         )
-            .unwrap()
+        .unwrap()
     }
     // function name need to be changed.
     pub fn set_essence_message_s(group: Group, chain: MessageChain) -> bool {
@@ -828,9 +823,9 @@ impl Group {
                     InvocationArg::try_from(chain.get_instance()).unwrap(),
                 ],
             )
-                .unwrap(),
+            .unwrap(),
         )
-            .unwrap()
+        .unwrap()
     }
     pub fn set_name(&self, name: &str) {
         Jvm::attach_thread()

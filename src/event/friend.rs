@@ -1,8 +1,10 @@
-use crate::contact::group::Group;
-use crate::env::{FromInstance, GetClassTypeTrait};
-use crate::event::event_trait::{BotEventTrait, FriendInfoChangedEvent, MiraiEventTrait};
-use crate::message::message_trait::MessageHashCodeTrait;
-use crate::utils::internal::instance_is_null;
+use crate::{
+    contact::group::Group,
+    env::{FromInstance, GetClassTypeTrait},
+    event::event_trait::{BotEventTrait, FriendInfoChangedEvent, MiraiEventTrait},
+    message::message_trait::MessageHashCodeTrait,
+    utils::internal::instance_is_null,
+};
 use contact_derive::GetInstanceDerive;
 use j4rs::{Instance, InvocationArg, Jvm};
 

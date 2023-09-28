@@ -1,13 +1,8 @@
 use crate::env::{FromInstance, GetEnvTrait};
-use crate::utils::internal::i8_16_to_bytes_16;
 use contact_derive::GetInstanceDerive;
-use j4rs::errors::J4RsError;
-use j4rs::{prelude::*, Instance, InvocationArg, Jvm};
+use j4rs::{errors::J4RsError, prelude::*, Instance, InvocationArg, Jvm};
 use j4rs_derive::*;
-use std::cmp::Ordering;
-use std::marker::PhantomData;
-use std::mem::transmute;
-use std::pin::Pin;
+use std::{cmp::Ordering, marker::PhantomData, mem::transmute, pin::Pin};
 
 #[derive(GetInstanceDerive)]
 pub struct InstanceWrapper {
@@ -87,7 +82,7 @@ impl<T, F: Fn(T) -> ()> Consumer<T, F>
         println!("{:?}", call_from_java_raw_as_i8_16);
         let jvm = Jvm::attach_thread().unwrap();
         let call_from_java_raw_as_java_bytes =
-            i8_16_to_bytes_16::<T>(&jvm, call_from_java_raw_as_i8_16);
+            crate::utils::internal::i8_16_to_bytes_16::<T>(&jvm, call_from_java_raw_as_i8_16);
         let instance = jvm
             .create_instance(
                 "rt.lea.LumiaConsumer",
@@ -215,8 +210,9 @@ impl<T, F> Comparator<T, F>
 {
     fn internal_function_instance_from_i8_16(call_from_java_raw_as_i8_16: [i8; 16]) -> Instance {
         let jvm = Jvm::attach_thread().unwrap();
-        let call_from_java_raw_as_java_bytes =
-            i8_16_to_bytes_16::<PairForComparator<T>>(&jvm, call_from_java_raw_as_i8_16);
+        let call_from_java_raw_as_java_bytes = crate::utils::internal::i8_16_to_bytes_16::<
+            PairForComparator<T>,
+        >(&jvm, call_from_java_raw_as_i8_16);
         jvm.create_instance(
             "rt.lea.LumiaFunction",
             &[InvocationArg::try_from(call_from_java_raw_as_java_bytes).unwrap()],
@@ -239,7 +235,9 @@ impl<T, F> Comparator<T, F>
             match ordering {
                 Ordering::Less => Instance::try_from(InvocationArg::try_from(-1).unwrap()).unwrap(),
                 Ordering::Equal => Instance::try_from(InvocationArg::try_from(0).unwrap()).unwrap(),
-                Ordering::Greater => Instance::try_from(InvocationArg::try_from(1).unwrap()).unwrap()
+                Ordering::Greater => {
+                    Instance::try_from(InvocationArg::try_from(1).unwrap()).unwrap()
+                }
             }
         });
         let call_from_java_raw: *mut dyn Fn(InstanceWrapper) -> Instance =
@@ -321,7 +319,7 @@ impl<T, F, R> Function<T, F, R>
     ) -> Instance {
         let jvm = Jvm::attach_thread().unwrap();
         let call_from_java_raw_as_java_bytes =
-            i8_16_to_bytes_16::<T>(&jvm, call_from_java_raw_as_i8_16);
+            crate::utils::internal::i8_16_to_bytes_16::<T>(&jvm, call_from_java_raw_as_i8_16);
         jvm.create_instance(
             "rt.lea.LumiaFunction",
             &[InvocationArg::try_from(call_from_java_raw_as_java_bytes).unwrap()],
@@ -460,7 +458,7 @@ impl<T, F> Predicate<T, F>
         println!("closure_to_predicate\n{:?}", call_from_java_raw_as_i8_16);
         let jvm = Jvm::attach_thread().unwrap();
         let call_from_java_raw_as_java_bytes =
-            i8_16_to_bytes_16::<T>(&jvm, call_from_java_raw_as_i8_16);
+            crate::utils::internal::i8_16_to_bytes_16::<T>(&jvm, call_from_java_raw_as_i8_16);
         let instance = jvm
             .create_instance(
                 "rt.lea.LumiaPredicate",

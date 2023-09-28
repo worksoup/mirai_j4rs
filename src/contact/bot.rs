@@ -1,23 +1,19 @@
-use super::{
-    contact_trait::{ContactOrBotTrait, UserOrBotTrait},
-    group::Group,
-    ContactList, Friend, OtherClient, Stranger,
-};
-use crate::action::nudges::BotNudge;
-use crate::env::FromInstance;
-use crate::error::MiraiRsError;
-use crate::utils::internal::instance_is_null;
 use crate::{
-    contact::group::MiraiMap,
-    env::GetEnvTrait,
+    action::nudges::BotNudge,
+    contact::{
+        contact_trait::{ContactOrBotTrait, UserOrBotTrait},
+        group::{Group, MiraiMap},
+        ContactList, Friend, OtherClient, Stranger,
+    },
+    env::{FromInstance, GetEnvTrait},
+    error::MiraiRsError,
     event::EventChannel,
-    utils::other::{
-        enums::{AvatarSpec, HeartbeatStrategy, MiraiProtocol},
-        tools,
+    utils::{
+        internal::{self, instance_is_null},
+        other::enums::{AvatarSpec, HeartbeatStrategy, MiraiProtocol},
     },
 };
 use contact_derive::GetInstanceDerive;
-use core::str;
 use j4rs::{ClasspathEntry, Instance, InvocationArg, JavaOpt, Jvm, JvmBuilder};
 use serde::{Deserialize, Serialize};
 use std::{
@@ -476,7 +472,7 @@ impl Env {
             "xyz.cssxsh.mirai.tool.FixProtocolVersion",
             "fetch",
             &[
-                tools::protocol_enum_r2j(protocol).unwrap(),
+                internal::protocol_enum_r2j(protocol).unwrap(),
                 InvocationArg::try_from(version).unwrap(),
             ],
         );
@@ -486,7 +482,7 @@ impl Env {
         let _ = self.jvm.invoke_static(
             "xyz.cssxsh.mirai.tool.FixProtocolVersion",
             "load",
-            &[tools::protocol_enum_r2j(protocol).unwrap()],
+            &[internal::protocol_enum_r2j(protocol).unwrap()],
         );
     }
     pub fn fix_protocol_version_info(&self) -> HashMap<String, String> {
@@ -638,7 +634,7 @@ impl Certificate<[u8; 16]> for Env {
                                 .create_java_array("byte", &password_md5)
                                 .unwrap(),
                         )
-                            .unwrap(),
+                        .unwrap(),
                         InvocationArg::try_from(bot_configuration.get_instance()).unwrap(),
                     ],
                 )
@@ -660,7 +656,7 @@ impl Certificate<[u8; 16]> for Env {
                                 .create_java_array("byte", &password_md5)
                                 .unwrap(),
                         )
-                            .unwrap(),
+                        .unwrap(),
                     ],
                 )
                 .unwrap()
@@ -730,7 +726,7 @@ impl BotConfiguration {
                                 .clone_instance(&bot.bot)
                                 .unwrap(),
                         )
-                            .unwrap()],
+                        .unwrap()],
                     )
                     .unwrap(),
             )
@@ -776,7 +772,7 @@ impl BotConfiguration {
                                 .clone_instance(&bot.bot)
                                 .unwrap(),
                         )
-                            .unwrap()],
+                        .unwrap()],
                     )
                     .unwrap(),
             )
@@ -882,7 +878,7 @@ impl BotConfiguration {
                     .unwrap(),
             )
             .unwrap();
-        tools::protocol_str2enum(mp)
+        internal::protocol_str2enum(mp)
     }
     pub fn get_reconnection_retry_times(&self) -> i32 {
         return Jvm::attach_thread()
@@ -1045,7 +1041,7 @@ impl BotConfiguration {
                         )
                         .unwrap(),
                 )
-                    .unwrap()],
+                .unwrap()],
             )
             .unwrap();
     }
@@ -1112,7 +1108,7 @@ impl BotConfiguration {
             .invoke(
                 &self.instance,
                 "setProtocol",
-                &[tools::protocol_enum_r2j(protocol).unwrap()],
+                &[internal::protocol_enum_r2j(protocol).unwrap()],
             )
             .unwrap();
     }
@@ -1279,9 +1275,9 @@ impl BotConfiguration {
         } else {
             retain.unwrap()
         })
-            .unwrap()
-            .into_primitive()
-            .unwrap();
+        .unwrap()
+        .into_primitive()
+        .unwrap();
         if identity.is_none() {
             Jvm::attach_thread()
                 .unwrap()
@@ -1427,7 +1423,8 @@ impl BotBuilder {
         dir_tmp.push("base_config.toml");
         // 如果 `base_config.toml` 不存在则创建一个默认的。
         if let Ok(base_config_file) = std::fs::metadata(&dir_tmp) {
-            if base_config_file.is_file() {} else {
+            if base_config_file.is_file() {
+            } else {
                 std::fs::remove_dir(&dir_tmp).unwrap();
                 let _ = std::fs::File::create(&dir_tmp).unwrap();
                 let contents = toml::to_string(&default_base_config).unwrap();
@@ -1650,7 +1647,7 @@ impl BotBuilder {
             "xyz.cssxsh.mirai.tool.FixProtocolVersion",
             "fetch",
             &[
-                tools::protocol_enum_r2j(protocol).unwrap(),
+                internal::protocol_enum_r2j(protocol).unwrap(),
                 InvocationArg::try_from(version).unwrap(),
             ],
         );
@@ -1662,7 +1659,7 @@ impl BotBuilder {
         let _ = jvm.invoke_static(
             "xyz.cssxsh.mirai.tool.FixProtocolVersion",
             "load",
-            &[tools::protocol_enum_r2j(protocol).unwrap()],
+            &[internal::protocol_enum_r2j(protocol).unwrap()],
         );
         self
     }

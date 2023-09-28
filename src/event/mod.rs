@@ -1,8 +1,8 @@
 pub use event::*;
 
-pub mod event;
 pub mod bot;
-pub mod message;
-pub mod group;
-pub mod friend;
+pub mod event;
 pub mod event_trait;
+pub mod friend;
+pub mod group;
+pub mod message;

@@ -1,8 +1,7 @@
-//TODO : message_chain_builder
-use super::MessageChain;
-use crate::{contact::contact_trait::ContactTrait, env::GetEnvTrait};
+use crate::{contact::contact_trait::ContactTrait, env::GetEnvTrait, message::MessageChain};
 use j4rs::{InvocationArg, Jvm};
 
+//TODO : message_chain_builder
 pub trait MessageTrait
     where
         Self: GetEnvTrait,

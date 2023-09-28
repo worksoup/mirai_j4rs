@@ -1,7 +1,9 @@
-use crate::contact::bot::Bot;
-use crate::env::{FromInstance, GetClassTypeTrait, GetEnvTrait};
-use j4rs::{Jvm};
-use crate::message::MessageChain;
+use crate::{
+    contact::bot::Bot,
+    env::{FromInstance, GetClassTypeTrait, GetEnvTrait},
+    message::MessageChain,
+};
+use j4rs::Jvm;
 
 pub trait MiraiEventTrait
     where
@@ -22,11 +24,16 @@ pub trait MiraiEventTrait
     }
     fn is_intercepted(&self) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.get_instance(), "isIntercepted", &[]).unwrap())
+        jvm.to_rust(
+            jvm.invoke(&self.get_instance(), "isIntercepted", &[])
+                .unwrap(),
+        )
             .unwrap()
     }
     // TODO: 这个函数哪来的？为什么在最初的版本中？
-    fn broadcast(&self) { todo!("什么也不做，也请先不要调用此函数") }
+    fn broadcast(&self) {
+        todo!("什么也不做，也请先不要调用此函数")
+    }
 }
 
 pub trait BotEventTrait
@@ -35,8 +42,7 @@ pub trait BotEventTrait
 {
     fn get_bot(&self) -> Bot {
         let jvm = Jvm::attach_thread().unwrap();
-        let bot =
-            jvm.invoke(&self.get_instance(), "getBot", &[]).unwrap();
+        let bot = jvm.invoke(&self.get_instance(), "getBot", &[]).unwrap();
         let id = jvm
             .to_rust(jvm.invoke(&bot, "getId", &[]).unwrap())
             .unwrap();
@@ -45,7 +51,6 @@ pub trait BotEventTrait
 }
 
 pub trait BotOfflineEventTrait {}
-
 
 pub trait MessageEventTrait
     where

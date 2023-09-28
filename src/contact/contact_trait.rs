@@ -1,14 +1,11 @@
-use std::path::PathBuf;
-
-use j4rs::{InvocationArg, Jvm};
-
-use crate::contact::Friend;
-use crate::env::FromInstance;
-use crate::utils::other::enums::AvatarSpec;
 use crate::{
-    env::GetEnvTrait,
+    contact::Friend,
+    env::{FromInstance, GetEnvTrait},
     message::{message_trait::MessageTrait, Image, MessageReceipt},
+    utils::other::enums::AvatarSpec,
 };
+use j4rs::{InvocationArg, Jvm};
+use std::path::PathBuf;
 
 pub trait ContactOrBotTrait
 where

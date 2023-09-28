@@ -1,12 +1,11 @@
 pub mod ffi;
-pub(crate) mod internal;
 mod ffi_internal_test;
+pub(crate) mod internal;
 pub mod other;
 
 use crate::env::{FromInstance, GetEnvTrait};
 use j4rs::{Instance, Jvm};
-use std::cmp::Ordering;
-use std::marker::PhantomData;
+use std::{cmp::Ordering, marker::PhantomData};
 
 pub trait MiraiRsCollectionTrait {
     type Element;

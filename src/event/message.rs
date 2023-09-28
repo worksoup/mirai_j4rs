@@ -1,6 +1,8 @@
-use crate::contact::{group::Group, AnonymousMember, Friend, Member, NormalMember};
-use crate::env::FromInstance;
-use crate::event::event_trait::{MessageEventTrait, MiraiEventTrait};
+use crate::{
+    contact::{group::Group, AnonymousMember, Friend, Member, NormalMember},
+    env::FromInstance,
+    event::event_trait::{MessageEventTrait, MiraiEventTrait},
+};
 use contact_derive::{GetClassTypeDerive, GetInstanceDerive};
 use j4rs::{Instance, Jvm};
 

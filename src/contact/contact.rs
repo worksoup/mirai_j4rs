@@ -1,21 +1,23 @@
-use std::marker::PhantomData;
-use std::path::PathBuf;
-//联系人
-use super::contact_trait::{
-    ContactOrBotTrait, ContactTrait, MemberTrait, UserOrBotTrait, UserTrait,
+use crate::{
+    action::nudges::{FriendNudge, MemberNudge},
+    contact::{
+        bot::FriendGroup,
+        contact_trait::{ContactOrBotTrait, ContactTrait, MemberTrait, UserOrBotTrait, UserTrait},
+    },
+    env::{FromInstance, GetEnvTrait},
+    message::{
+        message_trait::{MessageHashCodeTrait, MessageTrait},
+        Image, MessageReceipt,
+    },
+    utils::{internal::instance_is_null, other::enums::AvatarSpec},
 };
-use crate::action::nudges::{FriendNudge, MemberNudge};
-use crate::contact::bot::FriendGroup;
-use crate::env::{FromInstance, GetEnvTrait};
-use crate::message::message_trait::{MessageHashCodeTrait, MessageTrait};
-use crate::utils::{internal::instance_is_null, other::enums::AvatarSpec};
-use contact_derive::{GetInstanceDerive};
+use contact_derive::GetInstanceDerive;
 use j4rs::{Instance, InvocationArg, Jvm};
-use crate::message::{Image, MessageReceipt};
+use std::{marker::PhantomData, path::PathBuf};
 
 pub struct ContactList<T>
-    where
-        T: ContactTrait + FromInstance,
+where
+    T: ContactTrait + FromInstance,
 {
     pub(crate) instance: Instance,
     pub(crate) _unused: PhantomData<T>,
@@ -40,8 +42,8 @@ impl<T: ContactTrait + FromInstance> GetEnvTrait for ContactList<T> {
 }
 
 impl<T> ContactList<T>
-    where
-        T: ContactTrait + FromInstance,
+where
+    T: ContactTrait + FromInstance,
 {
     pub fn contains(&self, contact: T) -> bool {
         Jvm::attach_thread()
@@ -282,7 +284,9 @@ impl FromInstance for NormalMember {
     fn from_instance(instance: Instance) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let bot = jvm.invoke(&instance, "getBot", &[]).unwrap();
-        let id = jvm.to_rust(jvm.invoke(&instance, "getId", &[]).unwrap()).unwrap();
+        let id = jvm
+            .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
+            .unwrap();
         NormalMember { bot, instance, id }
     }
 }
@@ -291,7 +295,9 @@ impl FromInstance for NormalMember {
 impl NormalMember {
     pub fn get_mute_time_remaining(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
-        let time = jvm.invoke(&self.instance, "getMuteTimeRemaining", &[]).unwrap();
+        let time = jvm
+            .invoke(&self.instance, "getMuteTimeRemaining", &[])
+            .unwrap();
         jvm.to_rust(time).unwrap()
     }
     pub fn is_muted(&self) -> bool {
@@ -304,7 +310,9 @@ impl NormalMember {
     }
     pub fn get_last_speak_timestamp(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
-        let time = jvm.invoke(&self.instance, "getLastSpeakTimestamp", &[]).unwrap();
+        let time = jvm
+            .invoke(&self.instance, "getLastSpeakTimestamp", &[])
+            .unwrap();
         jvm.to_rust(time).unwrap()
     }
     pub fn unmute(&self) {
@@ -314,12 +322,20 @@ impl NormalMember {
     pub fn kick(&self, message: &str, block: bool) {
         let jvm = Jvm::attach_thread().unwrap();
         let message = InvocationArg::try_from(message).unwrap();
-        let block = InvocationArg::try_from(block).unwrap().into_primitive().unwrap();
-        let _ = jvm.invoke(&self.instance, "unmute", &[message, block]).unwrap();
+        let block = InvocationArg::try_from(block)
+            .unwrap()
+            .into_primitive()
+            .unwrap();
+        let _ = jvm
+            .invoke(&self.instance, "unmute", &[message, block])
+            .unwrap();
     }
     pub fn modify_admin(&self, op: bool) {
         let jvm = Jvm::attach_thread().unwrap();
-        let op = InvocationArg::try_from(op).unwrap().into_primitive().unwrap();
+        let op = InvocationArg::try_from(op)
+            .unwrap()
+            .into_primitive()
+            .unwrap();
         let _ = jvm.invoke(&self.instance, "modifyAdmin", &[op]).unwrap();
     }
 }
@@ -437,8 +453,8 @@ impl UserOrBotTrait for Member {
 
     fn nudge(&self) -> Self::NudgeType {
         match self {
-            Member::NormalMember(a) => { a.nudge() }
-            Member::AnonymousMember(a) => { a.nudge() }
+            Member::NormalMember(a) => a.nudge(),
+            Member::AnonymousMember(a) => a.nudge(),
         }
     }
 }

@@ -1,9 +1,11 @@
 #[cfg(test)]
 mod tests {
-    use std::cmp::Ordering;
-    use crate::env::{FromInstance, GetEnvTrait};
-    use crate::utils::ffi::{Comparator, Consumer, Function, Predicate};
+    use crate::{
+        env::{FromInstance, GetEnvTrait},
+        utils::ffi::{Comparator, Consumer, Function, Predicate},
+    };
     use j4rs::{ClasspathEntry, Instance, InvocationArg, Jvm, JvmBuilder};
+    use std::cmp::Ordering;
 
     struct X {
         instance: Instance,
@@ -84,7 +86,7 @@ mod tests {
             let val2: i32 = jvm.to_rust(x2).unwrap();
             val1.cmp(&val2)
         });
-        let test_instance1 = InvocationArg::try_from(22).unwrap_or_else(|err| { panic!("{}", err) });
+        let test_instance1 = InvocationArg::try_from(22).unwrap_or_else(|err| panic!("{}", err));
         let test_instance2 = InvocationArg::try_from(55).unwrap();
         let x = comparator.compare(test_instance1, test_instance2);
         println!("a = {a}\nThe ordering is `{:?}`.", x);
@@ -101,7 +103,7 @@ mod tests {
         });
         // println!("sleep");
         // sleep(std::time::Duration::from_millis(10000));
-        let test_value = InvocationArg::try_from(22).unwrap_or_else(|err| { panic!("{}", err) });
+        let test_value = InvocationArg::try_from(22).unwrap_or_else(|err| panic!("{}", err));
         let x = predicate.test(test_value);
         println!("a = {a}\n And `test_value > 0` is `{:?}`.", x);
     }

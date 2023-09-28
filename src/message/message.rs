@@ -1,24 +1,31 @@
-use contact_derive::GetInstanceDerive;
-use std::hint::unreachable_unchecked;
-
-use super::message_trait::{
-    CodableMessageTrait, ConstrainSingleTrait, MarketFaceTrait, MessageChainTrait,
-    MessageContentTrait, MessageHashCodeTrait, MessageTrait, RichMessageTrait, SingleMessageTrait,
-};
-use crate::contact::bot::{Bot};
-use crate::contact::contact_trait::{FileSupportedTrait, UserOrBotTrait};
-use crate::env::FromInstance;
-use crate::error::MiraiRsError;
-use crate::file::AbsoluteFile;
-use crate::message::message_trait::MessageMetaDataTrait;
-use crate::message::ImageType::{APNG, BMP, GIF, JPG, PNG, UNKNOW};
-use crate::utils::internal::{instance_is_null, is_instance_of};
-use crate::utils::MiraiRsCollectionTrait;
 use crate::{
-    contact::{contact_trait::ContactTrait, group::Group},
+    contact::{
+        bot::Bot,
+        contact_trait::ContactTrait,
+        contact_trait::{FileSupportedTrait, UserOrBotTrait},
+        group::Group,
+    },
+    env::FromInstance,
     env::GetEnvTrait,
+    error::MiraiRsError,
+    file::AbsoluteFile,
+    message::{
+        message_trait::MessageMetaDataTrait,
+        message_trait::{
+            CodableMessageTrait, ConstrainSingleTrait, MarketFaceTrait, MessageChainTrait,
+            MessageContentTrait, MessageHashCodeTrait, MessageTrait, RichMessageTrait,
+            SingleMessageTrait,
+        },
+        ImageType::{APNG, BMP, GIF, JPG, PNG, UNKNOW},
+    },
+    utils::{
+        internal::{instance_is_null, is_instance_of},
+        MiraiRsCollectionTrait,
+    },
 };
+use contact_derive::GetInstanceDerive;
 use j4rs::{Instance, InvocationArg, Jvm};
+use std::hint::unreachable_unchecked;
 
 #[derive(GetInstanceDerive)]
 pub struct QuoteReply {
@@ -124,7 +131,10 @@ impl<'a, T> MessageReceipt<'a, T>
     }
     pub fn recall_in(&self, millis: i64) -> Result<(), MiraiRsError> {
         let jvm = Jvm::attach_thread().unwrap();
-        let millis = InvocationArg::try_from(millis).unwrap().into_primitive().unwrap();
+        let millis = InvocationArg::try_from(millis)
+            .unwrap()
+            .into_primitive()
+            .unwrap();
         let instance = jvm.invoke(&self.instance, "recallIn", &[millis]).unwrap();
         // TODO: 获取撤回结果并返回。
         Ok(())

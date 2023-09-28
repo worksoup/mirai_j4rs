@@ -134,17 +134,11 @@ mod env {
         fn get_instance(&self) -> Instance;
     }
 
-    pub trait GetBotTrait {
-        fn get_bot(&self) -> crate::contact::bot::Bot;
-    }
-
-    /// 通过 `j4rs::Instance` 获得当前结构体。
-    pub trait ContactFromInstance
-        where
-            Self: GetEnvTrait + ContactOrBotTrait,
-    {
-        type Item: GetEnvTrait + ContactOrBotTrait;
-        fn from_instance(bot: Instance, instance: Instance, id: i64) -> Self::Item;
+    pub trait GetBotTrait: GetEnvTrait {
+        fn get_bot(&self) -> crate::contact::bot::Bot {
+            let instance = j4rs::Jvm::attach_thread().unwrap().invoke(&GetEnvTrait::get_instance(self), "getBot", &[]).unwrap();
+            crate::contact::bot::Bot::from_instance(instance)
+        }
     }
 
     /// 通过 `j4rs::Instance` 获得当前结构体。

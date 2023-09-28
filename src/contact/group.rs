@@ -1,12 +1,11 @@
 use super::{
-    bot::{Bot, Env},
+    bot::Bot,
     contact_trait::{ContactOrBotTrait, ContactTrait},
     ContactList, NormalMember,
 };
 use crate::contact::contact_trait::FileSupportedTrait;
 use crate::env::FromInstance;
 use crate::{
-    env::ContactFromInstance,
     env::GetEnvTrait,
     message::{MessageChain, MessageSource},
     other::enums::AvatarSpec,
@@ -185,11 +184,10 @@ impl ActiveRankRecord {
     pub fn get_member(&self) -> NormalMember {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm.invoke(&self.instance, "getMember", &[]).unwrap();
-        let bot = jvm.invoke(&instance, "getBot", &[]).unwrap();
-        let id = jvm
-            .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
-            .unwrap();
-        NormalMember::from_instance(bot, instance, id)
+        // 笔记： rust 中此类代码的行为：完全限定的方法调用。
+        // 同时指定了特型和类型。
+        // 如果是 `FromInstance` 的话，应该是调用了默认的实现？
+        <NormalMember as FromInstance>::from_instance(instance)
     }
     pub fn get_member_id(&self) -> i64 {
         if let Some(id) = self.member_id {
@@ -595,13 +593,6 @@ impl GroupActive {
                     .unwrap()],
             )
             .unwrap();
-    }
-}
-
-impl ContactFromInstance for Group {
-    type Item = Group;
-    fn from_instance(bot: Instance, instance: Instance, id: i64) -> Group {
-        Group { bot, instance, id }
     }
 }
 

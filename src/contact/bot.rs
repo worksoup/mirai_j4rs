@@ -195,16 +195,11 @@ impl Bot {
         }
     }
     pub fn get_as_stranger(&self) -> Stranger {
-        let id = self.id;
         let instance = Jvm::attach_thread()
             .unwrap()
             .invoke(&self.bot, "getAsStranger", &[])
             .unwrap();
-        Stranger {
-            bot: self.get_instance(),
-            instance,
-            id,
-        }
+        Stranger::from_instance(instance)
     }
     pub fn get_configuration(&self) -> BotConfiguration {
         let bot_configuration = Jvm::attach_thread()
@@ -304,11 +299,7 @@ impl Bot {
         if instance_is_null(&instance) {
             None
         } else {
-            Some(Stranger {
-                bot: self.get_instance(),
-                instance,
-                id,
-            })
+            Some(Stranger::from_instance(instance))
         }
     }
     pub fn get_strangers(&self) -> ContactList<Stranger> {
@@ -660,7 +651,7 @@ impl Certificate<[u8; 16]> for Env {
                                 .create_java_array("byte", &password_md5)
                                 .unwrap(),
                         )
-                        .unwrap(),
+                            .unwrap(),
                         InvocationArg::try_from(bot_configuration.get_instance()).unwrap(),
                     ],
                 )
@@ -682,7 +673,7 @@ impl Certificate<[u8; 16]> for Env {
                                 .create_java_array("byte", &password_md5)
                                 .unwrap(),
                         )
-                        .unwrap(),
+                            .unwrap(),
                     ],
                 )
                 .unwrap()
@@ -752,7 +743,7 @@ impl BotConfiguration {
                                 .clone_instance(&bot.bot)
                                 .unwrap(),
                         )
-                        .unwrap()],
+                            .unwrap()],
                     )
                     .unwrap(),
             )
@@ -798,7 +789,7 @@ impl BotConfiguration {
                                 .clone_instance(&bot.bot)
                                 .unwrap(),
                         )
-                        .unwrap()],
+                            .unwrap()],
                     )
                     .unwrap(),
             )
@@ -1067,7 +1058,7 @@ impl BotConfiguration {
                         )
                         .unwrap(),
                 )
-                .unwrap()],
+                    .unwrap()],
             )
             .unwrap();
     }
@@ -1301,9 +1292,9 @@ impl BotConfiguration {
         } else {
             retain.unwrap()
         })
-        .unwrap()
-        .into_primitive()
-        .unwrap();
+            .unwrap()
+            .into_primitive()
+            .unwrap();
         if identity.is_none() {
             Jvm::attach_thread()
                 .unwrap()
@@ -1449,8 +1440,7 @@ impl BotBuilder {
         dir_tmp.push("base_config.toml");
         // 如果 `base_config.toml` 不存在则创建一个默认的。
         if let Ok(base_config_file) = std::fs::metadata(&dir_tmp) {
-            if base_config_file.is_file() {
-            } else {
+            if base_config_file.is_file() {} else {
                 std::fs::remove_dir(&dir_tmp).unwrap();
                 let _ = std::fs::File::create(&dir_tmp).unwrap();
                 let contents = toml::to_string(&default_base_config).unwrap();

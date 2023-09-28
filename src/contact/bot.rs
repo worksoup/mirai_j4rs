@@ -11,7 +11,7 @@ use crate::{
     contact::group::MiraiMap,
     env::GetEnvTrait,
     event::EventChannel,
-    other::{
+    utils::other::{
         enums::{AvatarSpec, HeartbeatStrategy, MiraiProtocol},
         tools,
     },

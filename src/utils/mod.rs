@@ -1,5 +1,7 @@
 pub mod ffi;
 pub(crate) mod internal;
+mod ffi_internal_test;
+pub mod other;
 
 use crate::env::{FromInstance, GetEnvTrait};
 use j4rs::{Instance, Jvm};

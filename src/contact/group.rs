@@ -8,7 +8,7 @@ use crate::env::FromInstance;
 use crate::{
     env::GetEnvTrait,
     message::{MessageChain, MessageSource},
-    other::enums::AvatarSpec,
+    utils::other::enums::AvatarSpec,
 };
 use contact_derive::GetInstanceDerive;
 use j4rs::{Instance, InvocationArg, Jvm};

@@ -2,20 +2,23 @@ use std::path::PathBuf;
 
 use j4rs::{InvocationArg, Jvm};
 
+use crate::contact::Friend;
+use crate::env::FromInstance;
+use crate::utils::other::enums::AvatarSpec;
 use crate::{
     env::GetEnvTrait,
     message::{message_trait::MessageTrait, Image, MessageReceipt},
-    other::enums::AvatarSpec,
 };
-use crate::contact::Friend;
-use crate::env::FromInstance;
 
 pub trait ContactOrBotTrait
-    where
-        Self: Sized + GetEnvTrait,
+where
+    Self: Sized + GetEnvTrait,
 {
     fn get_bot(&self) -> crate::contact::bot::Bot {
-        let instance = Jvm::attach_thread().unwrap().invoke(&GetEnvTrait::get_instance(self), "getBot", &[]).unwrap();
+        let instance = Jvm::attach_thread()
+            .unwrap()
+            .invoke(&GetEnvTrait::get_instance(self), "getBot", &[])
+            .unwrap();
         crate::contact::bot::Bot::from_instance(instance)
     }
 
@@ -97,7 +100,7 @@ pub trait ContactOrBotTrait
                 )
                 .unwrap(),
         )
-            .unwrap();
+        .unwrap();
         Jvm::attach_thread()
             .unwrap()
             .to_rust(
@@ -111,8 +114,8 @@ pub trait ContactOrBotTrait
 }
 
 pub trait ContactTrait
-    where
-        Self: ContactOrBotTrait,
+where
+    Self: ContactOrBotTrait,
 {
     fn send_message<'a>(&self, message: impl MessageTrait) -> MessageReceipt<Self> {
         let instance = Jvm::attach_thread()
@@ -189,7 +192,7 @@ pub trait ContactTrait
                         )
                         .unwrap(),
                 )
-                    .unwrap()],
+                .unwrap()],
             )
             .unwrap();
         // 存疑：是否需要传入 Group(java) 本身？
@@ -211,38 +214,42 @@ pub trait ContactTrait
 }
 
 pub trait FileSupportedTrait
-    where
-        Self: ContactTrait,
-{}
+where
+    Self: ContactTrait,
+{
+}
 
 pub trait AudioSupportedTrait
-    where
-        Self: ContactTrait,
-{}
+where
+    Self: ContactTrait,
+{
+}
 
 pub trait UserOrBotTrait
-    where
-        Self: ContactOrBotTrait,
+where
+    Self: ContactOrBotTrait,
 {
     type NudgeType;
     fn nudge(&self) -> Self::NudgeType;
 }
 
 pub trait UserTrait
-    where
-        Self: UserOrBotTrait + ContactTrait,
-{}
+where
+    Self: UserOrBotTrait + ContactTrait,
+{
+}
 
 pub trait MemberTrait
-    where
-        Self: UserTrait,
-{}
+where
+    Self: UserTrait,
+{
+}
 
 pub trait StrangerTrait
-    where
-        Self: UserTrait,
-{}
-
+where
+    Self: UserTrait,
+{
+}
 
 // TODO: 为 `Bot`, `Stranger`, `NormalMember`, 实现。
 // 为什么 Mirai 里实现得这么怪啊。

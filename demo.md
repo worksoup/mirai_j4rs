@@ -1,16 +1,18 @@
 ```rust
 use mirai_j4rs::contact::group::Group;
 use mirai_j4rs::event::message::FriendMessageEvent;
+use mirai_j4rs::file::AbsoluteFileFolderTrait;
 use mirai_j4rs::message::message_trait::MarketFaceTrait;
 use mirai_j4rs::message::{RockPaperScissors, SingleMessage};
 use mirai_j4rs::{
-    contact::{bot::BotBuilder, contact_trait::ContactOrBotTrait},
+    contact::bot::BotBuilder,
     event::{event_trait::MessageEventTrait, message::GroupMessageEvent},
-    message::message_trait::{AbsoluteFileFloder, MessageTrait},
-    other::enums::MiraiProtocol,
+    message::message_trait::MessageTrait,
+    utils::other::enums::MiraiProtocol,
 };
 use serde::{Deserialize, Serialize};
 use std::path::Path;
+use mirai_j4rs::contact::contact_trait::ContactTrait;
 
 #[derive(Deserialize, Serialize)]
 pub(crate) struct BotInfo {
@@ -27,8 +29,7 @@ fn match_single_message(msg: SingleMessage, contact: Option<Group>) {
         SingleMessage::AtAll(at_all) => {
             println!("AtAll {}", at_all.to_string())
         }
-        // 🎲 和锤子包袱剪似乎被下线了，不过还能被 Mirai 接受和发送。
-        // 现在它们被 `\u0014\u0166` 和 `\u0014\u0167` 取代了。
+        // 🎲 和剪子包袱锤似乎被下线了，不过还能被 Mirai 接受和发送。
         SingleMessage::Dice(dice) => {
             println!("🎲 {}", dice.get_value())
         }
@@ -93,32 +94,32 @@ fn match_single_message(msg: SingleMessage, contact: Option<Group>) {
 }
 
 fn main() {
-    /// 如下结构体可在本文件找到定义：
-    /// ``` rust
-    /// #[derive(Deserialize, Serialize)]
-    /// pub(crate) struct BotInfo {
-    ///     pub(crate) bot_id: i64,
-    ///     pub(crate) bot_passwd: String,
-    /// }
-    /// ```
-    /// 所以 `bot_config.toml` 应当类似于：
-    /// ```
-    /// bot_id = 114514
-    /// bot_passwd = "1919810"
-    /// ```
+    //  如下结构体可在本文件找到定义：
+    //  ``` rust
+    //  #[derive(Deserialize, Serialize)]
+    //  pub(crate) struct BotInfo {
+    //      pub(crate) bot_id: i64,
+    //      pub(crate) bot_passwd: String,
+    //  }
+    //  ```
+    //  所以 `bot_config.toml` 应当类似于：
+    //  ```
+    //  bot_id = 114514
+    //  bot_passwd = "1919810"
+    //  ```
     let bot_info: BotInfo = toml::from_str(
         std::fs::read_to_string("./bot_config.toml")
             .unwrap()
             .as_str(),
     )
         .unwrap();
-    /// 这个路径是 `env_config.toml` 所在的目录。该配置文件如下：
-    /// ``` toml
-    /// jar_paths = [
-    ///     "/path/to/jvm_side.jar",
-    /// ]
-    /// java_opts = []
-    /// ```
+    //  这个路径是 `env_config.toml` 所在的目录。该配置文件如下：
+    //  ``` toml
+    //  jar_paths = [
+    //      "/path/to/jvm_side.jar",
+    //  ]
+    //  java_opts = []
+    //  ```
     let config_dir = Path::new(".");
     let bot = BotBuilder::new(config_dir)
         .id(bot_info.bot_id)
@@ -150,6 +151,8 @@ fn main() {
     // 监听 FriendMessageEvent.
     let listener_for_friend_message_event =
         event_channel.subscribe_always(&on_friend_message_event);
+    let group = bot.get_group(343455946).unwrap();
+    group.send_string("Ŧŧ");
     // 因为监听并不阻塞线程，不阻塞的话程序会直接结束。这里仅供参考。
     let current_thread = std::thread::current();
     ctrlc::set_handler(move || current_thread.unpark()).unwrap();

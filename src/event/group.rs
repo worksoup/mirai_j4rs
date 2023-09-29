@@ -75,6 +75,7 @@ pub mod member {
             let instance = jvm.invoke(&self.instance, "getEventId", &[]).unwrap();
             jvm.to_rust(instance).unwrap()
         }
+        // TODO: 以下一些函数会返回空值，需要做判断。
         pub fn get_from_id(&self) -> i64 {
             let jvm = Jvm::attach_thread().unwrap();
             let instance = jvm.invoke(&self.instance, "getFromId", &[]).unwrap();

@@ -30,9 +30,9 @@ pub trait MiraiEventTrait
         )
             .unwrap()
     }
-    // TODO: 这个函数哪来的？为什么在最初的版本中？
+    /// 广播一个事件。
     fn broadcast(&self) {
-        todo!("什么也不做，也请先不要调用此函数")
+        todo!("参见 EventKt")
     }
 }
 

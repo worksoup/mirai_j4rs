@@ -1,10 +1,11 @@
+use crate::message::SingleMessage;
 use crate::{contact::contact_trait::ContactTrait, env::GetEnvTrait, message::MessageChain};
 use j4rs::{InvocationArg, Jvm};
 
 //TODO : message_chain_builder
 pub trait MessageTrait
-    where
-        Self: GetEnvTrait,
+where
+    Self: GetEnvTrait,
 {
     fn to_content(&self) -> String {
         Jvm::attach_thread()
@@ -44,8 +45,8 @@ pub trait MessageTrait
     }
 
     fn plus<T>(&self, message: T) -> MessageChain
-        where
-            T: MessageTrait,
+    where
+        T: MessageTrait,
     {
         // j4rs 旧版本中有 bug, 所以只能如下写法。见 https://github.com/astonbitecode/j4rs/issues/71
         // 再注：不是同一个 bug, 所以新版本还是要这么写。
@@ -55,7 +56,7 @@ pub trait MessageTrait
         let instance = jvm // j4rs <= 0.17.1
             .invoke_static("rt.lea.LumiaUtils", "callPlus", &[msg1, msg2]) // j4rs <= 0.17.1
             .unwrap(); // j4rs <= 0.17.1
-        // let instance = jvm.invoke(&self.get_instance(), "plus", &[msg2]).unwrap(); // j4rs above 0.17.1
+                       // let instance = jvm.invoke(&self.get_instance(), "plus", &[msg2]).unwrap(); // j4rs above 0.17.1
         MessageChain { instance }
     }
 }
@@ -72,25 +73,24 @@ pub trait CodableMessageTrait: MessageTrait {
             )
             .unwrap()
     }
-    fn append_code_to(&self) -> String {
-        // TODO StringBuilder
-
-        //  Jvm::attach_thread().unwrap()
-        //     .to_rust(
-        //          Jvm::attach_thread().unwrap()
-        //             .invoke(&self.get_instance(), "serializeToMiraiCode", &[])
-        //             .unwrap(),
-        //     )
-        //     .unwrap()
-        todo!("StringBuilder")
-    }
+    // Mirai 中的实验性 api, 暂不提供。
+    // fn append_code_to(&self) -> String {
+    //     let jvm = Jvm::attach_thread().unwrap();
+    //     jvm.to_rust(
+    //         Jvm::attach_thread()
+    //             .unwrap()
+    //             .invoke(&self.get_instance(), "appendMiraiCodeTo", &[])
+    //             .unwrap(),
+    //     )
+    //     .unwrap()
+    // }
 }
 
 pub trait SingleMessageTrait: MessageTrait {}
 
 pub trait MessageChainTrait
-    where
-        Self: MessageTrait + CodableMessageTrait,
+where
+    Self: MessageTrait + CodableMessageTrait,
 {
     fn deserialize_from_json(json: String) -> MessageChain {
         let jvm = Jvm::attach_thread().unwrap();
@@ -117,9 +117,8 @@ pub trait MessageChainTrait
             .unwrap();
         MessageChain { instance }
     }
-    fn get(&self) // TODO -> impl SingleMessageTrait
-    {
-        todo!()
+    fn get(&self /*, key: MessageKey*/) -> SingleMessage {
+        todo!("MessageKey")
     }
     fn serialize_to_json_string(chain: &MessageChain) -> String {
         let jvm = Jvm::attach_thread().unwrap();
@@ -146,13 +145,14 @@ pub trait MessageChainTrait
 }
 
 pub trait MessageContentTrait
-    where
-        Self: SingleMessageTrait,
-{}
+where
+    Self: SingleMessageTrait,
+{
+}
 
 pub trait RichMessageTrait
-    where
-        Self: MessageContentTrait,
+where
+    Self: MessageContentTrait,
 {
     fn get_key(&self) {
         todo!()
@@ -161,8 +161,8 @@ pub trait RichMessageTrait
 }
 
 pub trait ServiceMessageTrait
-    where
-        Self: RichMessageTrait + CodableMessageTrait,
+where
+    Self: RichMessageTrait + CodableMessageTrait,
 {
     fn get_service_id(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
@@ -174,8 +174,8 @@ pub trait ServiceMessageTrait
 }
 
 pub trait ConstrainSingleTrait
-    where
-        Self: SingleMessageTrait,
+where
+    Self: SingleMessageTrait,
 {
     fn get_key() -> () {
         todo!()
@@ -186,8 +186,8 @@ pub trait ConstrainSingleTrait
 }
 
 pub trait MarketFaceTrait
-    where
-        Self: ConstrainSingleTrait + MessageContentTrait,
+where
+    Self: ConstrainSingleTrait + MessageContentTrait,
 {
     fn get_id(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
@@ -213,9 +213,10 @@ pub trait MarketFaceTrait
 }
 
 pub trait MessageMetaDataTrait
-    where
-        Self: SingleMessageTrait,
-{}
+where
+    Self: SingleMessageTrait,
+{
+}
 
 // impl MessageTrait for MessageMetaDataTrait
 // {
@@ -224,7 +225,6 @@ pub trait MessageMetaDataTrait
 //     }
 // }
 
-/// TODO
 pub trait CustomMessageTrait: SingleMessageTrait {
     //TODO
 }

@@ -529,9 +529,18 @@ impl Env {
             Some(Bot { bot, id })
         }
     }
-    pub fn get_bots(&self) -> ContactList<Friend> /*should be 'MiraiList<Bot>' which has not been implemented yet*/
+    pub fn get_bots(&self) -> Vec<Bot>
     {
-        todo!("should be 'MiraiList<Bot>' which has not been implemented yet")
+        let jvm = &self.jvm;
+        let instance = jvm
+            .invoke_static("net.mamoe.mirai.Bot$Companion", "getInstances", &[])
+            .unwrap();
+        let mut bots = Vec::new();
+        while jvm.to_rust(jvm.invoke(&instance, "hasNext", &[]).unwrap()).unwrap() {
+            let next = jvm.invoke(&instance, "next", &[]).unwrap();
+            bots.push(Bot::from_instance(next));
+        }
+        bots
     }
     //默认是global的。
     pub fn event_channel(&self) -> EventChannel {
@@ -634,7 +643,7 @@ impl Certificate<[u8; 16]> for Env {
                                 .create_java_array("byte", &password_md5)
                                 .unwrap(),
                         )
-                        .unwrap(),
+                            .unwrap(),
                         InvocationArg::try_from(bot_configuration.get_instance()).unwrap(),
                     ],
                 )
@@ -656,7 +665,7 @@ impl Certificate<[u8; 16]> for Env {
                                 .create_java_array("byte", &password_md5)
                                 .unwrap(),
                         )
-                        .unwrap(),
+                            .unwrap(),
                     ],
                 )
                 .unwrap()
@@ -726,7 +735,7 @@ impl BotConfiguration {
                                 .clone_instance(&bot.bot)
                                 .unwrap(),
                         )
-                        .unwrap()],
+                            .unwrap()],
                     )
                     .unwrap(),
             )
@@ -772,7 +781,7 @@ impl BotConfiguration {
                                 .clone_instance(&bot.bot)
                                 .unwrap(),
                         )
-                        .unwrap()],
+                            .unwrap()],
                     )
                     .unwrap(),
             )
@@ -1041,7 +1050,7 @@ impl BotConfiguration {
                         )
                         .unwrap(),
                 )
-                .unwrap()],
+                    .unwrap()],
             )
             .unwrap();
     }
@@ -1275,9 +1284,9 @@ impl BotConfiguration {
         } else {
             retain.unwrap()
         })
-        .unwrap()
-        .into_primitive()
-        .unwrap();
+            .unwrap()
+            .into_primitive()
+            .unwrap();
         if identity.is_none() {
             Jvm::attach_thread()
                 .unwrap()
@@ -1423,8 +1432,7 @@ impl BotBuilder {
         dir_tmp.push("base_config.toml");
         // 如果 `base_config.toml` 不存在则创建一个默认的。
         if let Ok(base_config_file) = std::fs::metadata(&dir_tmp) {
-            if base_config_file.is_file() {
-            } else {
+            if base_config_file.is_file() {} else {
                 std::fs::remove_dir(&dir_tmp).unwrap();
                 let _ = std::fs::File::create(&dir_tmp).unwrap();
                 let contents = toml::to_string(&default_base_config).unwrap();

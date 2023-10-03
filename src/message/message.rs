@@ -25,7 +25,15 @@ use crate::{
 };
 use contact_derive::GetInstanceDerive;
 use j4rs::{Instance, InvocationArg, Jvm};
+use lazy_static::lazy_static;
+use regex::Regex;
 use std::hint::unreachable_unchecked;
+
+lazy_static! {
+    pub static ref IMAGE_ID_REGEX: Regex =
+        Regex::new(r#"\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\..{3,5}"#)
+            .expect("失效的正则表达式。");
+}
 
 #[derive(GetInstanceDerive)]
 pub struct QuoteReply {
@@ -738,8 +746,11 @@ impl Image {
             )
             .unwrap()
     }
-    pub fn get_image_id_regex() {
-        todo!("get_image_id_regex")
+    /// 模板：`\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\..{3,5}`
+    /// 示例：`{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.ext`
+    /// 可以直接使用 [IMAGE_ID_REGEX] 静态对象。
+    pub fn get_image_id_regex() -> Regex {
+        return IMAGE_ID_REGEX.clone();
     }
     pub fn get_md5(&self) -> [i8; 16] {
         let jvm = Jvm::attach_thread().unwrap();
@@ -762,10 +773,6 @@ impl Image {
             .unwrap()
             .to_rust()
             .unwrap()
-    }
-    // TODO: 吗的什么玩意儿。又是不知道哪来的。
-    pub fn get_storage() -> i64 {
-        todo!("低优先级。")
     }
     pub fn get_image_type(&self) -> ImageType {
         let jvm = Jvm::attach_thread().unwrap();
@@ -956,6 +963,16 @@ impl CodableMessageTrait for MusicShare {}
 pub struct LightApp {
     instance: Instance,
 }
+
+impl LightApp {
+    pub fn get_content(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "getContent", &[]).unwrap())
+            .unwrap()
+    }
+}
+
+impl MessageHashCodeTrait for LightApp {}
 
 impl MessageTrait for LightApp {}
 

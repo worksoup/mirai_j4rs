@@ -59,6 +59,19 @@ pub(crate) struct Consumer<T, F>
     _unused: PhantomData<T>,
 }
 
+impl<T, F> GetEnvTrait for Consumer<T, F>
+    where
+        T: FromInstance,
+        F: Fn(T) -> (),
+{
+    fn get_instance(&self) -> Instance {
+        Jvm::attach_thread()
+            .unwrap()
+            .clone_instance(self.instance.as_ref().unwrap())
+            .unwrap()
+    }
+}
+
 impl<T, F: Fn(T) -> ()> Consumer<T, F>
     where
         T: FromInstance,
@@ -203,6 +216,19 @@ pub(crate) struct Comparator<T, F>
     _t: PhantomData<T>,
 }
 
+impl<T, F> GetEnvTrait for Comparator<T, F>
+    where
+        T: FromInstance,
+        F: Fn(&T, &T) -> Ordering,
+{
+    fn get_instance(&self) -> Instance {
+        Jvm::attach_thread()
+            .unwrap()
+            .clone_instance(self.instance.as_ref().unwrap())
+            .unwrap()
+    }
+}
+
 impl<T, F> Comparator<T, F>
     where
         T: FromInstance,
@@ -296,6 +322,18 @@ pub(crate) struct Function<T, F, R>
     internal_closure_raw: Option<[i8; 16]>,
     _t: PhantomData<T>,
     _r: PhantomData<R>,
+}
+
+impl<T, F, R> GetEnvTrait for Function<T, F, R>
+    where
+        T: FromInstance,
+        F: Fn(T) -> R,
+        R: GetEnvTrait + FromInstance,
+{
+    fn get_instance(&self) -> Instance {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.clone_instance(self.instance.as_ref().unwrap()).unwrap()
+    }
 }
 
 impl<T, F, R> Function<T, F, R>
@@ -429,6 +467,19 @@ pub(crate) struct Predicate<T, F>
     instance: Option<Instance>,
     internal_closure_raw: Option<[i8; 16]>,
     _t: PhantomData<T>,
+}
+
+impl<T, F> GetEnvTrait for Predicate<T, F>
+    where
+        T: FromInstance,
+        F: Fn(T) -> bool,
+{
+    fn get_instance(&self) -> Instance {
+        Jvm::attach_thread()
+            .unwrap()
+            .clone_instance(self.instance.as_ref().unwrap())
+            .unwrap()
+    }
 }
 
 impl<T, F> Predicate<T, F>

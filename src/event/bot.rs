@@ -60,7 +60,7 @@ impl MiraiEventTrait for BotOnlineEvent {
     }
 
     // fn broadcast(&self) {
-    //     TODO: 这个函数哪来的？为什么在最初的版本中？
+    //     TODO: EventKt
     // }
 }
 

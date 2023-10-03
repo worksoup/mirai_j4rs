@@ -186,7 +186,7 @@ impl AbsoluteFile {
         let jvm = Jvm::attach_thread().unwrap();
         crate::utils::internal::get_bytes_md5_and_cast_to_i8_16(jvm, &self.instance)
     }
-    /// 文件内容 SHA-1. 我记着是 20 位来着，记着测试。TODO: 测试
+    /// 文件内容 SHA-1. 我记着是 20 位来着，记着测试。TODO: 测试一下。
     pub fn get_sha1(&self) -> [i8; 20] {
         let jvm = Jvm::attach_thread().unwrap();
         let bytes = jvm.invoke(&self.instance, "getSha1", &[]).unwrap();

@@ -4,7 +4,9 @@ pub(crate) mod internal;
 pub mod other;
 
 use crate::env::{FromInstance, GetEnvTrait};
-use j4rs::{Instance, Jvm};
+use crate::utils::ffi::{Comparator, Consumer, Function, Predicate};
+use crate::utils::internal::instance_is_null;
+use j4rs::{Instance, InvocationArg, Jvm};
 use std::{cmp::Ordering, marker::PhantomData};
 
 pub trait MiraiRsCollectionTrait {
@@ -17,6 +19,7 @@ pub trait MiraiRsCollectionTrait {
 
 pub trait MiraiRsIterableTrait: Iterator {}
 
+/// 对应 Stream<AbsoluteFileFolder>
 pub struct FileFolderStream<T: FromInstance> {
     pub(crate) instance: Instance,
     pub(crate) _unused: PhantomData<T>,
@@ -31,7 +34,15 @@ impl<T: FromInstance> GetEnvTrait for FileFolderStream<T> {
     }
 }
 
-/// TODO: 暂时先用 to_vec 凑合一下吧。
+impl<T: FromInstance> FromInstance for FileFolderStream<T> {
+    fn from_instance(instance: Instance) -> Self {
+        FileFolderStream {
+            instance,
+            _unused: PhantomData::default(),
+        }
+    }
+}
+
 impl<T: FromInstance> FileFolderStream<T> {
     pub fn sorted_array_by<F>(&self, compare: F) -> Vec<T>
         where
@@ -41,80 +52,113 @@ impl<T: FromInstance> FileFolderStream<T> {
         array.sort_by(compare);
         array
     }
-    // 我觉得我可以直接假定没有重复文件。
-    // pub fn distinct(&self) {
-    //     ()
-    // }
-    pub fn close(self) {
-        todo!()
-    }
-    pub fn filter<P>(&self, predicate: P) -> FileFolderStream<T>
+    pub fn filter<P>(&self, p: P) -> FileFolderStream<T>
         where
-            P: FnMut(&T) -> bool,
+            P: Fn(T) -> bool,
+            T: FromInstance,
     {
-        todo!()
+        let jvm = Jvm::attach_thread().unwrap();
+        let p = Predicate::new(p);
+        let predicate = InvocationArg::try_from(p.get_instance()).unwrap();
+        let instance = jvm.invoke(&self.instance, "filter", &[predicate]).unwrap();
+        drop(p);
+        FileFolderStream::from_instance(instance)
     }
 
     pub fn map<B: FromInstance, F>(&self, f: F) -> FileFolderStream<B>
         where
-            F: FnMut(T) -> B,
+            F: Fn(T) -> B,
+            T: FromInstance,
+            B: GetEnvTrait + FromInstance,
     {
-        todo!()
+        let jvm = Jvm::attach_thread().unwrap();
+        let f = Function::new(f);
+        let mapper = InvocationArg::try_from(f.get_instance()).unwrap();
+        let instance = jvm.invoke(&self.instance, "map", &[mapper]).unwrap();
+        drop(f);
+        FileFolderStream::from_instance(instance)
     }
 
     pub fn for_each<F>(&self, f: F)
         where
-            F: FnMut(T),
+            F: Fn(T),
     {
-        todo!()
+        let jvm = Jvm::attach_thread().unwrap();
+        let f = Consumer::new(f);
+        let predicate = InvocationArg::try_from(f.get_instance()).unwrap();
+        let _ = jvm.invoke(&self.instance, "filter", &[predicate]).unwrap();
+        drop(f);
     }
 
     pub fn count(&self) -> i64 {
-        todo!()
-    }
-    pub fn collect<B: FromIterator<T>>(&self) -> B {
-        todo!()
-    }
-    pub fn find_first<P>(&self, predicate: P) -> Option<T>
-        where
-            P: FnMut(&T) -> bool,
-    {
-        todo!()
-    }
-    pub fn find_any<P>(&self, predicate: P) -> Option<T>
-        where
-            P: FnMut(&T) -> bool,
-    {
-        todo!()
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke(&self.instance, "count", &[]).unwrap();
+        jvm.to_rust(instance).unwrap()
     }
 
     pub fn flat_map<U: FromInstance, F>(&self, f: F) -> FileFolderStream<U>
         where
-            F: FnMut(T) -> FileFolderStream<U>,
+            F: Fn(T) -> FileFolderStream<U>,
+            T: FromInstance,
     {
-        todo!()
+        let jvm = Jvm::attach_thread().unwrap();
+        let f = Function::new(f);
+        let mapper = InvocationArg::try_from(f.get_instance()).unwrap();
+        let instance = jvm.invoke(&self.instance, "flatMap", &[mapper]).unwrap();
+        drop(f);
+        FileFolderStream::from_instance(instance)
     }
 
     pub fn skip(&self, n: i64) -> FileFolderStream<T> {
-        todo!()
+        let jvm = Jvm::attach_thread().unwrap();
+        let n = InvocationArg::try_from(n)
+            .unwrap()
+            .into_primitive()
+            .unwrap();
+        let instance = jvm.invoke(&self.instance, "skip", &[n]).unwrap();
+        FileFolderStream::from_instance(instance)
     }
 
     pub fn limit(&self, max_size: i64) -> FileFolderStream<T> {
-        todo!()
+        let jvm = Jvm::attach_thread().unwrap();
+        let max_size = InvocationArg::try_from(max_size)
+            .unwrap()
+            .into_primitive()
+            .unwrap();
+        let instance = jvm.invoke(&self.instance, "limit", &[max_size]).unwrap();
+        FileFolderStream::from_instance(instance)
     }
 
-    pub fn max_by<F>(&self, compare: F) -> Option<T>
+    pub fn max_by<F>(&self, f: F) -> Option<T>
         where
-            F: FnMut(&T, &T) -> Ordering,
+            F: Fn(&T, &T) -> Ordering + 'static,
     {
-        todo!()
+        let jvm = Jvm::attach_thread().unwrap();
+        let f = Comparator::new(f);
+        let compare = InvocationArg::try_from(f.get_instance()).unwrap();
+        let instance = jvm.invoke(&self.instance, "max", &[compare]).unwrap();
+        drop(f);
+        if instance_is_null(&instance) {
+            Some(T::from_instance(instance))
+        } else {
+            None
+        }
     }
 
-    pub fn min_by<F>(&self, compare: F) -> Option<T>
+    pub fn min_by<F>(&self, f: F) -> Option<T>
         where
-            F: FnMut(&T, &T) -> Ordering,
+            F: Fn(&T, &T) -> Ordering + 'static,
     {
-        todo!()
+        let jvm = Jvm::attach_thread().unwrap();
+        let f = Comparator::new(f);
+        let compare = InvocationArg::try_from(f.get_instance()).unwrap();
+        let instance = jvm.invoke(&self.instance, "min", &[compare]).unwrap();
+        drop(f);
+        if instance_is_null(&instance) {
+            Some(T::from_instance(instance))
+        } else {
+            None
+        }
     }
     pub fn to_vec(&self) -> Vec<T> {
         let jvm = Jvm::attach_thread().unwrap();

@@ -12,7 +12,7 @@ use mirai_j4rs::{
 };
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-use mirai_j4rs::contact::contact_trait::ContactTrait;
+use mirai_j4rs::contact::contact_trait::{SendMessageSupportedTrait};
 
 #[derive(Deserialize, Serialize)]
 pub(crate) struct BotInfo {
@@ -151,8 +151,6 @@ fn main() {
     // 监听 FriendMessageEvent.
     let listener_for_friend_message_event =
         event_channel.subscribe_always(&on_friend_message_event);
-    let group = bot.get_group(343455946).unwrap();
-    group.send_string("Ŧŧ");
     // 因为监听并不阻塞线程，不阻塞的话程序会直接结束。这里仅供参考。
     let current_thread = std::thread::current();
     ctrlc::set_handler(move || current_thread.unpark()).unwrap();

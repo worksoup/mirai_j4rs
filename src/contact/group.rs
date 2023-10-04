@@ -10,7 +10,7 @@ use crate::{
 };
 use contact_derive::GetInstanceDerive;
 use j4rs::{Instance, InvocationArg, Jvm};
-use std::{collections::HashMap, marker::PhantomData};
+use std::{cmp::Ordering, collections::HashMap, marker::PhantomData};
 
 pub struct GroupSettings {
     instance: Instance,
@@ -129,6 +129,46 @@ pub enum MemberPermission {
     Administrator = 1,
     #[default]
     Owner = 2,
+}
+
+pub trait AssertMemberPermissionTrait {
+    fn is_owner(&self) -> bool;
+    fn is_administrator(&self) -> bool;
+    fn is_operator(&self) -> bool;
+}
+
+impl MemberPermission {
+    fn internal_clone_into_i32(a: &MemberPermission) -> i32 {
+        match a {
+            MemberPermission::Member => 0,
+            MemberPermission::Administrator => 1,
+            MemberPermission::Owner => 2,
+        }
+    }
+}
+
+impl PartialEq for MemberPermission {
+    fn eq(&self, other: &Self) -> bool {
+        let a = MemberPermission::internal_clone_into_i32(self);
+        let b = MemberPermission::internal_clone_into_i32(other);
+        a.eq(&b)
+    }
+}
+
+impl PartialOrd for MemberPermission {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        let a = MemberPermission::internal_clone_into_i32(self);
+        let b = MemberPermission::internal_clone_into_i32(other);
+        a.partial_cmp(&b)
+    }
+}
+
+impl Eq for MemberPermission {}
+
+impl Ord for MemberPermission {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.partial_cmp(other).unwrap()
+    }
 }
 
 pub struct ActiveRankRecord {
@@ -265,8 +305,8 @@ impl<K, V> MiraiMap<K, V> {
             ) -> (K, V),
         >,
     ) -> HashMap<K, V>
-    where
-        K: Eq + PartialEq + std::hash::Hash,
+        where
+            K: Eq + PartialEq + std::hash::Hash,
     {
         let jvm = Jvm::attach_thread().unwrap();
         let java_cast =
@@ -807,9 +847,9 @@ impl Group {
                 "setEssenceMessage",
                 &[InvocationArg::try_from(source.get_instance()).unwrap()],
             )
-            .unwrap(),
+                .unwrap(),
         )
-        .unwrap()
+            .unwrap()
     }
     // function name need to be changed.
     pub fn set_essence_message_s(group: Group, chain: MessageChain) -> bool {
@@ -823,9 +863,9 @@ impl Group {
                     InvocationArg::try_from(chain.get_instance()).unwrap(),
                 ],
             )
-            .unwrap(),
+                .unwrap(),
         )
-        .unwrap()
+            .unwrap()
     }
     pub fn set_name(&self, name: &str) {
         Jvm::attach_thread()

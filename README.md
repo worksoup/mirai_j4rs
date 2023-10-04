@@ -56,7 +56,7 @@
 
 - [x] 群列表
 - [x] 成员列表
-- [ ] 群员权限
+- [x] 群员权限
 - [x] 禁言
 - [ ] 群公告管理
 - [ ] 群设置
@@ -102,7 +102,7 @@ mirai_j4rs={ git = "https://github.com/worksoup/mirai_j4rs.git" }
 第一种方法，适用于单个 `Bot`（因为内部没有措施防止 `Env` 重复定义）。
 
 ``` rust
-use mirai_j4rs::prelude::*; // prelude 还没写。请自行导入所需的模块等。
+use mirai_j4rs::prelude::*; // prelude 还没写。请自行导入所需的模块。
 fn main(){
     let bot = BotBuilder::new()
         .id(i64/*这里是你机器人的 id.*/)

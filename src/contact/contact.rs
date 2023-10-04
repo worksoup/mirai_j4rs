@@ -3,6 +3,7 @@ use crate::{
     contact::{
         bot::FriendGroup,
         contact_trait::{ContactOrBotTrait, ContactTrait, MemberTrait, UserOrBotTrait, UserTrait},
+        group::{AssertMemberPermissionTrait, MemberPermission},
     },
     env::{FromInstance, GetEnvTrait},
     message::{
@@ -16,8 +17,8 @@ use j4rs::{Instance, InvocationArg, Jvm};
 use std::{marker::PhantomData, path::PathBuf};
 
 pub struct ContactList<T>
-where
-    T: ContactTrait + FromInstance,
+    where
+        T: ContactTrait + FromInstance,
 {
     pub(crate) instance: Instance,
     pub(crate) _unused: PhantomData<T>,
@@ -42,8 +43,8 @@ impl<T: ContactTrait + FromInstance> GetEnvTrait for ContactList<T> {
 }
 
 impl<T> ContactList<T>
-where
-    T: ContactTrait + FromInstance,
+    where
+        T: ContactTrait + FromInstance,
 {
     pub fn contains(&self, contact: T) -> bool {
         Jvm::attach_thread()
@@ -278,6 +279,20 @@ pub struct NormalMember {
     pub(crate) bot: Instance,
     pub(crate) instance: Instance,
     pub(crate) id: i64,
+}
+
+impl AssertMemberPermissionTrait for NormalMember {
+    fn is_owner(&self) -> bool {
+        self.get_permission().eq(&MemberPermission::Owner)
+    }
+
+    fn is_administrator(&self) -> bool {
+        self.get_permission().eq(&MemberPermission::Administrator)
+    }
+
+    fn is_operator(&self) -> bool {
+        self.is_administrator() || self.is_owner()
+    }
 }
 
 impl FromInstance for NormalMember {

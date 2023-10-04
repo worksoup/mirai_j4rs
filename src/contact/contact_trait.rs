@@ -1,5 +1,8 @@
 use crate::{
-    contact::Friend,
+    contact::{
+        group::{Group, MemberPermission},
+        Friend,
+    },
     env::{FromInstance, GetEnvTrait},
     message::{message_trait::MessageTrait, Image, MessageReceipt},
     utils::other::enums::AvatarSpec,
@@ -8,8 +11,8 @@ use j4rs::{InvocationArg, Jvm};
 use std::path::PathBuf;
 
 pub trait ContactOrBotTrait
-where
-    Self: Sized + GetEnvTrait,
+    where
+        Self: Sized + GetEnvTrait,
 {
     fn get_bot(&self) -> crate::contact::bot::Bot {
         let instance = Jvm::attach_thread()
@@ -97,7 +100,7 @@ where
                 )
                 .unwrap(),
         )
-        .unwrap();
+            .unwrap();
         Jvm::attach_thread()
             .unwrap()
             .to_rust(
@@ -111,8 +114,8 @@ where
 }
 
 pub trait ContactTrait
-where
-    Self: ContactOrBotTrait,
+    where
+        Self: ContactOrBotTrait,
 {
     fn send_message<'a>(&self, message: impl MessageTrait) -> MessageReceipt<Self> {
         let instance = Jvm::attach_thread()
@@ -189,7 +192,7 @@ where
                         )
                         .unwrap(),
                 )
-                .unwrap()],
+                    .unwrap()],
             )
             .unwrap();
         // 存疑：是否需要传入 Group(java) 本身？
@@ -211,42 +214,94 @@ where
 }
 
 pub trait FileSupportedTrait
-where
-    Self: ContactTrait,
-{
-}
+    where
+        Self: ContactTrait,
+{}
 
 pub trait AudioSupportedTrait
-where
-    Self: ContactTrait,
-{
-}
+    where
+        Self: ContactTrait,
+{}
 
 pub trait UserOrBotTrait
-where
-    Self: ContactOrBotTrait,
+    where
+        Self: ContactOrBotTrait,
 {
     type NudgeType;
     fn nudge(&self) -> Self::NudgeType;
 }
 
 pub trait UserTrait
-where
-    Self: UserOrBotTrait + ContactTrait,
-{
-}
+    where
+        Self: UserOrBotTrait + ContactTrait,
+{}
 
 pub trait MemberTrait
-where
-    Self: UserTrait,
+    where
+        Self: UserTrait,
 {
+    fn get_group(&self) -> Group {
+        let jvm = Jvm::attach_thread().unwrap();
+        let group = jvm.invoke(&self.get_instance(), "getGroup", &[]).unwrap();
+        Group::from_instance(group)
+    }
+    fn get_active(&self) -> () {}
+    fn get_name_card(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        let name_card = jvm
+            .invoke(&self.get_instance(), "getNameCard", &[])
+            .unwrap();
+        jvm.to_rust(name_card).unwrap()
+    }
+    fn get_permission(&self) -> MemberPermission {
+        let jvm = Jvm::attach_thread().unwrap();
+        let perm = jvm
+            .invoke(&self.get_instance(), "getPermission", &[])
+            .unwrap();
+        let perm = jvm.invoke(&perm, "getLevel", &[]).unwrap();
+        let perm: i32 = jvm.to_rust(perm).unwrap();
+        MemberPermission::from(perm)
+    }
+    fn get_rank_title(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(
+            jvm.invoke(&self.get_instance(), "getRankTitle", &[])
+                .unwrap(),
+        )
+            .unwrap()
+    }
+    fn get_special_title(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(
+            jvm.invoke(&self.get_instance(), "getSpecialTitle", &[])
+                .unwrap(),
+        )
+            .unwrap()
+    }
+    fn get_temperature_title(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(
+            jvm.invoke(&self.get_instance(), "getTemperatureTitle", &[])
+                .unwrap(),
+        )
+            .unwrap()
+    }
+    // TODO: 会抛出错误。
+    fn mute(&self, duration_seconds: i64) {
+        let jvm = Jvm::attach_thread().unwrap();
+        let seconds = InvocationArg::try_from(duration_seconds)
+            .unwrap()
+            .into_primitive()
+            .unwrap();
+        jvm.invoke(&self.get_instance(), "mute", &[seconds])
+            .unwrap();
+    }
 }
 
 pub trait StrangerTrait
-where
-    Self: UserTrait,
-{
-}
+    where
+        Self: UserTrait,
+{}
 
 // TODO: 为 `Bot`, `Stranger`, `NormalMember`, 实现。
 // 为什么 Mirai 里实现得这么怪啊。

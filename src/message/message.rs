@@ -995,7 +995,7 @@ pub trait ForwardMessageBuilderAddByUserAndMessageTrait: Sized {
 
 impl ForwardMessageBuilderAddByUserAndMessageTrait for ForwardMessageBuilder {
     fn add(self, user_or_bot: impl UserOrBotTrait, message: impl MessageTrait, time: i32) {
-        self.add__user_or_bot__message(user_or_bot, message, time);
+        self.internal_add_1(user_or_bot, message, time);
     }
 }
 
@@ -1005,7 +1005,7 @@ pub trait ForwardMessageBuilderAddByIdNameAndMessageTrait: Sized {
 
 impl ForwardMessageBuilderAddByIdNameAndMessageTrait for ForwardMessageBuilder {
     fn add(self, sender_id: i64, sender_name: &str, message: impl MessageTrait, time: i32) {
-        self.add__sender_id__sender_name__message(sender_id, sender_name, message, time);
+        self.internal_add_2(sender_id, sender_name, message, time);
     }
 }
 
@@ -1022,7 +1022,8 @@ impl ForwardMessageBuilder {
             .unwrap();
         Self { instance }
     }
-    fn add__user_or_bot__message(
+    /// add(user_or_bot, message)
+    fn internal_add_1(
         self,
         user_or_bot: impl UserOrBotTrait,
         message: impl MessageTrait,
@@ -1040,7 +1041,8 @@ impl ForwardMessageBuilder {
             .unwrap();
         self
     }
-    fn add__sender_id__sender_name__message(
+    /// add(sender_id, sender_name, message)
+    fn internal_add_2(
         self,
         sender_id: i64,
         sender_name: &str,
@@ -1385,7 +1387,7 @@ impl FromInstance for PokeMessage {
 }
 
 impl PokeMessage {
-    fn name__poke_type__id(&self) -> (&str, i32, i32) {
+    fn get_name_and_poke_type_and_id(&self) -> (&str, i32, i32) {
         // match self {
         //     PokeMessage::戳一戳 => ("戳一戳", 1, -1),
         //     PokeMessage::比心 => ("比心", 2, -1),
@@ -1471,7 +1473,7 @@ impl PokeMessage {
 impl GetEnvTrait for PokeMessage {
     fn get_instance(&self) -> Instance {
         let jvm = Jvm::attach_thread().unwrap();
-        let (name, poke_type, id) = self.name__poke_type__id();
+        let (name, poke_type, id) = self.get_name_and_poke_type_and_id();
         let (name, poke_type, id) = (
             InvocationArg::try_from(name).unwrap(),
             InvocationArg::try_from(poke_type).unwrap(),

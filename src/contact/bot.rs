@@ -150,18 +150,6 @@ impl GetEnvTrait for Bot {
     }
 }
 
-// impl GetBotTrait for Bot {
-//     fn get_bot(&self) -> Bot {
-//         Bot {
-//             bot: Jvm::attach_thread()
-//                 .unwrap()
-//                 .clone_instance(&self.bot)
-//                 .unwrap(),
-//             id: self.id,
-//         }
-//     }
-// }
-
 impl Bot {
     pub fn close(self) {
         Jvm::attach_thread()

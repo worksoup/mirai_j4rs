@@ -131,11 +131,6 @@ pub enum MemberPermission {
     Owner = 2,
 }
 
-pub trait AssertMemberPermissionTrait {
-    fn is_owner(&self) -> bool;
-    fn is_administrator(&self) -> bool;
-    fn is_operator(&self) -> bool;
-}
 
 impl MemberPermission {
     fn internal_clone_into_i32(a: &MemberPermission) -> i32 {

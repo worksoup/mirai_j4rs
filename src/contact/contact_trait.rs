@@ -10,6 +10,12 @@ use crate::{
 use j4rs::{InvocationArg, Jvm};
 use std::path::PathBuf;
 
+pub trait AssertMemberPermissionTrait: MemberTrait {
+    fn is_owner(&self) -> bool;
+    fn is_administrator(&self) -> bool;
+    fn is_operator(&self) -> bool;
+}
+
 pub trait ContactOrBotTrait
     where
         Self: Sized + GetEnvTrait,

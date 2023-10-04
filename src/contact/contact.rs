@@ -2,8 +2,8 @@ use crate::{
     action::nudges::{FriendNudge, MemberNudge},
     contact::{
         bot::FriendGroup,
-        contact_trait::{ContactOrBotTrait, ContactTrait, MemberTrait, UserOrBotTrait, UserTrait},
-        group::{AssertMemberPermissionTrait, MemberPermission},
+        contact_trait::{ContactOrBotTrait, ContactTrait, MemberTrait, UserOrBotTrait, UserTrait, AssertMemberPermissionTrait},
+        group::MemberPermission,
     },
     env::{FromInstance, GetEnvTrait},
     message::{
@@ -211,13 +211,6 @@ pub struct Stranger {
     pub(crate) instance: Instance,
 }
 
-// impl GetBotTrait for Stranger {
-//     fn get_bot(&self) -> Bot {
-//         let instance = Jvm::attach_thread().unwrap().invoke(&self.get_instance(), "getBot", &[]).unwrap();
-//         Bot::from_instance(instance)
-//     }
-// }
-
 impl FromInstance for Stranger {
     fn from_instance(instance: Instance) -> Self {
         Stranger { instance }
@@ -256,13 +249,6 @@ impl UserTrait for Stranger {}
 pub struct OtherClient {
     instance: Instance,
 }
-
-// impl GetBotTrait for OtherClient {
-//     fn get_bot(&self) -> Bot {
-//         let instance = Jvm::attach_thread().unwrap().invoke(&self.get_instance(), "getBot", &[]).unwrap();
-//         Bot::from_instance(instance)
-//     }
-// }
 
 impl FromInstance for OtherClient {
     fn from_instance(instance: Instance) -> Self {
@@ -394,8 +380,6 @@ pub struct AnonymousMember {
     pub(crate) instance: Instance,
 }
 
-// impl GetBotTrait for AnonymousMember {}
-
 impl AnonymousMember {
     pub fn get_anonymous_id(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
@@ -440,15 +424,6 @@ pub enum Member {
     NormalMember(NormalMember),
     AnonymousMember(AnonymousMember),
 }
-
-// impl GetBotTrait for Member {
-//     fn get_bot(&self) -> Bot {
-//         match self {
-//             Member::NormalMember(member) => member.get_bot(),
-//             Member::AnonymousMember(member) => member.get_bot(),
-//         }
-//     }
-// }
 
 impl GetEnvTrait for Member {
     fn get_instance(&self) -> Instance {

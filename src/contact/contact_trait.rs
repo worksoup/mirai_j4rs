@@ -10,6 +10,7 @@ use crate::{
 use j4rs::{InvocationArg, Jvm};
 use std::path::PathBuf;
 use crate::action::nudges::Nudge;
+use crate::contact::group::MemberActive;
 
 pub trait AssertMemberPermissionTrait: MemberTrait {
     fn is_owner(&self) -> bool;
@@ -189,7 +190,7 @@ pub trait MemberTrait
         let group = jvm.invoke(&self.get_instance(), "getGroup", &[]).unwrap();
         Group::from_instance(group)
     }
-    fn get_active(&self) -> () {}
+    fn get_active(&self) -> MemberActive { todo!() }
     fn get_name_card(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         let name_card = jvm

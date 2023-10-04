@@ -21,10 +21,17 @@ use std::{
     path::{Path, PathBuf},
 };
 use crate::contact::contact_trait::NudgeSupportedTrait;
+use crate::utils::internal::java_iter_to_rust_vec;
 
 #[derive(GetInstanceDerive)]
 pub struct FriendGroup {
     pub(crate) instance: Instance,
+}
+
+impl FromInstance for FriendGroup {
+    fn from_instance(instance: Instance) -> Self {
+        Self { instance }
+    }
 }
 
 impl FriendGroup {
@@ -56,17 +63,10 @@ impl FriendGroup {
             .unwrap()
     }
     pub fn get_friends(&self) -> Vec<Friend> {
-        let mut vec = Vec::new();
         let jvm = Jvm::attach_thread().unwrap();
         let collection = jvm.invoke(&self.instance, "getFriends", &[]).unwrap();
-        while jvm
-            .to_rust(jvm.invoke(&collection, "hasNext", &[]).unwrap())
-            .unwrap()
-        {
-            let next = jvm.invoke(&collection, "next", &[]).unwrap();
-            vec.push(Friend::from_instance(next));
-        }
-        vec
+        let iter = jvm.invoke(&collection, "iterator", &[]).unwrap();
+        java_iter_to_rust_vec(&jvm, iter)
     }
     pub fn get_count(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
@@ -82,17 +82,11 @@ pub struct FriendGroups {
 
 impl FriendGroups {
     pub fn to_vec(&self) -> Vec<FriendGroup> {
-        let mut vec = Vec::new();
         let jvm = Jvm::attach_thread().unwrap();
         let collection = jvm.invoke(&self.instance, "asCollection", &[]).unwrap();
-        while jvm
-            .to_rust(jvm.invoke(&collection, "hasNext", &[]).unwrap())
-            .unwrap()
-        {
-            let next = jvm.invoke(&collection, "next", &[]).unwrap();
-            vec.push(FriendGroup { instance: next });
-        }
-        vec
+
+        let iter = jvm.invoke(&collection, "iterator", &[]).unwrap();
+        java_iter_to_rust_vec(&jvm, iter)
     }
     pub fn create(name: String) -> FriendGroup {
         let jvm = Jvm::attach_thread().unwrap();
@@ -533,15 +527,8 @@ impl Env {
         let instance = jvm
             .invoke_static("net.mamoe.mirai.Bot$Companion", "getInstances", &[])
             .unwrap();
-        let mut bots = Vec::new();
-        while jvm
-            .to_rust(jvm.invoke(&instance, "hasNext", &[]).unwrap())
-            .unwrap()
-        {
-            let next = jvm.invoke(&instance, "next", &[]).unwrap();
-            bots.push(Bot::from_instance(next));
-        }
-        bots
+        let iter = jvm.invoke(&instance, "iterator", &[]).unwrap();
+        java_iter_to_rust_vec(&jvm, iter)
     }
     //默认是global的。
     pub fn event_channel(&self) -> EventChannel {

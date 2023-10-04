@@ -1,3 +1,4 @@
+use crate::contact::contact_trait::SendMessageSupportedTrait;
 use crate::{
     contact::{
         bot::Bot,
@@ -10,8 +11,10 @@ use crate::{
 };
 use contact_derive::GetInstanceDerive;
 use j4rs::{Instance, InvocationArg, Jvm};
+use std::collections::HashSet;
 use std::{cmp::Ordering, collections::HashMap, marker::PhantomData};
-use crate::contact::contact_trait::SendMessageSupportedTrait;
+use crate::utils::internal::java_iter_to_rust_hash_set;
+use crate::utils::other::enums::{GroupHonorType, MemberMedalType};
 
 pub struct GroupSettings {
     instance: Instance,
@@ -134,29 +137,24 @@ pub enum MemberPermission {
     Owner = 2,
 }
 
-
 impl MemberPermission {
-    fn internal_clone_into_i32(a: &MemberPermission) -> i32 {
-        match a {
-            MemberPermission::Member => 0,
-            MemberPermission::Administrator => 1,
-            MemberPermission::Owner => 2,
-        }
+    fn internal_to_i32(a: &MemberPermission) -> i32 {
+        unsafe { *(a as *const MemberPermission as *const i32) }
     }
 }
 
 impl PartialEq for MemberPermission {
     fn eq(&self, other: &Self) -> bool {
-        let a = MemberPermission::internal_clone_into_i32(self);
-        let b = MemberPermission::internal_clone_into_i32(other);
+        let a = MemberPermission::internal_to_i32(self);
+        let b = MemberPermission::internal_to_i32(other);
         a.eq(&b)
     }
 }
 
 impl PartialOrd for MemberPermission {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        let a = MemberPermission::internal_clone_into_i32(self);
-        let b = MemberPermission::internal_clone_into_i32(other);
+        let a = MemberPermission::internal_to_i32(self);
+        let b = MemberPermission::internal_to_i32(other);
         a.partial_cmp(&b)
     }
 }
@@ -410,8 +408,8 @@ impl MiraiList<ActiveRankRecord> {
     ///这个函数记得改改。
     pub fn refresh_vector(&mut self) {
         let jvm = Jvm::attach_thread().unwrap();
-        let mut vec = Vec::<ActiveRankRecord>::new();
         let it = jvm.invoke(&self.instance, "listIterator", &[]).unwrap();
+        let mut vec = Vec::<ActiveRankRecord>::new();
         while jvm
             .chain(&it)
             .unwrap()
@@ -459,12 +457,60 @@ pub struct MemberMedalInfo {
     instance: Instance,
 }
 
-pub struct MemberMedalType {
-    instance: Instance,
+impl MemberMedalInfo {
+    pub fn get_color(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "getColor", &[]).unwrap()).unwrap()
+    }
+    pub fn get_medals(&self) -> HashSet<MemberMedalType> {
+        let jvm = Jvm::attach_thread().unwrap();
+        let set = jvm.invoke(&self.instance, "getHonors", &[]).unwrap();
+        let iter = jvm.invoke(&set, "iterator", &[]).unwrap();
+        java_iter_to_rust_hash_set(&jvm, iter)
+    }
+    pub fn get_title(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "getTitle", &[]).unwrap()).unwrap()
+    }
+    pub fn get_wearing(&self) -> MemberMedalType {
+        let jvm = Jvm::attach_thread().unwrap();
+        MemberMedalType::from_instance(jvm.invoke(&self.instance, "getWearing", &[]).unwrap())
+    }
+}
+
+impl FromInstance for MemberMedalInfo {
+    fn from_instance(instance: Instance) -> Self {
+        Self { instance }
+    }
 }
 
 pub struct MemberActive {
     instance: Instance,
+}
+
+impl MemberActive {
+    pub fn get_honors(&self) -> HashSet<GroupHonorType> {
+        let jvm = Jvm::attach_thread().unwrap();
+        let set = jvm.invoke(&self.instance, "getHonors", &[]).unwrap();
+        let iter = jvm.invoke(&set, "iterator", &[]).unwrap();
+        java_iter_to_rust_hash_set(&jvm, iter)
+    }
+    pub fn get_point(&self) -> i32 {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "getPoint", &[]).unwrap()).unwrap()
+    }
+    pub fn get_rank(&self) -> i32 {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "getRank", &[]).unwrap()).unwrap()
+    }
+    pub fn get_temperature(&self) -> i32 {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "getTemperature", &[]).unwrap()).unwrap()
+    }
+    pub fn query_medal(&self) -> MemberMedalInfo {
+        let jvm = Jvm::attach_thread().unwrap();
+        MemberMedalInfo { instance: jvm.invoke(&self.instance, "queryMedal", &[]).unwrap() }
+    }
 }
 
 impl GroupActive {

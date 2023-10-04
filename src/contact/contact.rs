@@ -441,6 +441,8 @@ impl FromInstance for Member {
     }
 }
 
+impl MemberTrait for Member {}
+
 impl ContactOrBotTrait for Member {}
 
 impl ContactTrait for Member {}

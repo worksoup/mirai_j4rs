@@ -9,6 +9,7 @@ use crate::{
 };
 use j4rs::{InvocationArg, Jvm};
 use std::path::PathBuf;
+use crate::action::nudges::Nudge;
 
 pub trait AssertMemberPermissionTrait: MemberTrait {
     fn is_owner(&self) -> bool;
@@ -18,7 +19,7 @@ pub trait AssertMemberPermissionTrait: MemberTrait {
 
 pub trait ContactOrBotTrait
     where
-        Self: Sized + GetEnvTrait,
+        Self: Sized + GetEnvTrait + FromInstance,
 {
     fn get_bot(&self) -> crate::contact::bot::Bot {
         let instance = Jvm::attach_thread()
@@ -39,42 +40,7 @@ pub trait ContactOrBotTrait
             )
             .unwrap()
     }
-    //
-    //应为：
-    // ```rust
-    // fn get_avatar_url(&self, size: Option<AvatarSpec>) -> String {
-    //     let size = j4rs::InvocationArg::try_from(
-    //     Jvm::attach_thread()
-    //         .unwrap()
-    //         .field(
-    //              &Jvm::attach_thread()
-    //                   .unwrap()
-    //                   .static_class("net.mamoe.mirai.contact.AvatarSpec")
-    //                   .unwrap(),
-    //              match size.unwrap() {
-    //                    AvatarSpec::XS => "SMALLEST",
-    //                    AvatarSpec::S => "SMALL",
-    //                    AvatarSpec::M => "MEDIUM",
-    //                    AvatarSpec::L => "LARGE",
-    //                    AvatarSpec::XL => "LARGEST",
-    //                    AvatarSpec::ORIGINAL => "ORIGINAL",
-    //              },
-    //         )
-    //         .unwrap(),
-    //     )
-    //     .unwrap();
-    //     Jvm::attach_thread()
-    //         .unwrap()
-    //         .to_rust(
-    //             Jvm::attach_thread()
-    //             .unwrap()
-    //             .invoke(&self.get_instance(), "getAvatarUrl", &[size])
-    //             .unwrap(),
-    //      )
-    //      .unwrap()
-    // }
-    // ```
-    //
+
     // 根据mirai源码，各个类型实现该trait时实际如此：
     // ```rust
     // fn get_avatar_url(&self, size: Option<AvatarSpec>) -> String {
@@ -119,11 +85,14 @@ pub trait ContactOrBotTrait
     }
 }
 
+
 pub trait ContactTrait
     where
         Self: ContactOrBotTrait,
-{
-    fn send_message<'a>(&self, message: impl MessageTrait) -> MessageReceipt<Self> {
+{}
+
+pub trait SendMessageSupportedTrait: ContactTrait {
+    fn send_message(&self, message: impl MessageTrait) -> MessageReceipt<Self> {
         let instance = Jvm::attach_thread()
             .unwrap()
             .invoke(
@@ -134,24 +103,7 @@ pub trait ContactTrait
             .unwrap();
         MessageReceipt::new(instance, &self)
     }
-    // fn send_message_suspend<'a>(
-    //     &'a self,
-    //     _message: impl MessageTrait,
-    // ) -> MessageReceipt<'a, Self> {
-    //     // let instance = self
-    //     //     .get_jvm()
-    //     //     .invoke(
-    //     //         &self.get_instance(),
-    //     //         "sendMessage",
-    //     //         &[j4rs::InvocationArg::try_from(message.get_instance()).unwrap()],
-    //     //     )
-    //     //     .unwrap();
-    //     // MessageReceipt::new( Jvm::attach_thread().unwrap(), instance, &self)
-    //
-    // }
 
-    ///
-    /// 对应一个sendMessage的重载
     fn send_string(&self, string: &str) -> MessageReceipt<'_, Self> {
         let instance = Jvm::attach_thread()
             .unwrap()
@@ -163,26 +115,6 @@ pub trait ContactTrait
             .unwrap();
         MessageReceipt::new(instance, &self)
     }
-    // 感觉没什么用
-    // fn send_image(&self, img: Image) -> MessageReceipt<Self> {
-    //     let _ = Jvm::attach_thread()
-    //         .unwrap()
-    //         .invoke(
-    //             &self.get_instance(),
-    //             "uploadImage",
-    //             &[InvocationArg::try_from(img.get_instance()).unwrap()],
-    //         )
-    //         .unwrap();
-    //     let instance = Jvm::attach_thread()
-    //         .unwrap()
-    //         .invoke(
-    //             &self.get_instance(),
-    //             "sendMessage",
-    //             &[InvocationArg::try_from(img.get_instance()).unwrap()],
-    //         )
-    //         .unwrap();
-    //     MessageReceipt::new(instance, &self)
-    // }
     fn upload_image_from_file(&self, path: &PathBuf) -> Image {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
@@ -232,9 +164,15 @@ pub trait AudioSupportedTrait
 pub trait UserOrBotTrait
     where
         Self: ContactOrBotTrait,
-{
-    type NudgeType;
-    fn nudge(&self) -> Self::NudgeType;
+{}
+
+pub trait NudgeSupportedTrait: UserOrBotTrait {
+    type NudgeType: Nudge;
+    fn nudge(&self) -> Self::NudgeType {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke(&self.get_instance(), "nudge", &[]).unwrap();
+        Self::NudgeType::from_instance(instance)
+    }
 }
 
 pub trait UserTrait
@@ -303,11 +241,6 @@ pub trait MemberTrait
             .unwrap();
     }
 }
-
-pub trait StrangerTrait
-    where
-        Self: UserTrait,
-{}
 
 // TODO: 为 `Bot`, `Stranger`, `NormalMember`, 实现。
 // 为什么 Mirai 里实现得这么怪啊。

@@ -46,7 +46,7 @@ pub trait BotEventTrait
         let id = jvm
             .to_rust(jvm.invoke(&bot, "getId", &[]).unwrap())
             .unwrap();
-        Bot { bot, id }
+        Bot { instance: bot, id }
     }
 }
 
@@ -62,7 +62,7 @@ pub trait MessageEventTrait
         let id = jvm
             .to_rust(jvm.invoke(&bot, "getId", &[]).unwrap())
             .unwrap();
-        Bot { bot, id }
+        Bot { instance: bot, id }
     }
     fn get_message(&self) -> MessageChain {
         let jvm = Jvm::attach_thread().unwrap();

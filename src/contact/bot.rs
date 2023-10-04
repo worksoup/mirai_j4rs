@@ -20,6 +20,7 @@ use std::{
     collections::HashMap,
     path::{Path, PathBuf},
 };
+use crate::contact::contact_trait::NudgeSupportedTrait;
 
 #[derive(GetInstanceDerive)]
 pub struct FriendGroup {
@@ -123,7 +124,7 @@ impl FriendGroups {
 }
 
 pub struct Bot {
-    pub(crate) bot: Instance,
+    pub(crate) instance: Instance,
     pub(crate) id: i64,
 }
 
@@ -137,7 +138,7 @@ impl FromInstance for Bot {
             .unwrap()
             .to_rust()
             .unwrap();
-        Bot { bot: instance, id }
+        Bot { instance: instance, id }
     }
 }
 
@@ -145,7 +146,7 @@ impl GetEnvTrait for Bot {
     fn get_instance(&self) -> Instance {
         Jvm::attach_thread()
             .unwrap()
-            .clone_instance(&self.bot)
+            .clone_instance(&self.instance)
             .unwrap()
     }
 }
@@ -154,7 +155,7 @@ impl Bot {
     pub fn close(self) {
         Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.bot, "close", &[])
+            .invoke(&self.instance, "close", &[])
             .unwrap();
     }
     pub fn close_and_join(self, err: MiraiRsError) {
@@ -162,14 +163,14 @@ impl Bot {
         let what = InvocationArg::try_from(err.what).unwrap();
         Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.bot, "closeAndJoin", &[r#type, what])
+            .invoke(&self.instance, "closeAndJoin", &[r#type, what])
             .unwrap();
     }
     pub fn get_as_friend(&self) -> Friend {
         let id = self.id;
         let instance = Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.bot, "getAsFriend", &[])
+            .invoke(&self.instance, "getAsFriend", &[])
             .unwrap();
         Friend {
             bot: self.get_instance(),
@@ -180,14 +181,14 @@ impl Bot {
     pub fn get_as_stranger(&self) -> Stranger {
         let instance = Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.bot, "getAsStranger", &[])
+            .invoke(&self.instance, "getAsStranger", &[])
             .unwrap();
         Stranger::from_instance(instance)
     }
     pub fn get_configuration(&self) -> BotConfiguration {
         let bot_configuration = Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.bot, "getConfiguration", &[])
+            .invoke(&self.instance, "getConfiguration", &[])
             .unwrap();
         BotConfiguration {
             instance: bot_configuration,
@@ -197,7 +198,7 @@ impl Bot {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.bot, "getEventChannel", &[])
+            .invoke(&self.instance, "getEventChannel", &[])
             .unwrap();
         EventChannel { jvm, instance }
     }
@@ -205,7 +206,7 @@ impl Bot {
         let instance = Jvm::attach_thread()
             .unwrap()
             .invoke(
-                &self.bot,
+                &self.instance,
                 "getFriend",
                 &[InvocationArg::try_from(id)
                     .unwrap()
@@ -225,14 +226,14 @@ impl Bot {
     }
     pub fn get_friend_groups(&self) -> FriendGroups {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.bot, "getFriendGroups", &[]).unwrap();
+        let instance = jvm.invoke(&self.instance, "getFriendGroups", &[]).unwrap();
         FriendGroups { instance }
     }
     pub fn get_friends(&self) -> ContactList<Friend> {
         ContactList::from_instance(
             Jvm::attach_thread()
                 .unwrap()
-                .invoke(&self.bot, "getFriends", &[])
+                .invoke(&self.instance, "getFriends", &[])
                 .unwrap(),
         )
     }
@@ -242,7 +243,7 @@ impl Bot {
     pub fn get_groups(&self) -> ContactList<Group> {
         let instance = Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.bot, "getGroups", &[])
+            .invoke(&self.instance, "getGroups", &[])
             .unwrap();
         ContactList::from_instance(instance)
     }
@@ -252,7 +253,7 @@ impl Bot {
     pub fn get_other_clients(&self) -> ContactList<OtherClient> {
         let instance = Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.bot, "getOtherClients", &[])
+            .invoke(&self.instance, "getOtherClients", &[])
             .unwrap();
         ContactList::from_instance(instance)
     }
@@ -260,7 +261,7 @@ impl Bot {
         let instance = Jvm::attach_thread()
             .unwrap()
             .invoke(
-                &self.bot,
+                &self.instance,
                 "getStranger",
                 &[InvocationArg::try_from(id)
                     .unwrap()
@@ -277,14 +278,14 @@ impl Bot {
     pub fn get_strangers(&self) -> ContactList<Stranger> {
         let instance = Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.bot, "getStrangers", &[])
+            .invoke(&self.instance, "getStrangers", &[])
             .unwrap();
         ContactList::from_instance(instance)
     }
     pub fn is_online(&self) -> bool {
         Jvm::attach_thread()
             .unwrap()
-            .chain(&self.bot)
+            .chain(&self.instance)
             .unwrap()
             .invoke("isOnline", &[])
             .unwrap()
@@ -294,13 +295,13 @@ impl Bot {
     pub fn join(&self) {
         Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.bot, "join", &[])
+            .invoke(&self.instance, "join", &[])
             .unwrap();
     }
     pub fn login(&self) {
         Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.bot, "login", &Vec::new())
+            .invoke(&self.instance, "login", &Vec::new())
             .unwrap();
     }
 }
@@ -323,14 +324,10 @@ impl ContactOrBotTrait for Bot {
     }
 }
 
-impl UserOrBotTrait for Bot {
-    type NudgeType = BotNudge;
+impl UserOrBotTrait for Bot {}
 
-    fn nudge(&self) -> BotNudge {
-        let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.bot, "nudge", &[]).unwrap();
-        BotNudge { instance }
-    }
+impl NudgeSupportedTrait for Bot {
+    type NudgeType = BotNudge;
 }
 
 pub struct MiraiLogger(Instance);
@@ -528,7 +525,7 @@ impl Env {
         if instance_is_null(&bot) {
             None
         } else {
-            Some(Bot { bot, id })
+            Some(Bot { instance: bot, id })
         }
     }
     pub fn get_bots(&self) -> Vec<Bot> {
@@ -600,7 +597,7 @@ impl Certificate<String> for Env {
                 )
                 .unwrap()
         };
-        Bot { bot, id }
+        Bot { instance: bot, id }
     }
 }
 
@@ -674,7 +671,7 @@ impl Certificate<[u8; 16]> for Env {
                 )
                 .unwrap()
         };
-        Bot { bot, id }
+        Bot { instance: bot, id }
     }
 }
 
@@ -736,7 +733,7 @@ impl BotConfiguration {
                         &[InvocationArg::try_from(
                             Jvm::attach_thread()
                                 .unwrap()
-                                .clone_instance(&bot.bot)
+                                .clone_instance(&bot.instance)
                                 .unwrap(),
                         )
                             .unwrap()],
@@ -782,7 +779,7 @@ impl BotConfiguration {
                         &[InvocationArg::try_from(
                             Jvm::attach_thread()
                                 .unwrap()
-                                .clone_instance(&bot.bot)
+                                .clone_instance(&bot.instance)
                                 .unwrap(),
                         )
                             .unwrap()],

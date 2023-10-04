@@ -9,14 +9,15 @@ use crate::{
 };
 use contact_derive::GetInstanceDerive;
 use j4rs::{Instance, InvocationArg, Jvm};
+use crate::contact::Stranger;
+use crate::env::FromInstance;
 
-pub trait Nudge: GetEnvTrait {
+pub trait Nudge: GetEnvTrait + MessageHashCodeTrait + FromInstance {
     type UserOrBot: UserOrBotTrait;
-    fn internal_build_user_or_bot_from_instance(instance: Instance) -> Self::UserOrBot;
     fn get_target(&self) -> Self::UserOrBot {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm.invoke(&self.get_instance(), "getTarget", &[]).unwrap();
-        Self::internal_build_user_or_bot_from_instance(instance)
+        Self::UserOrBot::from_instance(instance)
     }
     // TODO: 该函数不符合 Mirai 定义的位置。到时候用 rust 标准库里的特征看看能不能实现一下。
     fn to_string(&self) -> String {
@@ -48,13 +49,11 @@ pub struct BotNudge {
 
 impl Nudge for BotNudge {
     type UserOrBot = Bot;
+}
 
-    fn internal_build_user_or_bot_from_instance(bot: Instance) -> Self::UserOrBot {
-        let jvm = Jvm::attach_thread().unwrap();
-        let id = jvm
-            .to_rust(jvm.invoke(&bot, "getId", &[]).unwrap())
-            .unwrap();
-        Bot { bot, id }
+impl FromInstance for BotNudge {
+    fn from_instance(instance: Instance) -> Self {
+        Self { instance }
     }
 }
 
@@ -78,37 +77,49 @@ impl FriendNudge {
     }
 }
 
+impl FromInstance for FriendNudge {
+    fn from_instance(instance: Instance) -> Self {
+        Self { instance }
+    }
+}
+
 impl Nudge for FriendNudge {
     type UserOrBot = Friend;
-
-    fn internal_build_user_or_bot_from_instance(instance: Instance) -> Self::UserOrBot {
-        let jvm = Jvm::attach_thread().unwrap();
-        let bot = jvm.invoke(&instance, "getBot", &[]).unwrap();
-        let id = jvm
-            .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
-            .unwrap();
-        Self::UserOrBot { bot, instance, id }
-    }
 }
 
 impl MessageHashCodeTrait for FriendNudge {}
 
 #[derive(GetInstanceDerive)]
-pub struct MemberNudge {
+pub struct NormalMemberNudge {
     pub(crate) instance: Instance,
 }
 
-impl Nudge for MemberNudge {
-    type UserOrBot = NormalMember;
-
-    fn internal_build_user_or_bot_from_instance(instance: Instance) -> Self::UserOrBot {
-        let jvm = Jvm::attach_thread().unwrap();
-        let bot = jvm.invoke(&instance, "getBot", &[]).unwrap();
-        let id = jvm
-            .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
-            .unwrap();
-        Self::UserOrBot { bot, instance, id }
+impl FromInstance for NormalMemberNudge {
+    fn from_instance(instance: Instance) -> Self {
+        Self { instance }
     }
 }
 
-impl MessageHashCodeTrait for MemberNudge {}
+impl Nudge for NormalMemberNudge {
+    type UserOrBot = NormalMember;
+}
+
+impl MessageHashCodeTrait for NormalMemberNudge {}
+
+#[derive(GetInstanceDerive)]
+pub struct StrangerNudge {
+    pub(crate) instance: Instance,
+}
+
+
+impl FromInstance for StrangerNudge {
+    fn from_instance(instance: Instance) -> Self {
+        Self { instance }
+    }
+}
+
+impl Nudge for StrangerNudge {
+    type UserOrBot = Stranger;
+}
+
+impl MessageHashCodeTrait for StrangerNudge {}

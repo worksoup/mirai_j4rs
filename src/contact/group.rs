@@ -11,6 +11,7 @@ use crate::{
 use contact_derive::GetInstanceDerive;
 use j4rs::{Instance, InvocationArg, Jvm};
 use std::{cmp::Ordering, collections::HashMap, marker::PhantomData};
+use crate::contact::contact_trait::SendMessageSupportedTrait;
 
 pub struct GroupSettings {
     instance: Instance,
@@ -107,6 +108,8 @@ pub struct Group {
     pub(crate) instance: Instance,
     pub(crate) id: i64,
 }
+
+impl SendMessageSupportedTrait for Group {}
 
 impl FileSupportedTrait for Group {}
 

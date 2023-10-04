@@ -485,6 +485,20 @@ impl Env {
             &[internal::protocol_enum_r2j(protocol).unwrap()],
         );
     }
+    pub fn fix_protocol_version_load_form_file(&self, protocol: MiraiProtocol, file: &str) -> () {
+        println!("fix protocol version - tmp - load");
+        let file = InvocationArg::try_from(
+            self.jvm
+                .create_instance("java.io.File", &[InvocationArg::try_from(file).unwrap()])
+                .unwrap(),
+        )
+            .unwrap();
+        let _ = self.jvm.invoke_static(
+            "xyz.cssxsh.mirai.tool.FixProtocolVersion",
+            "load",
+            &[internal::protocol_enum_r2j(protocol).unwrap(), file],
+        );
+    }
     pub fn fix_protocol_version_info(&self) -> HashMap<String, String> {
         println!("fix protocol version - tmp - info");
         let map: MiraiMap<String, String> = MiraiMap {
@@ -529,14 +543,16 @@ impl Env {
             Some(Bot { bot, id })
         }
     }
-    pub fn get_bots(&self) -> Vec<Bot>
-    {
+    pub fn get_bots(&self) -> Vec<Bot> {
         let jvm = &self.jvm;
         let instance = jvm
             .invoke_static("net.mamoe.mirai.Bot$Companion", "getInstances", &[])
             .unwrap();
         let mut bots = Vec::new();
-        while jvm.to_rust(jvm.invoke(&instance, "hasNext", &[]).unwrap()).unwrap() {
+        while jvm
+            .to_rust(jvm.invoke(&instance, "hasNext", &[]).unwrap())
+            .unwrap()
+        {
             let next = jvm.invoke(&instance, "next", &[]).unwrap();
             bots.push(Bot::from_instance(next));
         }

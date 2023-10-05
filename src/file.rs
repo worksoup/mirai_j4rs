@@ -3,10 +3,11 @@ use crate::{
     env::{FromInstance, GetEnvTrait},
     message::FileMessage,
     utils::internal::is_instance_of,
-    utils::FileFolderStream,
+    utils::JavaStream,
 };
 use contact_derive::GetInstanceDerive;
 use j4rs::{Instance, InvocationArg, Jvm};
+use crate::utils::internal::{external_resource_close, external_resource_from_file};
 
 pub trait AbsoluteFileFolderTrait: Sized + GetEnvTrait {
     fn delete(&self) -> bool {
@@ -308,10 +309,10 @@ impl FromInstance for AbsoluteFolder {
 }
 
 impl AbsoluteFolder {
-    pub fn children(&self) -> FileFolderStream<AbsoluteFileFolder> {
+    pub fn children(&self) -> JavaStream<AbsoluteFileFolder> {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm.invoke(&self.instance, "childrenStream", &[]).unwrap();
-        FileFolderStream {
+        JavaStream {
             instance,
             _unused: Default::default(),
         }
@@ -324,18 +325,18 @@ impl AbsoluteFolder {
             .unwrap();
         AbsoluteFolder { instance }
     }
-    pub fn files(&self) -> FileFolderStream<AbsoluteFile> {
+    pub fn files(&self) -> JavaStream<AbsoluteFile> {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm.invoke(&self.instance, "filesStream", &[]).unwrap();
-        FileFolderStream {
+        JavaStream {
             instance,
             _unused: Default::default(),
         }
     }
-    pub fn folders(&self) -> FileFolderStream<AbsoluteFolder> {
+    pub fn folders(&self) -> JavaStream<AbsoluteFolder> {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm.invoke(&self.instance, "foldersStream", &[]).unwrap();
-        FileFolderStream {
+        JavaStream {
             instance,
             _unused: Default::default(),
         }
@@ -350,13 +351,13 @@ impl AbsoluteFolder {
         let instance = jvm.invoke(&self.instance, "isEmpty", &[]).unwrap();
         jvm.to_rust(instance).unwrap()
     }
-    pub fn resolve_all(&self, path: &str) -> FileFolderStream<AbsoluteFileFolder> {
+    pub fn resolve_all(&self, path: &str) -> JavaStream<AbsoluteFileFolder> {
         let jvm = Jvm::attach_thread().unwrap();
         let path = InvocationArg::try_from(path).unwrap();
         let instance = jvm
             .invoke(&self.instance, "resolveAllStream", &[path])
             .unwrap();
-        FileFolderStream {
+        JavaStream {
             instance,
             _unused: Default::default(),
         }
@@ -373,13 +374,13 @@ impl AbsoluteFolder {
             .unwrap();
         AbsoluteFile { instance }
     }
-    pub fn resolve_files(&self, path: &str) -> FileFolderStream<AbsoluteFile> {
+    pub fn resolve_files(&self, path: &str) -> JavaStream<AbsoluteFile> {
         let jvm = Jvm::attach_thread().unwrap();
         let path = InvocationArg::try_from(path).unwrap();
         let instance = jvm
             .invoke(&self.instance, "resolveFilesStream", &[path])
             .unwrap();
-        FileFolderStream {
+        JavaStream {
             instance,
             _unused: Default::default(),
         }
@@ -403,17 +404,7 @@ impl AbsoluteFolder {
     /// 上传新文件。
     pub fn upload_new_file(&self, path: &str) -> AbsoluteFile {
         let jvm = Jvm::attach_thread().unwrap();
-        let res = jvm
-            .invoke_static(
-                "net.mamoe.mirai.utils.ExternalResource",
-                "create",
-                &[InvocationArg::try_from(
-                    jvm.create_instance("java.io.File", &[InvocationArg::try_from(path).unwrap()])
-                        .unwrap(),
-                )
-                    .unwrap()],
-            )
-            .unwrap();
+        let res = external_resource_from_file(&jvm, path);
         let instance = jvm
             .invoke(
                 &self.instance,
@@ -422,7 +413,7 @@ impl AbsoluteFolder {
             )
             .unwrap();
         // Mirai 文档里说要 close.
-        let _ = jvm.invoke(&res, "close", &[]);
+        external_resource_close(&jvm, res);
         AbsoluteFile { instance }
     }
     /// 上传新文件，传入的 callback 可以获取到当前上传文件的进度。
@@ -467,17 +458,7 @@ impl RemoteFiles {
     /// 上传新文件。
     pub fn upload_new_file(&self, path: &str) -> AbsoluteFile {
         let jvm = Jvm::attach_thread().unwrap();
-        let res = jvm
-            .invoke_static(
-                "net.mamoe.mirai.utils.ExternalResource",
-                "create",
-                &[InvocationArg::try_from(
-                    jvm.create_instance("java.io.File", &[InvocationArg::try_from(path).unwrap()])
-                        .unwrap(),
-                )
-                    .unwrap()],
-            )
-            .unwrap();
+        let res = external_resource_from_file(&jvm, path);
         let instance = jvm
             .invoke(
                 &self.instance,
@@ -486,7 +467,7 @@ impl RemoteFiles {
             )
             .unwrap();
         // Mirai 文档里说要 close.
-        let _ = jvm.invoke(&res, "close", &[]);
+        external_resource_close(&jvm, res);
         AbsoluteFile { instance }
     }
 

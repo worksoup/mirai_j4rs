@@ -20,12 +20,12 @@ pub trait MiraiRsCollectionTrait {
 pub trait MiraiRsIterableTrait: Iterator {}
 
 /// 对应 Stream<AbsoluteFileFolder>
-pub struct FileFolderStream<T: FromInstance> {
+pub struct JavaStream<T: FromInstance> {
     pub(crate) instance: Instance,
     pub(crate) _unused: PhantomData<T>,
 }
 
-impl<T: FromInstance> GetEnvTrait for FileFolderStream<T> {
+impl<T: FromInstance> GetEnvTrait for JavaStream<T> {
     fn get_instance(&self) -> Instance {
         Jvm::attach_thread()
             .unwrap()
@@ -34,16 +34,16 @@ impl<T: FromInstance> GetEnvTrait for FileFolderStream<T> {
     }
 }
 
-impl<T: FromInstance> FromInstance for FileFolderStream<T> {
+impl<T: FromInstance> FromInstance for JavaStream<T> {
     fn from_instance(instance: Instance) -> Self {
-        FileFolderStream {
+        JavaStream {
             instance,
             _unused: PhantomData::default(),
         }
     }
 }
 
-impl<T: FromInstance> FileFolderStream<T> {
+impl<T: FromInstance> JavaStream<T> {
     pub fn sorted_array_by<F>(&self, compare: F) -> Vec<T>
         where
             F: FnMut(&T, &T) -> Ordering,
@@ -52,7 +52,7 @@ impl<T: FromInstance> FileFolderStream<T> {
         array.sort_by(compare);
         array
     }
-    pub fn filter<P>(&self, p: P) -> FileFolderStream<T>
+    pub fn filter<P>(&self, p: P) -> JavaStream<T>
         where
             P: Fn(T) -> bool,
             T: FromInstance,
@@ -62,10 +62,10 @@ impl<T: FromInstance> FileFolderStream<T> {
         let predicate = InvocationArg::try_from(p.get_instance()).unwrap();
         let instance = jvm.invoke(&self.instance, "filter", &[predicate]).unwrap();
         drop(p);
-        FileFolderStream::from_instance(instance)
+        JavaStream::from_instance(instance)
     }
 
-    pub fn map<B: FromInstance, F>(&self, f: F) -> FileFolderStream<B>
+    pub fn map<B: FromInstance, F>(&self, f: F) -> JavaStream<B>
         where
             F: Fn(T) -> B,
             T: FromInstance,
@@ -76,7 +76,7 @@ impl<T: FromInstance> FileFolderStream<T> {
         let mapper = InvocationArg::try_from(f.get_instance()).unwrap();
         let instance = jvm.invoke(&self.instance, "map", &[mapper]).unwrap();
         drop(f);
-        FileFolderStream::from_instance(instance)
+        JavaStream::from_instance(instance)
     }
 
     pub fn for_each<F>(&self, f: F)
@@ -96,9 +96,9 @@ impl<T: FromInstance> FileFolderStream<T> {
         jvm.to_rust(instance).unwrap()
     }
 
-    pub fn flat_map<U: FromInstance, F>(&self, f: F) -> FileFolderStream<U>
+    pub fn flat_map<U: FromInstance, F>(&self, f: F) -> JavaStream<U>
         where
-            F: Fn(T) -> FileFolderStream<U>,
+            F: Fn(T) -> JavaStream<U>,
             T: FromInstance,
     {
         let jvm = Jvm::attach_thread().unwrap();
@@ -106,27 +106,27 @@ impl<T: FromInstance> FileFolderStream<T> {
         let mapper = InvocationArg::try_from(f.get_instance()).unwrap();
         let instance = jvm.invoke(&self.instance, "flatMap", &[mapper]).unwrap();
         drop(f);
-        FileFolderStream::from_instance(instance)
+        JavaStream::from_instance(instance)
     }
 
-    pub fn skip(&self, n: i64) -> FileFolderStream<T> {
+    pub fn skip(&self, n: i64) -> JavaStream<T> {
         let jvm = Jvm::attach_thread().unwrap();
         let n = InvocationArg::try_from(n)
             .unwrap()
             .into_primitive()
             .unwrap();
         let instance = jvm.invoke(&self.instance, "skip", &[n]).unwrap();
-        FileFolderStream::from_instance(instance)
+        JavaStream::from_instance(instance)
     }
 
-    pub fn limit(&self, max_size: i64) -> FileFolderStream<T> {
+    pub fn limit(&self, max_size: i64) -> JavaStream<T> {
         let jvm = Jvm::attach_thread().unwrap();
         let max_size = InvocationArg::try_from(max_size)
             .unwrap()
             .into_primitive()
             .unwrap();
         let instance = jvm.invoke(&self.instance, "limit", &[max_size]).unwrap();
-        FileFolderStream::from_instance(instance)
+        JavaStream::from_instance(instance)
     }
 
     pub fn max_by<F>(&self, f: F) -> Option<T>

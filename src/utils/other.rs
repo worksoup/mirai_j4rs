@@ -5,23 +5,31 @@ pub mod enums {
 
     pub enum HeartbeatStrategy {
         /// `HeartbeatStrategy.STAT_HB`
+        #[doc(alias = "STAT_HB")]
         S,
         /// `HeartbeatStrategy.REGISTER`
+        #[doc(alias = "REGISTER")]
         R,
         /// `HeartbeatStrategy.NONE`
+        #[doc(alias = "NONE")]
         N,
     }
 
     pub enum MiraiProtocol {
         /// `MiraiProtocol.ANDROID_PHONE`
+        #[doc(alias = "ANDROID_PHONE")]
         A,
         /// `MiraiProtocol.ANDROID_PAD`
+        #[doc(alias = "ANDROID_PAD")]
         P,
         /// `MiraiProtocol.ANDROID_WATCH`
+        #[doc(alias = "ANDROID_WATCH")]
         W,
         /// `MiraiProtocol.IPAD`
+        #[doc(alias = "IPAD")]
         I,
         /// `MiraiProtocol.MACOS`
+        #[doc(alias = "MACOS")]
         M,
     }
 
@@ -29,14 +37,19 @@ pub mod enums {
     #[repr(i32)]
     pub enum AvatarSpec {
         /// SMALLEST(40), 最高压缩等级。
+        #[doc(alias = "SMALLEST")]
         XS = 40,
-        /// SMALL(41), 群员列表中的显示大小, 实际上是 40 px, 但会比 `SMALLEST` 好一些。
+        /// SMALL(41), 群员列表中的显示大小, 实际上是 40 px, 但会比 [`SMALLEST`] 好一些。
+        #[doc(alias = "SMALL")]
         S = 41,
         /// MEDIUM(100), 联系人列表中的显示大小。
+        #[doc(alias = "MEDIUM")]
         M = 100,
         /// LARGE(140), 消息列表中的显示大小。
+        #[doc(alias = "LARGE")]
         L = 140,
         /// LARGEST(640), 联系人详情页面中的显示大小。
+        #[doc(alias = "LARGEST")]
         XL = 640,
         /// ORIGINAL(0), 原图。
         ORIGINAL = 0,

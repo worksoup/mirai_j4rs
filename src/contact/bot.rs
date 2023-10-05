@@ -132,7 +132,7 @@ impl FromInstance for Bot {
             .unwrap()
             .to_rust()
             .unwrap();
-        Bot { instance: instance, id }
+        Bot { instance, id }
     }
 }
 
@@ -153,11 +153,10 @@ impl Bot {
             .unwrap();
     }
     pub fn close_and_join(self, err: MiraiRsError) {
-        let r#type = InvocationArg::try_from(err.r#type).unwrap();
-        let what = InvocationArg::try_from(err.what).unwrap();
+        // TODO
         Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "closeAndJoin", &[r#type, what])
+            .invoke(&self.instance, "closeAndJoin", &[])
             .unwrap();
     }
     pub fn get_as_friend(&self) -> Friend {

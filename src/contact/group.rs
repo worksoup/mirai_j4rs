@@ -1,4 +1,11 @@
-use crate::contact::contact_trait::SendMessageSupportedTrait;
+use crate::contact::contact_trait::{AnnouncementTrait, PublishAnnouncementSupportedTrait, SendMessageSupportedTrait};
+use crate::message::message_trait::MessageHashCodeTrait;
+use crate::utils::internal::{
+    external_resource_close, external_resource_from_file, is_instance_of,
+    java_iter_to_rust_hash_set, java_iter_to_rust_vec,
+};
+use crate::utils::other::enums::{GroupHonorType, MemberMedalType};
+use crate::utils::JavaStream;
 use crate::{
     contact::{
         bot::Bot,
@@ -13,8 +20,7 @@ use contact_derive::GetInstanceDerive;
 use j4rs::{Instance, InvocationArg, Jvm};
 use std::collections::HashSet;
 use std::{cmp::Ordering, collections::HashMap, marker::PhantomData};
-use crate::utils::internal::java_iter_to_rust_hash_set;
-use crate::utils::other::enums::{GroupHonorType, MemberMedalType};
+use crate::error::{MiraiRsError};
 
 pub struct GroupSettings {
     instance: Instance,
@@ -112,6 +118,47 @@ pub struct Group {
     pub(crate) id: i64,
 }
 
+impl PublishAnnouncementSupportedTrait for Group {
+    /// 在该群发布公告。需要管理员权限。发布公告后群内将会出现 "有新公告" 系统提示。
+    ///
+    /// 需要处理的错误有：[`MiraiRsErrorEnum::PermissionDenied`], [`MiraiRsErrorEnum::IllegalState`].
+    fn publish_announcement(&self, content: &str) -> Result<OnlineAnnouncement, MiraiRsError> {
+        let jvm = Jvm::attach_thread().unwrap();
+        let group = self.get_instance();
+        let group = InvocationArg::try_from(group).unwrap();
+        let content = InvocationArg::try_from(content).unwrap();
+        let online = jvm.invoke_static(
+            "net.mamoe.mirai.contact.announcement.Announcement",
+            "publishAnnouncement",
+            &[group, content],
+        )?;
+        Ok(OnlineAnnouncement::from_instance(online))
+    }
+    /// 在该群发布公告。需要管理员权限。发布公告后群内将会出现 "有新公告" 系统提示。
+    ///
+    /// 需要处理的错误有：[`MiraiRsErrorEnum::PermissionDenied`], [`MiraiRsErrorEnum::IllegalState`].
+    ///
+    /// 另见 [`AnnouncementParameters`].
+    fn publish_announcement_with_parameters(
+        &self,
+        content: &str,
+        parameters: AnnouncementParameters,
+    ) -> Result<OnlineAnnouncement, MiraiRsError> {
+        let jvm = Jvm::attach_thread().unwrap();
+        let group = self.get_instance();
+        let group = InvocationArg::try_from(group).unwrap();
+        let content = InvocationArg::try_from(content).unwrap();
+        let parameters = parameters.get_instance();
+        let parameters = InvocationArg::try_from(parameters).unwrap();
+        let online = jvm.invoke_static(
+            "net.mamoe.mirai.contact.announcement.Announcement",
+            "publishAnnouncement",
+            &[group, content, parameters],
+        )?;
+        Ok(OnlineAnnouncement::from_instance(online))
+    }
+}
+
 impl SendMessageSupportedTrait for Group {}
 
 impl FileSupportedTrait for Group {}
@@ -120,12 +167,401 @@ pub struct GroupActive {
     instance: Instance,
 }
 
+/// 群公告的附加参数。
+/// 字段均为公开，可以直接构造。
+/// 同时可以通过 [`AnnouncementParameters::default`] 方法获取一个默认的实例。
+/// 字段含义见结构体内注释。
+pub struct AnnouncementParameters {
+    /// 群公告的图片，目前仅支持发送图片，不支持获得图片。可通过 [`Announcements::upload_image_from_file`] 上传图片。
+    ///
+    /// 另见 [`AnnouncementImage`]
+    pub image: Option<AnnouncementImage>,
+    /// 发送给新成员。
+    pub send_to_new_member: bool,
+    /// 置顶. 可以有多个置顶公告。
+    pub is_pinned: bool,
+    /// 显示能够引导群成员修改昵称的窗口。
+    pub show_edit_card: bool,
+    /// 使用弹窗。
+    pub show_popup: bool,
+    /// 需要群成员确认。
+    pub require_confirmation: bool,
+}
+
+impl AnnouncementParameters {
+    pub fn default() -> Self {
+        AnnouncementParameters {
+            image: None,
+            send_to_new_member: false,
+            is_pinned: false,
+            show_edit_card: false,
+            show_popup: false,
+            require_confirmation: false,
+        }
+    }
+}
+
+impl GetEnvTrait for AnnouncementParameters {
+    fn get_instance(&self) -> Instance {
+        let jvm = Jvm::attach_thread().unwrap();
+        let mut builder = jvm
+            .create_instance(
+                "net.mamoe.mirai.contact.announcement.AnnouncementParametersBuilder",
+                &[],
+            )
+            .unwrap();
+        if let Some(image) = &self.image {
+            let image = image.get_instance();
+            let image = InvocationArg::try_from(image).unwrap();
+            builder = jvm.invoke(&builder, "image", &[image]).unwrap();
+        }
+        let is_pinned = InvocationArg::try_from(self.is_pinned)
+            .unwrap()
+            .into_primitive()
+            .unwrap();
+        let require_confirmation = InvocationArg::try_from(self.require_confirmation)
+            .unwrap()
+            .into_primitive()
+            .unwrap();
+        let send_to_new_member = InvocationArg::try_from(self.send_to_new_member)
+            .unwrap()
+            .into_primitive()
+            .unwrap();
+        let show_edit_card = InvocationArg::try_from(self.show_edit_card)
+            .unwrap()
+            .into_primitive()
+            .unwrap();
+        let show_popup = InvocationArg::try_from(self.show_popup)
+            .unwrap()
+            .into_primitive()
+            .unwrap();
+        builder = jvm.invoke(&builder, "isPinned", &[is_pinned]).unwrap();
+        builder = jvm
+            .invoke(&builder, "requireConfirmation", &[require_confirmation])
+            .unwrap();
+        builder = jvm
+            .invoke(&builder, "sendToNewMember", &[send_to_new_member])
+            .unwrap();
+        builder = jvm
+            .invoke(&builder, "showEditCard", &[show_edit_card])
+            .unwrap();
+        builder = jvm.invoke(&builder, "showPopup", &[show_popup]).unwrap();
+        jvm.invoke(&builder, "build", &[]).unwrap()
+    }
+}
+
+impl FromInstance for AnnouncementParameters {
+    fn from_instance(instance: Instance) -> Self {
+        let jvm = Jvm::attach_thread().unwrap();
+        let image = jvm.invoke(&instance, "image", &[]).unwrap();
+        let image = if instance_is_null(&image) {
+            Some(AnnouncementImage { instance: image })
+        } else {
+            None
+        };
+        let is_pinned = jvm.invoke(&instance, "isPinned", &[]).unwrap();
+        let is_pinned = jvm.to_rust(is_pinned).unwrap();
+        let require_confirmation = jvm.invoke(&instance, "requireConfirmation", &[]).unwrap();
+        let require_confirmation = jvm.to_rust(require_confirmation).unwrap();
+        let send_to_new_member = jvm.invoke(&instance, "sendToNewMember", &[]).unwrap();
+        let send_to_new_member = jvm.to_rust(send_to_new_member).unwrap();
+        let show_edit_card = jvm.invoke(&instance, "showEditCard", &[]).unwrap();
+        let show_edit_card = jvm.to_rust(show_edit_card).unwrap();
+        let show_popup = jvm.invoke(&instance, "showPopup", &[]).unwrap();
+        let show_popup = jvm.to_rust(show_popup).unwrap();
+        AnnouncementParameters {
+            image,
+            send_to_new_member,
+            is_pinned,
+            show_edit_card,
+            show_popup,
+            require_confirmation,
+        }
+    }
+}
+
+#[derive(GetInstanceDerive)]
+pub struct OfflineAnnouncement {
+    instance: Instance,
+}
+
+impl FromInstance for OfflineAnnouncement {
+    fn from_instance(instance: Instance) -> Self {
+        Self { instance }
+    }
+}
+
+impl OfflineAnnouncement {
+    fn from_announcement(announcement: impl AnnouncementTrait) -> Self {
+        let jvm = Jvm::attach_thread().unwrap();
+        let announcement = InvocationArg::try_from(announcement.get_instance()).unwrap();
+        let offline_announcement = jvm
+            .invoke_static(
+                "net.mamoe.mirai.contact.announcement.OfflineAnnouncement",
+                "from",
+                &[announcement],
+            )
+            .unwrap();
+        Self::from_instance(offline_announcement)
+    }
+}
+
+impl From<Announcement> for OfflineAnnouncement {
+    fn from(announcement: Announcement) -> Self {
+        OfflineAnnouncement::from_announcement(announcement)
+    }
+}
+
+impl From<OnlineAnnouncement> for OfflineAnnouncement {
+    fn from(online_announcement: OnlineAnnouncement) -> Self {
+        OfflineAnnouncement::from_announcement(online_announcement)
+    }
+}
+
+impl AnnouncementTrait for OfflineAnnouncement {}
+
+/// 在线公告，也就是已经发送的存在于服务器的公告。
+///
+/// 依靠 [`fid`][OnlineAnnouncement::get_fid] 唯一识别。可[删除][OnlineAnnouncement::delete]。
+///
+/// 另见 [`Announcement`] 与 [`AnnouncementTrait`]
+#[derive(GetInstanceDerive)]
+pub struct OnlineAnnouncement {
+    instance: Instance,
+}
+
+impl FromInstance for OnlineAnnouncement {
+    fn from_instance(instance: Instance) -> Self {
+        Self { instance }
+    }
+}
+
+impl OnlineAnnouncement {
+    /// 删除这个公告，也可以使用 [`Announcements::delete`].
+    ///
+    /// 成功返回 `true`, 公告已经被删除则返回 `false`.
+    ///
+    /// 需要处理的错误有：[`MiraiRsErrorEnum::PermissionDenied`], [`MiraiRsErrorEnum::IllegalState`].
+    pub fn delete(&self) -> Result<bool, MiraiRsError> {
+        let jvm = Jvm::attach_thread().unwrap();
+        let r#bool = jvm.invoke(&self.instance, "delete", &[])?;
+        Ok(jvm.to_rust(r#bool).unwrap())
+    }
+    /// 所有人都已阅读。如果 [`AnnouncementParameters`] 的 `require_confirmation` 为 `true` 则为所有人都已确认。
+    pub fn get_all_confirmed(&self) -> bool {
+        let jvm = Jvm::attach_thread().unwrap();
+        let r#bool = jvm.invoke(&self.instance, "getAllConfirmed", &[]).unwrap();
+        jvm.to_rust(r#bool).unwrap()
+    }
+    /// 已阅读成员的数量。如果 [`AnnouncementParameters`] 的 `require_confirmation` 为 `true` 则为已确认成员的数量。
+    pub fn get_confirmed_members_count(&self) -> i32 {
+        let jvm = Jvm::attach_thread().unwrap();
+        let r#i32 = jvm.invoke(&self.instance, "getConfirmedMembersCount", &[]).unwrap();
+        jvm.to_rust(r#i32).unwrap()
+    }
+    /// 唯一识别属性。
+    pub fn get_fid(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        let fid = jvm.invoke(&self.instance, "getFid", &[]).unwrap();
+        jvm.to_rust(fid).unwrap()
+    }
+    /// 公告所属群。
+    pub fn get_group(&self) -> Group {
+        let jvm = Jvm::attach_thread().unwrap();
+        let group = jvm.invoke(&self.instance, "getGroup", &[]).unwrap();
+        Group::from_instance(group)
+    }
+    /// 公告所在群所属的 [`Bot`].
+    ///
+    /// 相当于 `self.get_group().get_bot()`.
+    pub fn get_bot(&self) -> Bot {
+        self.get_group().get_bot()
+    }
+    /// 公告发出时的时间戳。
+    ///
+    /// 另见 [std::time::UNIX_EPOCH].
+    pub fn get_publication_time(&self) -> i64 {
+        let jvm = Jvm::attach_thread().unwrap();
+        let time = jvm.invoke(&self.instance, "getPublicationTime", &[]).unwrap();
+        jvm.to_rust(time).unwrap()
+    }
+    /// [公告发送者][NormalMember]。该成员可能已经离开群，此时返回 `None`.
+    pub fn get_sender(&self) -> Option<NormalMember> {
+        let jvm = Jvm::attach_thread().unwrap();
+        let sender = jvm.invoke(&self.instance, "getSender", &[]).unwrap();
+        if instance_is_null(&sender) {
+            Some(NormalMember::from_instance(sender))
+        } else { None }
+    }
+    /// [公告发送者][NormalMember] id.
+    pub fn get_sender_id(&self) -> i64 {
+        let jvm = Jvm::attach_thread().unwrap();
+        let id = jvm.invoke(&self.instance, "getSenderId", &[]).unwrap();
+        jvm.to_rust(id).unwrap()
+    }
+    /// 获取已确认或未确认（指定 `confirmed`）的群成员。
+    ///
+    /// 需要处理的错误有：[`MiraiRsErrorEnum::PermissionDenied`], [`MiraiRsErrorEnum::IllegalState`].
+    pub fn members(&self, confirmed: bool) -> Result<Vec<NormalMember>, MiraiRsError> {
+        let jvm = Jvm::attach_thread().unwrap();
+        let confirmed = InvocationArg::try_from(confirmed).unwrap().into_primitive().unwrap();
+        let members = jvm.invoke(&self.instance, "members", &[confirmed])?;
+        let iter = jvm.invoke(&members, "iterator", &[]).unwrap();
+        Ok(java_iter_to_rust_vec(&jvm, iter))
+    }
+    /// 提醒未确认的群成员。
+    ///
+    /// 需要处理的错误有：[`MiraiRsErrorEnum::PermissionDenied`], [`MiraiRsErrorEnum::IllegalState`].
+    pub fn remind(&self) -> Result<(), MiraiRsError> {
+        let jvm = Jvm::attach_thread().unwrap();
+        let _ = jvm.invoke(&self.instance, "remind", &[])?;
+        Ok(())
+    }
+}
+
+impl AnnouncementTrait for OnlineAnnouncement {}
+
+/// 群公告。可以是 [`OnlineAnnouncement`] 或 [`OfflineAnnouncement`].
+///
+/// ## 发布公告
+///
+/// ### 构造一条新公告并发布
+///
+/// 构造 [`OfflineAnnouncement`] 然后调用 [`OfflineAnnouncement::publish_to`] 或 [`Announcements::publish`]
+///
+/// 构造时的 [`AnnouncementParameters`] 可以设置一些附加属性。
+///
+/// 也可以使用 [`Group::publish_announcement`] 和 [`Group::publish_announcement_with_parameters`] 创建并发布公告。
+///
+/// ### 转发获取的公告到其他群
+///
+/// 通过一个群的 [`Announcements`] 获取到 [`OnlineAnnouncement`], 然后调用 [`OnlineAnnouncement::publish_to`] 即可。
+/// 由于 `Mirai` 目前不支持获取公告图片，所以转发的公告也不会带有原公告的图片。
+pub enum Announcement {
+    OnlineAnnouncement(OnlineAnnouncement),
+    OfflineAnnouncement(OfflineAnnouncement),
+}
+
+impl GetEnvTrait for Announcement {
+    fn get_instance(&self) -> Instance {
+        match self {
+            Announcement::OnlineAnnouncement(a) => a.get_instance(),
+            Announcement::OfflineAnnouncement(a) => a.get_instance(),
+        }
+    }
+}
+
+impl FromInstance for Announcement {
+    fn from_instance(instance: Instance) -> Self {
+        if is_instance_of(
+            &instance,
+            "net.mamoe.mirai.contact.announcement.OnlineAnnouncement",
+        ) {
+            Self::OnlineAnnouncement(OnlineAnnouncement::from_instance(instance))
+        } else {
+            Self::OfflineAnnouncement(OfflineAnnouncement::from_instance(instance))
+        }
+    }
+}
+
+impl AnnouncementTrait for Announcement {}
+
+#[derive(GetInstanceDerive)]
+pub struct AnnouncementImage {
+    instance: Instance,
+}
+
+impl AnnouncementImage {
+    pub fn new(id: &str, h: i32, w: i32) -> Self {
+        let jvm = Jvm::attach_thread().unwrap();
+        let id = InvocationArg::try_from(id).unwrap();
+        let h = InvocationArg::try_from(h)
+            .unwrap()
+            .into_primitive()
+            .unwrap();
+        let w = InvocationArg::try_from(w)
+            .unwrap()
+            .into_primitive()
+            .unwrap();
+        let instance = jvm.invoke_static("", "create", &[id, h, w]).unwrap();
+        Self { instance }
+    }
+    pub fn get_height(&self) -> i32 {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke_static("", "getHeight", &[]).unwrap();
+        jvm.to_rust(instance).unwrap()
+    }
+    pub fn get_width(&self) -> i32 {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke_static("", "getWidth", &[]).unwrap();
+        jvm.to_rust(instance).unwrap()
+    }
+    pub fn get_id(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke_static("", "getId", &[]).unwrap();
+        jvm.to_rust(instance).unwrap()
+    }
+    pub fn get_url(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke_static("", "getUrl", &[]).unwrap();
+        jvm.to_rust(instance).unwrap()
+    }
+    pub fn to_string(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke_static("", "toString", &[]).unwrap();
+        jvm.to_rust(instance).unwrap()
+    }
+}
+
+impl MessageHashCodeTrait for AnnouncementImage {}
+
 pub struct Announcements {
     instance: Instance,
 }
 
 impl Announcements {
-    // TODO
+    pub fn as_stream(&self) -> JavaStream<OnlineAnnouncement> {
+        let jvm = Jvm::attach_thread().unwrap();
+        JavaStream::from_instance(jvm.invoke(&self.instance, "asStream", &[]).unwrap())
+    }
+    pub fn delete(&self, fid: &str) -> bool {
+        let jvm = Jvm::attach_thread().unwrap();
+        let fid = InvocationArg::try_from(fid).unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "delete", &[fid]).unwrap())
+            .unwrap()
+    }
+    pub fn get(&self, fid: &str) -> OnlineAnnouncement {
+        let jvm = Jvm::attach_thread().unwrap();
+        let fid = InvocationArg::try_from(fid).unwrap();
+        OnlineAnnouncement::from_instance(jvm.invoke(&self.instance, "get", &[fid]).unwrap())
+    }
+    pub fn members(&self) -> Vec<NormalMember> {
+        let jvm = Jvm::attach_thread().unwrap();
+        let list = jvm.invoke(&self.instance, "members", &[]).unwrap();
+        let iter = jvm.invoke(&list, "iterator", &[]).unwrap();
+        java_iter_to_rust_vec(&jvm, iter)
+    }
+    pub fn publish(&self, announcement: Announcement) -> OnlineAnnouncement {
+        let jvm = Jvm::attach_thread().unwrap();
+        let announcement = InvocationArg::try_from(announcement.get_instance()).unwrap();
+        let announcement = jvm
+            .invoke(&self.instance, "publish", &[announcement])
+            .unwrap();
+        OnlineAnnouncement::from_instance(announcement)
+    }
+    pub fn remind(&self, fid: &str) {
+        let jvm = Jvm::attach_thread().unwrap();
+        let fid = InvocationArg::try_from(fid).unwrap();
+        let _ = jvm.invoke(&self.instance, "remind", &[fid]).unwrap();
+    }
+    pub fn upload_image_from_file(&self, path: &str) -> AnnouncementImage {
+        let jvm = Jvm::attach_thread().unwrap();
+        let res = external_resource_from_file(&jvm, path);
+        let a = InvocationArg::try_from(jvm.clone_instance(&res).unwrap()).unwrap();
+        let instance = jvm.invoke(&self.instance, "uploadImage", &[a]).unwrap();
+        external_resource_close(&jvm, res);
+        AnnouncementImage { instance }
+    }
 }
 
 #[derive(num_enum::FromPrimitive, num_enum::IntoPrimitive, Debug)]
@@ -460,7 +896,8 @@ pub struct MemberMedalInfo {
 impl MemberMedalInfo {
     pub fn get_color(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getColor", &[]).unwrap()).unwrap()
+        jvm.to_rust(jvm.invoke(&self.instance, "getColor", &[]).unwrap())
+            .unwrap()
     }
     pub fn get_medals(&self) -> HashSet<MemberMedalType> {
         let jvm = Jvm::attach_thread().unwrap();
@@ -470,7 +907,8 @@ impl MemberMedalInfo {
     }
     pub fn get_title(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getTitle", &[]).unwrap()).unwrap()
+        jvm.to_rust(jvm.invoke(&self.instance, "getTitle", &[]).unwrap())
+            .unwrap()
     }
     pub fn get_wearing(&self) -> MemberMedalType {
         let jvm = Jvm::attach_thread().unwrap();
@@ -488,6 +926,12 @@ pub struct MemberActive {
     instance: Instance,
 }
 
+impl FromInstance for MemberActive {
+    fn from_instance(instance: Instance) -> Self {
+        Self { instance }
+    }
+}
+
 impl MemberActive {
     pub fn get_honors(&self) -> HashSet<GroupHonorType> {
         let jvm = Jvm::attach_thread().unwrap();
@@ -497,19 +941,24 @@ impl MemberActive {
     }
     pub fn get_point(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getPoint", &[]).unwrap()).unwrap()
+        jvm.to_rust(jvm.invoke(&self.instance, "getPoint", &[]).unwrap())
+            .unwrap()
     }
     pub fn get_rank(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getRank", &[]).unwrap()).unwrap()
+        jvm.to_rust(jvm.invoke(&self.instance, "getRank", &[]).unwrap())
+            .unwrap()
     }
     pub fn get_temperature(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getTemperature", &[]).unwrap()).unwrap()
+        jvm.to_rust(jvm.invoke(&self.instance, "getTemperature", &[]).unwrap())
+            .unwrap()
     }
     pub fn query_medal(&self) -> MemberMedalInfo {
         let jvm = Jvm::attach_thread().unwrap();
-        MemberMedalInfo { instance: jvm.invoke(&self.instance, "queryMedal", &[]).unwrap() }
+        MemberMedalInfo {
+            instance: jvm.invoke(&self.instance, "queryMedal", &[]).unwrap(),
+        }
     }
 }
 

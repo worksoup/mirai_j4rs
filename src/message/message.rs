@@ -1586,7 +1586,12 @@ impl SuperFace {
             .unwrap();
         Self { instance }
     }
-    pub fn get_face(&self) -> i32 {
+    pub fn get_face(&self) -> Face {
+        let jvm = Jvm::attach_thread().unwrap();
+        let face_id = jvm.invoke(&self.instance, "getFace", &[]).unwrap();
+        jvm.to_rust::<i32>(face_id).unwrap().into()
+    }
+    pub fn get_face_id(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
         let face_id = jvm.invoke(&self.instance, "getFace", &[]).unwrap();
         jvm.to_rust(face_id).unwrap()

@@ -1,3 +1,9 @@
+use crate::action::nudges::Nudge;
+use crate::contact::group::{
+    AnnouncementParameters, MemberActive, OfflineAnnouncement, OnlineAnnouncement,
+};
+use crate::error::MiraiRsError;
+use crate::utils::internal::{external_resource_close, external_resource_from_file};
 use crate::{
     contact::{
         group::{Group, MemberPermission},
@@ -8,9 +14,6 @@ use crate::{
     utils::other::enums::AvatarSpec,
 };
 use j4rs::{InvocationArg, Jvm};
-use std::path::PathBuf;
-use crate::action::nudges::Nudge;
-use crate::contact::group::MemberActive;
 
 pub trait AssertMemberPermissionTrait: MemberTrait {
     fn is_owner(&self) -> bool;
@@ -86,7 +89,6 @@ pub trait ContactOrBotTrait
     }
 }
 
-
 pub trait ContactTrait
     where
         Self: ContactOrBotTrait,
@@ -116,24 +118,9 @@ pub trait SendMessageSupportedTrait: ContactTrait {
             .unwrap();
         MessageReceipt::new(instance, &self)
     }
-    fn upload_image_from_file(&self, path: &PathBuf) -> Image {
+    fn upload_image_from_file(&self, path: &str) -> Image {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm
-            .invoke_static(
-                "net.mamoe.mirai.utils.ExternalResource",
-                "create",
-                &[InvocationArg::try_from(
-                    Jvm::attach_thread()
-                        .unwrap()
-                        .create_instance(
-                            "java.io.File",
-                            &[InvocationArg::try_from(path.to_str().unwrap()).unwrap()],
-                        )
-                        .unwrap(),
-                )
-                    .unwrap()],
-            )
-            .unwrap();
+        let resource = external_resource_from_file(&jvm, path);
         // 存疑：是否需要传入 Group(java) 本身？
         // 新：似乎不需要？
         // 新：前两条注释说的是什么来着？
@@ -141,11 +128,11 @@ pub trait SendMessageSupportedTrait: ContactTrait {
             .invoke(
                 &self.get_instance(),
                 "uploadImage",
-                &[InvocationArg::try_from(jvm.clone_instance(&instance).unwrap()).unwrap()],
+                &[InvocationArg::try_from(jvm.clone_instance(&resource).unwrap()).unwrap()],
             )
             .unwrap();
         // Mirai 文档里说要 close.
-        let _ = jvm.invoke(&instance, "close", &[]);
+        external_resource_close(&jvm, resource);
         Image {
             instance: image_instance,
         }
@@ -190,7 +177,11 @@ pub trait MemberTrait
         let group = jvm.invoke(&self.get_instance(), "getGroup", &[]).unwrap();
         Group::from_instance(group)
     }
-    fn get_active(&self) -> MemberActive { todo!() }
+    fn get_active(&self) -> MemberActive {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke(&self.get_instance(), "getActive", &[]).unwrap();
+        MemberActive::from_instance(instance)
+    }
     fn get_name_card(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         let name_card = jvm
@@ -251,4 +242,55 @@ pub trait AsFriend {
 // TODO: 为 `Bot`, `NormalMember`, 实现。
 pub trait AsStranger {
     fn as_stranger(&self) -> Friend;
+}
+
+pub trait AnnouncementTrait: GetEnvTrait {
+    /// 内容。
+    fn get_content(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        let content = jvm.invoke(&self.get_instance(), "getContent", &[]).unwrap();
+        jvm.to_rust(content).unwrap()
+    }
+    /// 公告的附加属性。
+    ///
+    /// 参见 [`AnnouncementParameters`].
+    fn get_parameters(&self) -> AnnouncementParameters {
+        let jvm = Jvm::attach_thread().unwrap();
+        let paras = jvm
+            .invoke(&self.get_instance(), "getParameters", &[])
+            .unwrap();
+        AnnouncementParameters::from_instance(paras)
+    }
+    /// 创建 [`OfflineAnnouncement`]. 也可以使用 `self.into()` 或 [`OfflineAnnouncement::from`].
+    fn to_offline(&self) -> OfflineAnnouncement {
+        let jvm = Jvm::attach_thread().unwrap();
+        let a = InvocationArg::try_from(self.get_instance()).unwrap();
+        let offline = jvm
+            .invoke_static(
+                "net.mamoe.mirai.contact.announcement.AnnouncementKt",
+                "toOffline",
+                &[a],
+            )
+            .unwrap();
+        OfflineAnnouncement::from_instance(offline)
+    }
+    /// 将该公告发布到群。需要管理员权限。发布公告后群内将会出现 "有新公告" 系统提示。
+    ///
+    /// 需要处理的错误有：[`MiraiRsErrorEnum::PermissionDenied`], [`MiraiRsErrorEnum::IllegalState`].
+    fn publish_to(&self, group: Group) -> Result<OnlineAnnouncement, MiraiRsError> {
+        let jvm = Jvm::attach_thread().unwrap();
+        let group = group.get_instance();
+        let group = InvocationArg::try_from(group).unwrap();
+        let online = jvm.invoke(&self.get_instance(), "publishTo", &[group])?;
+        Ok(OnlineAnnouncement::from_instance(online))
+    }
+}
+
+pub trait PublishAnnouncementSupportedTrait {
+    fn publish_announcement(&self, content: &str) -> Result<OnlineAnnouncement, MiraiRsError>;
+    fn publish_announcement_with_parameters(
+        &self,
+        content: &str,
+        parameters: AnnouncementParameters,
+    ) -> Result<OnlineAnnouncement, MiraiRsError>;
 }

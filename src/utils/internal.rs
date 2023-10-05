@@ -1,8 +1,8 @@
-use std::collections::HashSet;
-use std::hash::Hash;
+use crate::env::FromInstance;
 use crate::utils::other::enums::MiraiProtocol;
 use j4rs::{Instance, InvocationArg, Jvm};
-use crate::env::FromInstance;
+use std::collections::HashSet;
+use std::hash::Hash;
 
 pub(crate) fn get_bytes_md5_and_cast_to_i8_16(jvm: Jvm, instance: &Instance) -> [i8; 16] {
     let bytes = jvm.invoke(&instance, "getMd5", &[]).unwrap();
@@ -118,20 +118,49 @@ pub(crate) fn protocol_str2enum(protocol: String) -> MiraiProtocol {
     }
 }
 
-pub(crate) fn java_iter_to_rust_vec<T: FromInstance, >(jvm: &Jvm, iter: Instance) -> Vec<T> {
+pub(crate) fn java_iter_to_rust_vec<T: FromInstance>(jvm: &Jvm, iter: Instance) -> Vec<T> {
     let mut res = Vec::new();
-    while jvm.to_rust(jvm.invoke(&iter, "hasNext", &[]).unwrap()).unwrap() {
+    while jvm
+        .to_rust(jvm.invoke(&iter, "hasNext", &[]).unwrap())
+        .unwrap()
+    {
         let next = jvm.invoke(&iter, "next", &[]).unwrap();
         res.push(T::from_instance(next));
     }
     res
 }
 
-pub(crate) fn java_iter_to_rust_hash_set<T: FromInstance + Hash + Eq, >(jvm: &Jvm, iter: Instance) -> HashSet<T> {
+pub(crate) fn java_iter_to_rust_hash_set<T: FromInstance + Hash + Eq>(
+    jvm: &Jvm,
+    iter: Instance,
+) -> HashSet<T> {
     let mut res = HashSet::new();
-    while jvm.to_rust(jvm.invoke(&iter, "hasNext", &[]).unwrap()).unwrap() {
+    while jvm
+        .to_rust(jvm.invoke(&iter, "hasNext", &[]).unwrap())
+        .unwrap()
+    {
         let next = jvm.invoke(&iter, "next", &[]).unwrap();
         res.insert(T::from_instance(next));
     }
     res
+}
+
+/// 请注意 close.
+pub(crate) fn external_resource_from_file(jvm: &Jvm, path: &str) -> Instance {
+    jvm.invoke_static(
+        "net.mamoe.mirai.utils.ExternalResource",
+        "create",
+        &[InvocationArg::try_from(
+            Jvm::attach_thread()
+                .unwrap()
+                .create_instance("java.io.File", &[InvocationArg::try_from(path).unwrap()])
+                .unwrap(),
+        )
+            .unwrap()],
+    )
+        .unwrap()
+}
+
+pub(crate) fn external_resource_close(jvm: &Jvm, resource: Instance) {
+    let _ = jvm.invoke(&resource, "close", &[]);
 }

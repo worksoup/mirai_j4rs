@@ -22,6 +22,7 @@ use std::{
     collections::HashMap,
     path::{Path, PathBuf},
 };
+use crate::utils::login_solver::LoginSolverTrait;
 
 #[derive(GetInstanceDerive)]
 pub struct FriendGroup {
@@ -1086,13 +1087,13 @@ impl BotConfiguration {
             )
             .unwrap();
     }
-    pub fn set_login_solver(&self, login_solver: LoginSolver) {
+    pub fn set_login_solver<const IS_SLIDER_CAPTCHA_SUPPORTED: bool, T: LoginSolverTrait<IS_SLIDER_CAPTCHA_SUPPORTED>>(&self, _: T) {
         Jvm::attach_thread()
             .unwrap()
             .invoke(
                 &self.instance,
                 "setLoginSolver",
-                &[InvocationArg::try_from(login_solver.get_instance()).unwrap()],
+                &[InvocationArg::try_from(T::__instance()).unwrap()],
             )
             .unwrap();
     }

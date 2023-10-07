@@ -2,6 +2,7 @@ pub mod ffi;
 mod ffi_internal_test;
 pub(crate) mod internal;
 pub mod other;
+pub mod login_solver;
 
 use crate::env::{FromInstance, GetEnvTrait};
 use crate::utils::ffi::{Comparator, Consumer, Function, Predicate};

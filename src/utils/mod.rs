@@ -138,7 +138,7 @@ impl<T: FromInstance> JavaStream<T> {
         let compare = InvocationArg::try_from(f.get_instance()).unwrap();
         let instance = jvm.invoke(&self.instance, "max", &[compare]).unwrap();
         drop(f);
-        if instance_is_null(&instance) {
+        if !instance_is_null(&instance) {
             Some(T::from_instance(instance))
         } else {
             None
@@ -154,7 +154,7 @@ impl<T: FromInstance> JavaStream<T> {
         let compare = InvocationArg::try_from(f.get_instance()).unwrap();
         let instance = jvm.invoke(&self.instance, "min", &[compare]).unwrap();
         drop(f);
-        if instance_is_null(&instance) {
+        if !instance_is_null(&instance) {
             Some(T::from_instance(instance))
         } else {
             None

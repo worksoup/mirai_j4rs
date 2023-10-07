@@ -96,10 +96,10 @@ impl<T> ContactList<T>
                     .unwrap()],
             )
             .unwrap();
-        if instance_is_null(&instance) {
-            None
-        } else {
+        if !instance_is_null(&instance) {
             Some(T::from_instance(instance))
+        } else {
+            None
         }
     }
     pub fn get_size(&self) -> usize {

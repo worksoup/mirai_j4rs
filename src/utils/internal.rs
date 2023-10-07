@@ -28,12 +28,22 @@ pub(crate) fn get_bytes_md5_and_cast_to_i8_16(jvm: Jvm, instance: &Instance) -> 
         .unwrap()
 }
 
-pub(super) fn i8_16_to_bytes_16<E>(jvm: &Jvm, array: [i8; 16]) -> Instance {
+pub(super) fn i8_16_to_bytes_16(jvm: &Jvm, array: [i8; 16]) -> Instance {
     let mut i8vector = Vec::new();
     for i in array {
         i8vector.push(InvocationArg::try_from(i).unwrap());
     }
     jvm.create_java_array("java.lang.Byte", &i8vector).unwrap()
+}
+
+pub(crate) fn instance_from_i8_16<const CLASS_TYPE: &'static str>(call_from_java_raw_as_i8_16: [i8; 16]) -> Instance {
+    let jvm = Jvm::attach_thread().unwrap();
+    let call_from_java_raw_as_java_bytes = i8_16_to_bytes_16(&jvm, call_from_java_raw_as_i8_16);
+    jvm.create_instance(
+        CLASS_TYPE,
+        &[InvocationArg::try_from(call_from_java_raw_as_java_bytes).unwrap()],
+    )
+        .unwrap()
 }
 
 pub(crate) fn is_instance_of(instance: &Instance, class_name: &str) -> bool {
@@ -60,24 +70,15 @@ pub(crate) fn java_println(val: &Instance) {
 }
 
 pub(crate) fn instance_is_null(instance: &Instance) -> bool {
-    Jvm::attach_thread()
-        .unwrap()
-        .to_rust(
-            Jvm::attach_thread()
-                .unwrap()
-                .invoke_static(
-                    "java.util.Objects",
-                    "isNull",
-                    &[InvocationArg::try_from(
-                        Jvm::attach_thread()
-                            .unwrap()
-                            .clone_instance(instance)
-                            .unwrap(),
-                    )
-                        .unwrap()],
-                )
-                .unwrap(),
+    let jvm = Jvm::attach_thread().unwrap();
+    jvm.to_rust(
+        jvm.invoke_static(
+            "java.util.Objects",
+            "isNull",
+            &[InvocationArg::try_from(jvm.clone_instance(instance).unwrap()).unwrap()],
         )
+            .unwrap(),
+    )
         .unwrap()
 }
 

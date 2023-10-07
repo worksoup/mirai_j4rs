@@ -1,3 +1,5 @@
+use crate::contact::contact_trait::NudgeSupportedTrait;
+use crate::utils::internal::java_iter_to_rust_vec;
 use crate::{
     action::nudges::BotNudge,
     contact::{
@@ -20,8 +22,6 @@ use std::{
     collections::HashMap,
     path::{Path, PathBuf},
 };
-use crate::contact::contact_trait::NudgeSupportedTrait;
-use crate::utils::internal::java_iter_to_rust_vec;
 
 #[derive(GetInstanceDerive)]
 pub struct FriendGroup {
@@ -207,14 +207,14 @@ impl Bot {
                     .unwrap()],
             )
             .unwrap();
-        if instance_is_null(&instance) {
-            None
-        } else {
+        if !instance_is_null(&instance) {
             Some(Friend {
                 bot: self.get_instance(),
                 instance,
                 id,
             })
+        } else {
+            None
         }
     }
     pub fn get_friend_groups(&self) -> FriendGroups {
@@ -262,10 +262,10 @@ impl Bot {
                     .unwrap()],
             )
             .unwrap();
-        if instance_is_null(&instance) {
-            None
-        } else {
+        if !instance_is_null(&instance) {
             Some(Stranger::from_instance(instance))
+        } else {
+            None
         }
     }
     pub fn get_strangers(&self) -> ContactList<Stranger> {
@@ -327,7 +327,10 @@ pub struct MiraiLogger(Instance);
 
 pub struct DeviceInfo(Instance);
 
-pub struct LoginSolver(Instance);
+#[derive(GetInstanceDerive)]
+pub struct LoginSolver {
+    instance: Instance,
+}
 
 pub struct ContactListCache {
     instance: Instance,
@@ -515,10 +518,10 @@ impl Env {
                     .unwrap()],
             )
             .unwrap();
-        if instance_is_null(&bot) {
-            None
-        } else {
+        if !instance_is_null(&bot) {
             Some(Bot { instance: bot, id })
+        } else {
+            None
         }
     }
     pub fn get_bots(&self) -> Vec<Bot> {
@@ -841,12 +844,15 @@ impl BotConfiguration {
             .unwrap()
     }
     pub fn get_login_solver(&self) -> Option<LoginSolver> {
-        return Some(LoginSolver(
-            Jvm::attach_thread()
-                .unwrap()
-                .invoke(&self.instance, "getLoginSolver", &[])
-                .unwrap(),
-        ));
+        let instance = Jvm::attach_thread()
+            .unwrap()
+            .invoke(&self.instance, "getLoginSolver", &[])
+            .unwrap();
+        if !instance_is_null(&instance) {
+            Some(LoginSolver { instance })
+        } else {
+            None
+        }
     }
     pub fn get_network_logger_supplier(&self) -> Option<Instance> {
         return Some(
@@ -1086,7 +1092,7 @@ impl BotConfiguration {
             .invoke(
                 &self.instance,
                 "setLoginSolver",
-                &[InvocationArg::try_from(login_solver.0).unwrap()],
+                &[InvocationArg::try_from(login_solver.get_instance()).unwrap()],
             )
             .unwrap();
     }

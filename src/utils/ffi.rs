@@ -1,4 +1,5 @@
 use crate::env::{FromInstance, GetEnvTrait};
+use crate::utils::internal::instance_from_i8_16;
 use contact_derive::GetInstanceDerive;
 use j4rs::{errors::J4RsError, prelude::*, Instance, InvocationArg, Jvm};
 use j4rs_derive::*;
@@ -95,7 +96,7 @@ impl<T, F: Fn(T) -> ()> Consumer<T, F>
         println!("{:?}", call_from_java_raw_as_i8_16);
         let jvm = Jvm::attach_thread().unwrap();
         let call_from_java_raw_as_java_bytes =
-            crate::utils::internal::i8_16_to_bytes_16::<T>(&jvm, call_from_java_raw_as_i8_16);
+            crate::utils::internal::i8_16_to_bytes_16(&jvm, call_from_java_raw_as_i8_16);
         let instance = jvm
             .create_instance(
                 "rt.lea.LumiaConsumer",
@@ -126,81 +127,37 @@ impl<T, F: Fn(T) -> ()> Drop for Consumer<T, F>
     }
 }
 
-#[call_from_java("rt.lea.LumiaComparator.nativeCompare")]
-fn lumia_comparator_compare(
-    comparator_as_i8_16: Instance,
-    val1: Instance,
-    val2: Instance,
-) -> Result<Instance, String> {
-    let comparator_raw: [i8; 16] = Jvm::attach_thread()
-        .unwrap()
-        .to_rust(comparator_as_i8_16)
-        .unwrap();
-    println!(
-        "lumia_comparator_compare, in {}, {}:{}",
-        file! {},
-        line!(),
-        column!()
-    );
-    println!("comparator_raw: {:?}", comparator_raw);
-    let comparator: *mut dyn Fn(InstanceWrapper, InstanceWrapper) -> i32 =
-        unsafe { transmute(comparator_raw) };
-    let ordering = unsafe {
-        (*comparator)(
-            InstanceWrapper::from_instance(val1),
-            InstanceWrapper::from_instance(val2),
-        )
-    };
-    let ordering = InvocationArg::try_from(ordering).map_err(|error| format!("{}", error))?;
-    Instance::try_from(ordering).map_err(|error| format!("{}", error))
+struct KtPairWrapper<P1, P2>
+    where
+        P1: FromInstance,
+        P2: FromInstance,
+{
+    val1: P1,
+    val2: P2,
 }
 
-struct PairForComparator<T>
+impl<P1, P2> KtPairWrapper<P1, P2>
     where
-        T: FromInstance,
+        P1: FromInstance,
+        P2: FromInstance,
 {
-    val1: T,
-    val2: T,
-}
-
-impl<T> PairForComparator<T>
-    where
-        T: FromInstance,
-{
-    pub fn get_pair(self) -> (T, T) {
+    pub fn get_pair(self) -> (P1, P2) {
         (self.val1, self.val2)
     }
 }
 
-impl<T> FromInstance for PairForComparator<T>
+impl<P1, P2> FromInstance for KtPairWrapper<P1, P2>
     where
-        T: FromInstance,
+        P1: FromInstance,
+        P2: FromInstance,
 {
     fn from_instance(instance: Instance) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.cast(&instance, "java.util.List").unwrap();
-        let val1 = jvm
-            .invoke(
-                &instance,
-                "get",
-                &[InvocationArg::try_from(0)
-                    .unwrap()
-                    .into_primitive()
-                    .unwrap()],
-            )
-            .unwrap();
-        let val2 = jvm
-            .invoke(
-                &instance,
-                "get",
-                &[InvocationArg::try_from(1)
-                    .unwrap()
-                    .into_primitive()
-                    .unwrap()],
-            )
-            .unwrap();
-        let val1 = T::from_instance(val1);
-        let val2 = T::from_instance(val2);
+        let instance = jvm.cast(&instance, "kotlin.Pair").unwrap();
+        let val1 = jvm.invoke(&instance, "getFirst", &[]).unwrap();
+        let val2 = jvm.invoke(&instance, "getSecond", &[]).unwrap();
+        let val1 = P1::from_instance(val1);
+        let val2 = P2::from_instance(val2);
         Self { val1, val2 }
     }
 }
@@ -234,17 +191,6 @@ impl<T, F> Comparator<T, F>
         T: FromInstance,
         F: Fn(&T, &T) -> Ordering + 'static,
 {
-    fn internal_function_instance_from_i8_16(call_from_java_raw_as_i8_16: [i8; 16]) -> Instance {
-        let jvm = Jvm::attach_thread().unwrap();
-        let call_from_java_raw_as_java_bytes = crate::utils::internal::i8_16_to_bytes_16::<
-            PairForComparator<T>,
-        >(&jvm, call_from_java_raw_as_i8_16);
-        jvm.create_instance(
-            "rt.lea.LumiaFunction",
-            &[InvocationArg::try_from(call_from_java_raw_as_java_bytes).unwrap()],
-        )
-            .unwrap()
-    }
     pub fn new(closure: F) -> Pin<Box<Comparator<T, F>>> {
         let jvm = Jvm::attach_thread().unwrap();
         let mut comparator: Comparator<T, F> = Comparator {
@@ -255,7 +201,7 @@ impl<T, F> Comparator<T, F>
         };
         let closure_ref = &comparator.closure;
         let call_from_java = Box::new(|value: InstanceWrapper| -> Instance {
-            let value = value.get::<PairForComparator<T>>();
+            let value = value.get::<KtPairWrapper<T, T>>();
             let (val1, val2) = value.get_pair();
             let ordering = closure_ref(&val1, &val2);
             match ordering {
@@ -270,7 +216,7 @@ impl<T, F> Comparator<T, F>
             Box::into_raw(call_from_java);
         let call_from_java_as_i8_16 = unsafe { transmute::<_, [i8; 16]>(call_from_java_raw) };
         comparator.internal_closure_raw = Some(call_from_java_as_i8_16);
-        let lumia_function = Self::internal_function_instance_from_i8_16(call_from_java_as_i8_16);
+        let lumia_function = instance_from_i8_16::<"rt.lea.LumiaFunction">(call_from_java_as_i8_16);
         let lumia_comparator = jvm
             .create_instance(
                 "rt.lea.LumiaComparator",
@@ -352,49 +298,6 @@ impl<T, F, R> Function<T, F, R>
             Box::into_raw(call_from_java);
         unsafe { transmute::<_, [i8; 16]>(call_from_java_raw) }
     }
-    pub(crate) fn internal_function_instance_from_i8_16(
-        call_from_java_raw_as_i8_16: [i8; 16],
-    ) -> Instance {
-        let jvm = Jvm::attach_thread().unwrap();
-        let call_from_java_raw_as_java_bytes =
-            crate::utils::internal::i8_16_to_bytes_16::<T>(&jvm, call_from_java_raw_as_i8_16);
-        jvm.create_instance(
-            "rt.lea.LumiaFunction",
-            &[InvocationArg::try_from(call_from_java_raw_as_java_bytes).unwrap()],
-        )
-            .unwrap()
-    }
-    // pub fn new(closure: F) -> Pin<Box<Function<T, F, R>>> {
-    //     let mut function: Function<T, F, R> = Function {
-    //         closure,
-    //         instance: None,
-    //         internal_closure_raw: None,
-    //         _t: Default::default(),
-    //         _r: Default::default(),
-    //     };
-    //     let closure_ref = &function.closure;
-    //     let call_from_java = Box::new(|value: InstanceWrapper| -> Instance {
-    //         let value = value.get::<T>();
-    //         let value = closure_ref(value);
-    //         value.get_instance()
-    //     });
-    //     let call_from_java_raw: *mut dyn Fn(InstanceWrapper) -> Instance =
-    //         Box::into_raw(call_from_java);
-    //     let call_from_java_raw_as_i8_16 = unsafe { transmute::<_, [i8; 16]>(call_from_java_raw) };
-    //     function.internal_closure_raw = Some(call_from_java_raw_as_i8_16);
-    //     println!("closure_to_function\n{:?}", call_from_java_raw_as_i8_16);
-    //     let jvm = Jvm::attach_thread().unwrap();
-    //     let call_from_java_raw_as_java_bytes =
-    //         i8_16_to_bytes_16::<T>(&jvm, call_from_java_raw_as_i8_16);
-    //     let instance = jvm
-    //         .create_instance(
-    //             "rt.lea.LumiaFunction",
-    //             &[InvocationArg::try_from(call_from_java_raw_as_java_bytes).unwrap()],
-    //         )
-    //         .unwrap();
-    //     function.instance = Some(instance);
-    //     Box::pin(function)
-    // }
     pub fn new(closure: F) -> Pin<Box<Function<T, F, R>>> {
         let mut function: Function<T, F, R> = Function {
             closure,
@@ -407,7 +310,7 @@ impl<T, F, R> Function<T, F, R>
         let call_from_java_raw_as_i8_16 = Self::internal_closure_as_i8_16(closure_ref);
         function.internal_closure_raw = Some(call_from_java_raw_as_i8_16);
         println!("closure_to_function\n{:?}", call_from_java_raw_as_i8_16);
-        let instance = Self::internal_function_instance_from_i8_16(call_from_java_raw_as_i8_16);
+        let instance = instance_from_i8_16::<"rt.lea.LumiaFunction">(call_from_java_raw_as_i8_16);
         function.instance = Some(instance);
         Box::pin(function)
     }
@@ -509,7 +412,7 @@ impl<T, F> Predicate<T, F>
         println!("closure_to_predicate\n{:?}", call_from_java_raw_as_i8_16);
         let jvm = Jvm::attach_thread().unwrap();
         let call_from_java_raw_as_java_bytes =
-            crate::utils::internal::i8_16_to_bytes_16::<T>(&jvm, call_from_java_raw_as_i8_16);
+            crate::utils::internal::i8_16_to_bytes_16(&jvm, call_from_java_raw_as_i8_16);
         let instance = jvm
             .create_instance(
                 "rt.lea.LumiaPredicate",
@@ -542,113 +445,218 @@ impl<T, F> Drop for Predicate<T, F>
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use crate::{
-        env::{FromInstance, GetEnvTrait},
-        utils::ffi::{Comparator, Consumer, Function, Predicate},
-    };
-    use j4rs::{ClasspathEntry, Instance, InvocationArg, Jvm, JvmBuilder};
-    use std::cmp::Ordering;
+pub(crate) struct KtFunc0<R, F>
+    where
+        F: Fn() -> R,
+        R: GetEnvTrait + FromInstance,
+{
+    closure: F,
+    instance: Option<Instance>,
+    internal_closure_raw: Option<[i8; 16]>,
+}
 
-    struct X {
-        instance: Instance,
+impl<R, F> GetEnvTrait for KtFunc0<R, F>
+    where
+        F: Fn() -> R,
+        R: GetEnvTrait + FromInstance,
+{
+    fn get_instance(&self) -> Instance {
+        Jvm::attach_thread()
+            .unwrap()
+            .clone_instance(self.instance.as_ref().unwrap())
+            .unwrap()
     }
+}
 
-    impl GetEnvTrait for X {
-        fn get_instance(&self) -> Instance {
-            let jvm = Jvm::attach_thread().unwrap();
-            jvm.clone_instance(&self.instance).unwrap()
-        }
+impl<R, F> KtFunc0<R, F>
+    where
+        F: Fn() -> R,
+        R: GetEnvTrait + FromInstance,
+{
+    pub fn new(closure: F) -> Pin<Box<KtFunc0<R, F>>> {
+        let jvm = Jvm::attach_thread().unwrap();
+        let mut kt_func0: KtFunc0<R, F> = KtFunc0 {
+            closure,
+            instance: None,
+            internal_closure_raw: None,
+        };
+        let closure_ref = &kt_func0.closure;
+        let call_from_java =
+            Box::new(|value: InstanceWrapper| -> Instance { closure_ref().get_instance() });
+        let call_from_java_raw: *mut dyn Fn(InstanceWrapper) -> Instance =
+            Box::into_raw(call_from_java);
+        let call_from_java_as_i8_16 = unsafe { transmute::<_, [i8; 16]>(call_from_java_raw) };
+        kt_func0.internal_closure_raw = Some(call_from_java_as_i8_16);
+        let lumia_function = instance_from_i8_16::<"rt.lea.LumiaFunction">(call_from_java_as_i8_16);
+        let lumia_comparator = jvm
+            .create_instance(
+                "rt.lea.LumiaKtFunc0",
+                &[InvocationArg::try_from(lumia_function).unwrap()],
+            )
+            .unwrap();
+        kt_func0.instance = Some(lumia_comparator);
+        Box::pin(kt_func0)
     }
-
-    impl X {
-        fn fuck(&self) -> String {
-            let jvm = Jvm::attach_thread().unwrap();
-            jvm.chain(&self.instance)
-                .unwrap()
-                .invoke("getClass", &[])
-                .unwrap()
-                .invoke("toString", &[])
-                .unwrap()
-                .to_rust()
-                .unwrap()
-        }
+    pub fn invoke(&self) -> R {
+        let jvm = Jvm::attach_thread().unwrap();
+        let result = jvm
+            .invoke(&self.instance.as_ref().unwrap(), "invoke", &[])
+            .unwrap();
+        R::from_instance(result)
     }
+}
 
-    impl FromInstance for X {
-        fn from_instance(instance: Instance) -> Self {
-            X { instance }
-        }
+pub(crate) struct KtFunc1<T, R, F>
+    where
+        T: FromInstance,
+        F: Fn(T) -> R,
+        R: GetEnvTrait + FromInstance,
+{
+    closure: F,
+    instance: Option<Instance>,
+    internal_closure_raw: Option<[i8; 16]>,
+    _t: PhantomData<T>,
+}
+
+impl<T, R, F> GetEnvTrait for KtFunc1<T, R, F>
+    where
+        T: FromInstance,
+        F: Fn(T) -> R,
+        R: GetEnvTrait + FromInstance,
+{
+    fn get_instance(&self) -> Instance {
+        Jvm::attach_thread()
+            .unwrap()
+            .clone_instance(self.instance.as_ref().unwrap())
+            .unwrap()
     }
+}
 
-    fn get_a_jvm_for_test() -> Jvm {
-        match JvmBuilder::new()
-            .classpath_entry(ClasspathEntry::new(
-                "/run/media/leart/5A98CD5F98CD3A71/Users/15102/Works/Mirai/MiraiRS/jvm_side.jar",
-            ))
-            .build()
-        {
-            Ok(jvm) => jvm,
-            Err(_) => Jvm::attach_thread().unwrap(),
-        }
-    }
-
-    #[test]
-    fn closure_to_consumer_works() {
-        let _jvm = get_a_jvm_for_test();
-        let a = 2;
-        let consumer = Consumer::new(|x: X| {
-            println!("a = {a}\nThe class name is `{}`.", x.fuck());
+impl<T, R, F> KtFunc1<T, R, F>
+    where
+        T: FromInstance,
+        F: Fn(T) -> R,
+        R: GetEnvTrait + FromInstance,
+{
+    pub fn new(closure: F) -> Pin<Box<KtFunc1<T, R, F>>> {
+        let jvm = Jvm::attach_thread().unwrap();
+        let mut kt_func1: KtFunc1<T, R, F> = KtFunc1 {
+            closure,
+            instance: None,
+            internal_closure_raw: None,
+            _t: Default::default(),
+        };
+        let closure_ref = &kt_func1.closure;
+        let call_from_java = Box::new(|value: InstanceWrapper| -> Instance {
+            closure_ref(value.get()).get_instance()
         });
-        let test_instance = InvocationArg::try_from(true).unwrap();
-        consumer.accept(test_instance);
+        let call_from_java_raw: *mut dyn Fn(InstanceWrapper) -> Instance =
+            Box::into_raw(call_from_java);
+        let call_from_java_as_i8_16 = unsafe { transmute::<_, [i8; 16]>(call_from_java_raw) };
+        kt_func1.internal_closure_raw = Some(call_from_java_as_i8_16);
+        let lumia_function = instance_from_i8_16::<"rt.lea.LumiaFunction">(call_from_java_as_i8_16);
+        let lumia_comparator = jvm
+            .create_instance(
+                "rt.lea.LumiaKtFunc1",
+                &[InvocationArg::try_from(lumia_function).unwrap()],
+            )
+            .unwrap();
+        kt_func1.instance = Some(lumia_comparator);
+        Box::pin(kt_func1)
     }
-
-    #[test]
-    fn closure_to_function_works() {
-        let _jvm = get_a_jvm_for_test();
-        let a = 2;
-        let function = Function::new(|x: X| -> X {
-            println!("a = {a}\nThe class name is `{}`.", x.fuck());
-            x
-        });
-        let test_instance = InvocationArg::try_from(true).unwrap();
-        let x = function.apply(test_instance);
-        println!("a = {a}\nThe class name is `{}`.", x.fuck());
+    pub fn invoke(&self, val1: InvocationArg) -> R {
+        let jvm = Jvm::attach_thread().unwrap();
+        let result = jvm
+            .invoke(&self.instance.as_ref().unwrap(), "invoke", &[val1])
+            .unwrap();
+        R::from_instance(result)
     }
+}
 
-    #[test]
-    fn closure_to_comparator_works() {
-        let _jvm = get_a_jvm_for_test();
-        let a = 2;
-        let comparator = Comparator::new(move |x1: &X, x2: &X| -> Ordering {
-            let jvm = Jvm::attach_thread().unwrap(); // jvm 不能直接捕获，否则会卡死或崩溃。
-            let x1 = x1.get_instance();
-            let x2 = x2.get_instance();
-            let val1: i32 = jvm.to_rust(x1).unwrap();
-            let val2: i32 = jvm.to_rust(x2).unwrap();
-            val1.cmp(&val2)
-        });
-        let test_instance1 = InvocationArg::try_from(22).unwrap_or_else(|err| panic!("{}", err));
-        let test_instance2 = InvocationArg::try_from(55).unwrap();
-        let x = comparator.compare(test_instance1, test_instance2);
-        println!("a = {a}\nThe ordering is `{:?}`.", x);
+pub(crate) struct KtFunc2<P1, P2, R, F>
+    where
+        P1: FromInstance,
+        P2: FromInstance,
+        F: Fn(P1, P2) -> R,
+        R: GetEnvTrait + FromInstance,
+{
+    closure: F,
+    instance: Option<Instance>,
+    internal_closure_raw: Option<[i8; 16]>,
+    _p1: PhantomData<P1>,
+    _p2: PhantomData<P2>,
+}
+
+impl<P1, P2, R, F> GetEnvTrait for KtFunc2<P1, P2, R, F>
+    where
+        P1: FromInstance,
+        P2: FromInstance,
+        F: Fn(P1, P2) -> R,
+        R: GetEnvTrait + FromInstance,
+{
+    fn get_instance(&self) -> Instance {
+        Jvm::attach_thread()
+            .unwrap()
+            .clone_instance(self.instance.as_ref().unwrap())
+            .unwrap()
     }
+}
 
-    #[test]
-    fn closure_to_predicate_works() {
-        let _jvm = get_a_jvm_for_test();
-        let a = 2;
-        let predicate = Predicate::new(move |x1: X| -> bool {
-            let jvm = Jvm::attach_thread().unwrap(); // jvm不能直接捕获，否则会卡死。
-            let val1: i32 = jvm.to_rust(x1.get_instance()).unwrap();
-            val1 > 0
+impl<P1, P2, R, F> KtFunc2<P1, P2, R, F>
+    where
+        P1: FromInstance,
+        P2: FromInstance,
+        F: Fn(P1, P2) -> R,
+        R: GetEnvTrait + FromInstance,
+{
+    pub fn new(closure: F) -> Pin<Box<KtFunc2<P1, P2, R, F>>> {
+        let jvm = Jvm::attach_thread().unwrap();
+        let mut kt_func2: KtFunc2<P1, P2, R, F> = KtFunc2 {
+            closure,
+            instance: None,
+            internal_closure_raw: None,
+            _p1: Default::default(),
+            _p2: Default::default(),
+        };
+        let closure_ref = &kt_func2.closure;
+        let call_from_java = Box::new(|value: InstanceWrapper| -> Instance {
+            let value = value.get::<KtPairWrapper<P1, P2>>();
+            let (val1, val2) = value.get_pair();
+            closure_ref(val1, val2).get_instance()
         });
-        // println!("sleep");
-        // sleep(std::time::Duration::from_millis(10000));
-        let test_value = InvocationArg::try_from(22).unwrap_or_else(|err| panic!("{}", err));
-        let x = predicate.test(test_value);
-        println!("a = {a}\n And `test_value > 0` is `{:?}`.", x);
+        let call_from_java_raw: *mut dyn Fn(InstanceWrapper) -> Instance =
+            Box::into_raw(call_from_java);
+        let call_from_java_as_i8_16 = unsafe { transmute::<_, [i8; 16]>(call_from_java_raw) };
+        kt_func2.internal_closure_raw = Some(call_from_java_as_i8_16);
+        let lumia_function = instance_from_i8_16::<"rt.lea.LumiaFunction">(call_from_java_as_i8_16);
+        let lumia_comparator = jvm
+            .create_instance(
+                "rt.lea.LumiaKtFunc2",
+                &[InvocationArg::try_from(lumia_function).unwrap()],
+            )
+            .unwrap();
+        kt_func2.instance = Some(lumia_comparator);
+        Box::pin(kt_func2)
+    }
+    pub fn invoke(&self, val1: InvocationArg, val2: InvocationArg) -> R {
+        let jvm = Jvm::attach_thread().unwrap();
+        let result = jvm
+            .invoke(&self.instance.as_ref().unwrap(), "invoke", &[val1, val2])
+            .unwrap();
+        R::from_instance(result)
+    }
+}
+
+impl FromInstance for () {
+    fn from_instance(_instance: Instance) -> Self {
+        ()
+    }
+}
+
+impl GetEnvTrait for () {
+    fn get_instance(&self) -> Instance {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.invoke_static("javax.lang.model.util.Types", "getNullType", &[])
+            .unwrap()
     }
 }

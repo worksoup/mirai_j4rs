@@ -1,5 +1,6 @@
 use crate::contact::contact_trait::NudgeSupportedTrait;
 use crate::utils::internal::java_iter_to_rust_vec;
+use crate::utils::login_solver::{LoginSolverTrait, QrCodeLoginListenerTrait, State};
 use crate::{
     action::nudges::BotNudge,
     contact::{
@@ -22,7 +23,6 @@ use std::{
     collections::HashMap,
     path::{Path, PathBuf},
 };
-use crate::utils::login_solver::LoginSolverTrait;
 
 #[derive(GetInstanceDerive)]
 pub struct FriendGroup {
@@ -1087,7 +1087,17 @@ impl BotConfiguration {
             )
             .unwrap();
     }
-    pub fn set_login_solver<const IS_SLIDER_CAPTCHA_SUPPORTED: bool, T: LoginSolverTrait<IS_SLIDER_CAPTCHA_SUPPORTED>>(&self, _: T) {
+    pub fn set_login_solver<'a,
+        T,
+        T2,
+    >(
+        &self,
+        _: T,
+    ) where
+        T2: QrCodeLoginListenerTrait,
+        T: LoginSolverTrait<'a,
+            T2
+        >, {
         Jvm::attach_thread()
             .unwrap()
             .invoke(

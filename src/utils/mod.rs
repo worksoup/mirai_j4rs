@@ -1,11 +1,13 @@
-pub mod ffi;
+pub(crate) mod ffi;
 mod ffi_internal_test;
 pub(crate) mod internal;
-pub mod other;
 pub mod login_solver;
+pub mod other;
 
 use crate::env::{FromInstance, GetEnvTrait};
-use crate::utils::ffi::{Comparator, Consumer, Function, Predicate};
+use crate::utils::ffi::callable_objects_in_jvm::{
+    comparator::Comparator, consumer::Consumer, function::Function, predicate::Predicate,
+};
 use crate::utils::internal::instance_is_null;
 use j4rs::{Instance, InvocationArg, Jvm};
 use std::{cmp::Ordering, marker::PhantomData};
@@ -53,7 +55,7 @@ impl<T: FromInstance> JavaStream<T> {
         array.sort_by(compare);
         array
     }
-    pub fn filter<P>(&self, p: P) -> JavaStream<T>
+    pub fn filter<P>(&self, p: &P) -> JavaStream<T>
         where
             P: Fn(T) -> bool,
             T: FromInstance,
@@ -66,7 +68,7 @@ impl<T: FromInstance> JavaStream<T> {
         JavaStream::from_instance(instance)
     }
 
-    pub fn map<B: FromInstance, F>(&self, f: F) -> JavaStream<B>
+    pub fn map<B: FromInstance, F>(&self, f: &F) -> JavaStream<B>
         where
             F: Fn(T) -> B,
             T: FromInstance,
@@ -80,7 +82,7 @@ impl<T: FromInstance> JavaStream<T> {
         JavaStream::from_instance(instance)
     }
 
-    pub fn for_each<F>(&self, f: F)
+    pub fn for_each<F>(&self, f: &F)
         where
             F: Fn(T),
     {
@@ -97,7 +99,7 @@ impl<T: FromInstance> JavaStream<T> {
         jvm.to_rust(instance).unwrap()
     }
 
-    pub fn flat_map<U: FromInstance, F>(&self, f: F) -> JavaStream<U>
+    pub fn flat_map<U: FromInstance, F>(&self, f: &F) -> JavaStream<U>
         where
             F: Fn(T) -> JavaStream<U>,
             T: FromInstance,
@@ -130,9 +132,9 @@ impl<T: FromInstance> JavaStream<T> {
         JavaStream::from_instance(instance)
     }
 
-    pub fn max_by<F>(&self, f: F) -> Option<T>
+    pub fn max_by<F>(&self, f: &F) -> Option<T>
         where
-            F: Fn(&T, &T) -> Ordering + 'static,
+            F: Fn(T, T) -> Ordering,
     {
         let jvm = Jvm::attach_thread().unwrap();
         let f = Comparator::new(f);
@@ -146,9 +148,9 @@ impl<T: FromInstance> JavaStream<T> {
         }
     }
 
-    pub fn min_by<F>(&self, f: F) -> Option<T>
+    pub fn min_by<F>(&self, f: &F) -> Option<T>
         where
-            F: Fn(&T, &T) -> Ordering + 'static,
+            F: Fn(T, T) -> Ordering,
     {
         let jvm = Jvm::attach_thread().unwrap();
         let f = Comparator::new(f);
@@ -167,7 +169,7 @@ impl<T: FromInstance> JavaStream<T> {
         let instance = jvm.invoke(&self.instance, "toList", &[]).unwrap();
         loop {
             let has_next: bool = jvm
-                .to_rust(jvm.invoke(&instance, "hasNxt", &[]).unwrap())
+                .to_rust(jvm.invoke(&instance, "hasNext", &[]).unwrap())
                 .unwrap();
             if has_next {
                 let next = jvm.invoke(&instance, "next", &[]).unwrap();

@@ -2,6 +2,9 @@
 
 **ɒiM_J is Mirai_J4rs.**
 
+**近期听闻签名服务受到重创，由于本项目还未较好地适配安卓手表协议，所以请谨慎使用。**
+可以使用 `j4rs` 库直接操作 Jvm 对象使用该协议。
+
 使用 [`j4rs`](https://crates.io/crates/j4rs) 库简易(陋)地封装了一下 [`Mirai`](https://docs.mirai.mamoe.net/), api
 基本与 `Mirai` 保持一致。
 

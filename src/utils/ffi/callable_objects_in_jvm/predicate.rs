@@ -3,7 +3,7 @@ use crate::utils::internal::data_wrapper::DataWrapper;
 use crate::utils::internal::instance_from_i8_16;
 use j4rs::{errors::J4RsError, prelude::*, Instance, InvocationArg, Jvm};
 use j4rs_derive::*;
-use std::{marker::PhantomData, mem::transmute, pin::Pin};
+use std::{marker::PhantomData, mem::transmute};
 
 #[call_from_java("rt.lea.LumiaPredicate.nativeTest")]
 fn lumia_predicate_test(
@@ -28,37 +28,22 @@ fn lumia_predicate_test(
     Instance::try_from(value).map_err(|error| format!("{}", error))
 }
 
-pub struct Predicate<'a, T, F>
-where
-    T: FromInstance,
-    F: Fn(T) -> bool,
+pub struct Predicate<'a, T>
+    where
+        T: FromInstance,
 {
     instance: Instance,
     internal_closure_raw: [i8; 16],
     _t: PhantomData<T>,
-    _f: PhantomData<&'a F>,
+    __a: PhantomData<&'a ()>,
 }
 
-impl<'a, T, F> GetEnvTrait for Predicate<'a, T, F>
-where
-    T: FromInstance,
-    F: Fn(T) -> bool,
-{
-    fn get_instance(&self) -> Instance {
-        Jvm::attach_thread()
-            .unwrap()
-            .clone_instance(&self.instance)
-            .unwrap()
-    }
-}
-
-impl<'a, T, F> Predicate<'a, T, F>
-where
-    T: FromInstance,
-    F: Fn(T) -> bool,
+impl<'a, T> Predicate<'a, T>
+    where
+        T: FromInstance,
 {
     #[inline]
-    fn internal_closure_as_i8_16(f: &'a F) -> [i8; 16] {
+    fn internal_closure_as_i8_16<F: Fn(T) -> bool>(f: &'a F) -> [i8; 16] {
         let call_from_java = |value: DataWrapper<Instance>| -> Result<InvocationArg, J4RsError> {
             let value = value.get::<T>();
             let value = f(value);
@@ -69,33 +54,34 @@ where
         ) -> Result<InvocationArg, J4RsError> = Box::into_raw(Box::new(call_from_java));
         unsafe { transmute::<_, [i8; 16]>(call_from_java_raw) }
     }
-    pub fn new(closure: &'a F) -> Pin<Box<Predicate<'a, T, F>>> {
+    pub fn new<F: Fn(T) -> bool, >(closure: &'a F) -> Predicate<'a, T> {
         let internal_closure_raw = Self::internal_closure_as_i8_16(closure);
         println!("closure_to_predicate\n{:?}", internal_closure_raw);
         let instance = instance_from_i8_16::<"rt.lea.LumiaPredicate">(internal_closure_raw);
-        Box::pin(Predicate {
+        Predicate {
             instance,
             internal_closure_raw,
             _t: PhantomData::default(),
-            _f: PhantomData::default(),
-        })
+            __a: PhantomData::default(),
+        }
+    }
+    pub fn to_instance(&self) -> Instance {
+        Jvm::attach_thread()
+            .unwrap()
+            .clone_instance(&self.instance)
+            .unwrap()
     }
     pub fn test(&self, arg: InvocationArg) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
         let result = jvm.invoke(&self.instance, "test", &[arg]).unwrap();
         jvm.to_rust(result).unwrap()
     }
-}
-
-impl<'a, T, F> Drop for Predicate<'a, T, F>
-where
-    T: FromInstance,
-    F: Fn(T) -> bool,
-{
-    fn drop(&mut self) {
-        let predicate: *mut dyn Fn(DataWrapper<Instance>) -> Result<InvocationArg, J4RsError> =
-            unsafe { transmute(self.internal_closure_raw) };
-        let boxed = unsafe { Box::from_raw(predicate) };
-        drop(boxed)
+    pub fn get_internal_closure_raw(
+        &self,
+    ) -> *mut dyn Fn(DataWrapper<Instance>) -> Result<InvocationArg, J4RsError> {
+        unsafe { transmute(self.internal_closure_raw) }
+    }
+    pub fn drop_internal_closure_raw(&self) {
+        let _boxed = unsafe { Box::from_raw(self.get_internal_closure_raw()) };
     }
 }

@@ -6,6 +6,7 @@ mod tests {
     };
     use j4rs::{ClasspathEntry, Instance, InvocationArg, Jvm, JvmBuilder};
     use std::cmp::Ordering;
+    use crate::utils::ffi::callable_objects_in_jvm::kt_func_0::KtFunc0;
 
     struct X {
         instance: Instance,
@@ -14,6 +15,8 @@ mod tests {
     impl GetEnvTrait for X {
         fn get_instance(&self) -> Instance {
             let jvm = Jvm::attach_thread().unwrap();
+            let m =
+                j4rs::JavaClass::from(self.instance.class_name());
             jvm.clone_instance(&self.instance).unwrap()
         }
     }
@@ -109,6 +112,22 @@ mod tests {
         // sleep(std::time::Duration::from_millis(10000));
         let test_value = InvocationArg::try_from(22).unwrap_or_else(|err| panic!("{}", err));
         let x = predicate.test(test_value);
+        predicate.drop_internal_closure_raw();
         println!("a = {a}\n And `test_value > 0` is `{:?}`.", x);
+    }
+
+    #[test]
+    fn closure_to_kt_func_0_works() {
+        let jvm = get_a_jvm_for_test();
+        let a = 2;
+        let f = || -> X {
+            let _jvm = Jvm::attach_thread().unwrap(); // jvm不能直接捕获，否则会卡死。
+            let b = InvocationArg::try_from(true).unwrap().into_primitive().unwrap();
+            let instance = _jvm.create_instance("java.lang.Boolean", &[b]).unwrap(); // 需要通过参数对象创建对象，不能直接 Instance::try_from, 否则会出错。
+            X { instance }
+        };
+        let kt_func_0 = KtFunc0::new(&f);
+        let x = kt_func_0.invoke();
+        println!("a = {a}\n And `x` is `{}`.", jvm.to_rust::<bool>(jvm.cast(&x.get_instance(), "java.lang.Boolean").unwrap()).unwrap());
     }
 }

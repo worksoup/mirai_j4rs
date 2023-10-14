@@ -1087,17 +1087,12 @@ impl BotConfiguration {
             )
             .unwrap();
     }
-    pub fn set_login_solver<'a,
-        T,
-        T2,
-    >(
+    pub fn set_login_solver<T, T2, >(
         &self,
         _: T,
     ) where
         T2: QrCodeLoginListenerTrait,
-        T: LoginSolverTrait<'a,
-            T2
-        >, {
+        T: LoginSolverTrait<T2>, {
         Jvm::attach_thread()
             .unwrap()
             .invoke(

@@ -1,5 +1,4 @@
 pub(crate) mod ffi;
-mod ffi_internal_test;
 pub(crate) mod internal;
 pub mod login_solver;
 pub mod other;
@@ -62,8 +61,9 @@ impl<T: FromInstance> JavaStream<T> {
     {
         let jvm = Jvm::attach_thread().unwrap();
         let p = Predicate::new(p);
-        let predicate = InvocationArg::try_from(p.get_instance()).unwrap();
+        let predicate = InvocationArg::try_from(p.to_instance()).unwrap();
         let instance = jvm.invoke(&self.instance, "filter", &[predicate]).unwrap();
+        p.drop_internal_closure_raw();
         drop(p);
         JavaStream::from_instance(instance)
     }
@@ -76,7 +76,7 @@ impl<T: FromInstance> JavaStream<T> {
     {
         let jvm = Jvm::attach_thread().unwrap();
         let f = Function::new(f);
-        let mapper = InvocationArg::try_from(f.get_instance()).unwrap();
+        let mapper = InvocationArg::try_from(f.to_instance()).unwrap();
         let instance = jvm.invoke(&self.instance, "map", &[mapper]).unwrap();
         drop(f);
         JavaStream::from_instance(instance)
@@ -88,7 +88,7 @@ impl<T: FromInstance> JavaStream<T> {
     {
         let jvm = Jvm::attach_thread().unwrap();
         let f = Consumer::new(f);
-        let predicate = InvocationArg::try_from(f.get_instance()).unwrap();
+        let predicate = InvocationArg::try_from(f.to_instance()).unwrap();
         let _ = jvm.invoke(&self.instance, "filter", &[predicate]).unwrap();
         drop(f);
     }
@@ -106,7 +106,7 @@ impl<T: FromInstance> JavaStream<T> {
     {
         let jvm = Jvm::attach_thread().unwrap();
         let f = Function::new(f);
-        let mapper = InvocationArg::try_from(f.get_instance()).unwrap();
+        let mapper = InvocationArg::try_from(f.to_instance()).unwrap();
         let instance = jvm.invoke(&self.instance, "flatMap", &[mapper]).unwrap();
         drop(f);
         JavaStream::from_instance(instance)
@@ -138,7 +138,7 @@ impl<T: FromInstance> JavaStream<T> {
     {
         let jvm = Jvm::attach_thread().unwrap();
         let f = Comparator::new(f);
-        let compare = InvocationArg::try_from(f.get_instance()).unwrap();
+        let compare = InvocationArg::try_from(f.to_instance()).unwrap();
         let instance = jvm.invoke(&self.instance, "max", &[compare]).unwrap();
         drop(f);
         if !instance_is_null(&instance) {
@@ -154,7 +154,7 @@ impl<T: FromInstance> JavaStream<T> {
     {
         let jvm = Jvm::attach_thread().unwrap();
         let f = Comparator::new(f);
-        let compare = InvocationArg::try_from(f.get_instance()).unwrap();
+        let compare = InvocationArg::try_from(f.to_instance()).unwrap();
         let instance = jvm.invoke(&self.instance, "min", &[compare]).unwrap();
         drop(f);
         if !instance_is_null(&instance) {

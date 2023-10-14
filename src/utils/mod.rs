@@ -63,7 +63,6 @@ impl<T: FromInstance> JavaStream<T> {
         let p = Predicate::new(p);
         let predicate = InvocationArg::try_from(p.to_instance()).unwrap();
         let instance = jvm.invoke(&self.instance, "filter", &[predicate]).unwrap();
-        p.drop_internal_closure_raw();
         drop(p);
         JavaStream::from_instance(instance)
     }

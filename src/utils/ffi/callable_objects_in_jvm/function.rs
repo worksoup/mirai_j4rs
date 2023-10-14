@@ -1,6 +1,4 @@
-use crate::env::{FromInstance, GetEnvTrait};
-use crate::utils::internal::data_wrapper::DataWrapper;
-use crate::utils::internal::instance_from_i8_16;
+use crate::{env::{FromInstance, GetEnvTrait}, utils::internal::{data_wrapper::DataWrapper, instance_from_i8_16}};
 use j4rs::{prelude::*, Instance, InvocationArg, Jvm};
 use j4rs_derive::*;
 use std::{marker::PhantomData, mem::transmute};

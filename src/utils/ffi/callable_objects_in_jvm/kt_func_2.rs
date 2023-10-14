@@ -68,7 +68,7 @@ impl<'a, P1, P2, R> KtFunc2<'a, P1, P2, R>
     pub fn get_internal_closure_raw(&self) -> *mut dyn Fn(DataWrapper<Instance>) -> Instance {
         unsafe { transmute(self.internal_closure_raw) }
     }
-    pub fn drop_internal_closure_raw(&self) {
+    pub(super) fn drop_internal_closure_raw(&self) {
         let _boxed = unsafe { Box::from_raw(self.get_internal_closure_raw()) };
     }
 }

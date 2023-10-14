@@ -1,12 +1,14 @@
 #[cfg(test)]
 mod tests {
-    use crate::env::{FromInstance, GetEnvTrait};
-    use crate::utils::ffi::callable_objects_in_jvm::{
-        comparator::Comparator, consumer::Consumer, function::Function, predicate::Predicate,
+    use crate::{
+        env::{FromInstance, GetEnvTrait},
+        utils::ffi::callable_objects_in_jvm::{
+            comparator::Comparator, consumer::Consumer, function::Function, kt_func_0::KtFunc0,
+            kt_func_1::KtFunc1, kt_func_2::KtFunc2, predicate::Predicate,
+        },
     };
     use j4rs::{ClasspathEntry, Instance, InvocationArg, Jvm, JvmBuilder};
     use std::cmp::Ordering;
-    use crate::utils::ffi::callable_objects_in_jvm::kt_func_0::KtFunc0;
 
     struct X {
         instance: Instance,
@@ -15,8 +17,6 @@ mod tests {
     impl GetEnvTrait for X {
         fn get_instance(&self) -> Instance {
             let jvm = Jvm::attach_thread().unwrap();
-            let m =
-                j4rs::JavaClass::from(self.instance.class_name());
             jvm.clone_instance(&self.instance).unwrap()
         }
     }
@@ -112,7 +112,6 @@ mod tests {
         // sleep(std::time::Duration::from_millis(10000));
         let test_value = InvocationArg::try_from(22).unwrap_or_else(|err| panic!("{}", err));
         let x = predicate.test(test_value);
-        predicate.drop_internal_closure_raw();
         println!("a = {a}\n And `test_value > 0` is `{:?}`.", x);
     }
 
@@ -122,12 +121,60 @@ mod tests {
         let a = 2;
         let f = || -> X {
             let _jvm = Jvm::attach_thread().unwrap(); // jvm不能直接捕获，否则会卡死。
-            let b = InvocationArg::try_from(true).unwrap().into_primitive().unwrap();
+            let b = InvocationArg::try_from(true)
+                .unwrap()
+                .into_primitive()
+                .unwrap();
             let instance = _jvm.create_instance("java.lang.Boolean", &[b]).unwrap(); // 需要通过参数对象创建对象，不能直接 Instance::try_from, 否则会出错。
             X { instance }
         };
         let kt_func_0 = KtFunc0::new(&f);
         let x = kt_func_0.invoke();
-        println!("a = {a}\n And `x` is `{}`.", jvm.to_rust::<bool>(jvm.cast(&x.get_instance(), "java.lang.Boolean").unwrap()).unwrap());
+        println!(
+            "a = {a}\n And `x` is `{}`.",
+            jvm.to_rust::<bool>(jvm.cast(&x.get_instance(), "java.lang.Boolean").unwrap())
+                .unwrap()
+        );
+    }
+
+    #[test]
+    fn closure_to_kt_func_1_works() {
+        let _jvm = get_a_jvm_for_test();
+        let a = 2;
+        let f = |x: X| -> X {
+            println!("a = {a}\nThe class name is `{}`.", x.fuck());
+            x
+        };
+        let kt_func_1 = KtFunc1::new(&f);
+        let test_instance = InvocationArg::try_from(true).unwrap();
+        let x = kt_func_1.invoke(test_instance);
+        println!("a = {a}\nThe class name is `{}`.", x.fuck());
+    }
+
+    #[test]
+    fn closure_to_kt_func_2_works() {
+        let _jvm = get_a_jvm_for_test();
+        let a = 2;
+        let f = move |x1: X, x2: X| -> X {
+            let jvm = Jvm::attach_thread().unwrap(); // jvm 不能直接捕获，否则会卡死或崩溃。
+            let x1 = x1.get_instance();
+            let x2 = x2.get_instance();
+            let val1: i32 = jvm.to_rust(x1).unwrap();
+            let val2: i32 = jvm.to_rust(x2).unwrap();
+            let b = InvocationArg::try_from(val1 - val2)
+                .unwrap()
+                .into_primitive()
+                .unwrap();
+            let instance = jvm.create_instance("java.lang.Integer", &[b]).unwrap(); // 需要通过参数对象创建对象，不能直接 Instance::try_from, 否则会出错。
+            X { instance }
+        };
+        let kt_func_2 = KtFunc2::new(&f);
+        let test_instance1 = InvocationArg::try_from(22).unwrap_or_else(|err| panic!("{}", err));
+        let test_instance2 = InvocationArg::try_from(55).unwrap();
+        let x = kt_func_2.invoke(test_instance1, test_instance2);
+        println!(
+            "a = {a}\nThe ordering is `{:?}`.",
+            _jvm.to_rust::<i32>(x.get_instance()).unwrap()
+        );
     }
 }

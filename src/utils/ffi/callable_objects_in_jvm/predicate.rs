@@ -81,7 +81,7 @@ impl<'a, T> Predicate<'a, T>
     ) -> *mut dyn Fn(DataWrapper<Instance>) -> Result<InvocationArg, J4RsError> {
         unsafe { transmute(self.internal_closure_raw) }
     }
-    pub fn drop_internal_closure_raw(&self) {
+    pub(super) fn drop_internal_closure_raw(&self) {
         let _boxed = unsafe { Box::from_raw(self.get_internal_closure_raw()) };
     }
 }

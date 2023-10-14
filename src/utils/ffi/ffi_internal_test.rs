@@ -153,7 +153,7 @@ mod tests {
 
     #[test]
     fn closure_to_kt_func_2_works() {
-        let _jvm = get_a_jvm_for_test();
+        let top_jvm = get_a_jvm_for_test();
         let a = 2;
         let f = move |x1: X, x2: X| -> X {
             let jvm = Jvm::attach_thread().unwrap(); // jvm 不能直接捕获，否则会卡死或崩溃。
@@ -174,7 +174,7 @@ mod tests {
         let x = kt_func_2.invoke(test_instance1, test_instance2);
         println!(
             "a = {a}\nThe ordering is `{:?}`.",
-            _jvm.to_rust::<i32>(x.get_instance()).unwrap()
+            top_jvm.to_rust::<i32>(x.get_instance()).unwrap()
         );
     }
 }

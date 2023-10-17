@@ -254,7 +254,7 @@ impl FromInstance for AnnouncementParameters {
     fn from_instance(instance: Instance) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let image = jvm.invoke(&instance, "image", &[]).unwrap();
-        let image = if instance_is_null(&image) {
+        let image = if !instance_is_null(&image) {
             Some(AnnouncementImage { instance: image })
         } else {
             None
@@ -389,7 +389,7 @@ impl OnlineAnnouncement {
     pub fn get_sender(&self) -> Option<NormalMember> {
         let jvm = Jvm::attach_thread().unwrap();
         let sender = jvm.invoke(&self.instance, "getSender", &[]).unwrap();
-        if instance_is_null(&sender) {
+        if !instance_is_null(&sender) {
             Some(NormalMember::from_instance(sender))
         } else { None }
     }
@@ -1172,14 +1172,14 @@ impl Group {
                     .unwrap()],
             )
             .unwrap();
-        if instance_is_null(&instance) {
-            None
-        } else {
+        if !instance_is_null(&instance) {
             Some(Group {
                 bot: bot.get_instance(),
                 instance,
                 id,
             })
+        } else {
+            None
         }
     }
     pub fn contains_member(&self, member: &NormalMember) -> bool {
@@ -1223,14 +1223,14 @@ impl Group {
                     .unwrap()],
             )
             .unwrap();
-        if instance_is_null(&instance) {
-            None
-        } else {
+        if !instance_is_null(&instance) {
             Some(NormalMember {
                 bot: self.bot,
                 instance,
                 id,
             })
+        } else {
+            None
         }
     }
     pub fn get_active(&self) -> GroupActive {

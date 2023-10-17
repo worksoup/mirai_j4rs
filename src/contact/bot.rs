@@ -1,3 +1,7 @@
+use crate::contact::contact_trait::NudgeSupportedTrait;
+use crate::utils::contact::friend_group::FriendGroups;
+use crate::utils::internal::java_iter_to_rust_vec;
+use crate::utils::login_solver::{DeviceVerificationRequests, DeviceVerificationResult, LoginSolverTrait, QrCodeLoginListener};
 use crate::{
     action::nudges::BotNudge,
     contact::{
@@ -20,102 +24,8 @@ use std::{
     collections::HashMap,
     path::{Path, PathBuf},
 };
-use crate::contact::contact_trait::NudgeSupportedTrait;
-use crate::utils::internal::java_iter_to_rust_vec;
-
-#[derive(GetInstanceDerive)]
-pub struct FriendGroup {
-    pub(crate) instance: Instance,
-}
-
-impl FromInstance for FriendGroup {
-    fn from_instance(instance: Instance) -> Self {
-        Self { instance }
-    }
-}
-
-impl FriendGroup {
-    pub fn delete(&self) -> bool {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "delete", &[]).unwrap())
-            .unwrap()
-    }
-    pub fn rename_to(&self, new_name: &str) -> bool {
-        let jvm = Jvm::attach_thread().unwrap();
-        let new_name = InvocationArg::try_from(new_name).unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "delete", &[new_name]).unwrap())
-            .unwrap()
-    }
-    pub fn move_in(&self, friend: Friend) -> bool {
-        let jvm = Jvm::attach_thread().unwrap();
-        let friend = InvocationArg::try_from(friend.get_instance()).unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "delete", &[friend]).unwrap())
-            .unwrap()
-    }
-    pub fn get_name(&self) -> String {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getName", &[]).unwrap())
-            .unwrap()
-    }
-    pub fn get_id(&self) -> i32 {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getId", &[]).unwrap())
-            .unwrap()
-    }
-    pub fn get_friends(&self) -> Vec<Friend> {
-        let jvm = Jvm::attach_thread().unwrap();
-        let collection = jvm.invoke(&self.instance, "getFriends", &[]).unwrap();
-        let iter = jvm.invoke(&collection, "iterator", &[]).unwrap();
-        java_iter_to_rust_vec(&jvm, iter)
-    }
-    pub fn get_count(&self) -> i32 {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getCount", &[]).unwrap())
-            .unwrap()
-    }
-}
-
-#[derive(GetInstanceDerive)]
-pub struct FriendGroups {
-    pub(crate) instance: Instance,
-}
-
-impl FriendGroups {
-    pub fn to_vec(&self) -> Vec<FriendGroup> {
-        let jvm = Jvm::attach_thread().unwrap();
-        let collection = jvm.invoke(&self.instance, "asCollection", &[]).unwrap();
-
-        let iter = jvm.invoke(&collection, "iterator", &[]).unwrap();
-        java_iter_to_rust_vec(&jvm, iter)
-    }
-    pub fn create(name: String) -> FriendGroup {
-        let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm
-            .invoke_static(
-                "net.mamoe.mirai.contact.friendgroup.FriendGroups",
-                "create",
-                &[name.try_into().unwrap()],
-            )
-            .unwrap();
-        FriendGroup { instance }
-    }
-    pub fn get(&self, id: i64) -> FriendGroup {
-        let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm
-            .invoke(
-                &self.instance,
-                "get",
-                &[InvocationArg::try_from(id).unwrap()],
-            )
-            .unwrap();
-        FriendGroup { instance }
-    }
-    pub fn get_default(&self) -> FriendGroup {
-        let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getDefault", &[]).unwrap();
-        FriendGroup { instance }
-    }
-}
+use crate::utils::ffi::callable_objects_in_jvm::kt_func_1::KtFunc1Raw;
+use crate::utils::ffi::callable_objects_in_jvm::kt_func_2::KtFunc2Raw;
 
 pub struct Bot {
     pub(crate) instance: Instance,
@@ -185,6 +95,7 @@ impl Bot {
             .unwrap();
         BotConfiguration {
             instance: bot_configuration,
+            _login_solver_holder: None,
         }
     }
     pub fn get_event_channel(&self) -> EventChannel {
@@ -207,14 +118,14 @@ impl Bot {
                     .unwrap()],
             )
             .unwrap();
-        if instance_is_null(&instance) {
-            None
-        } else {
+        if !instance_is_null(&instance) {
             Some(Friend {
                 bot: self.get_instance(),
                 instance,
                 id,
             })
+        } else {
+            None
         }
     }
     pub fn get_friend_groups(&self) -> FriendGroups {
@@ -262,10 +173,10 @@ impl Bot {
                     .unwrap()],
             )
             .unwrap();
-        if instance_is_null(&instance) {
-            None
-        } else {
+        if !instance_is_null(&instance) {
             Some(Stranger::from_instance(instance))
+        } else {
+            None
         }
     }
     pub fn get_strangers(&self) -> ContactList<Stranger> {
@@ -310,10 +221,11 @@ impl ContactOrBotTrait for Bot {
             AvatarSpec::XL.into()
         };
         // 这里 Mirai 源码中应该是 http 而不是 https.
-        "https://q.qlogo.cn/g?b=qq&nk=".to_string()
-            + self.get_id().to_string().as_str()
-            + "&s="
-            + size.to_string().as_str()
+        let mut url = "https://q.qlogo.cn/g?b=qq&nk=".to_string();
+        url.push_str(self.get_id().to_string().as_str());
+        url.push_str("&s=");
+        url.push_str(size.to_string().as_str());
+        url
     }
 }
 
@@ -327,7 +239,11 @@ pub struct MiraiLogger(Instance);
 
 pub struct DeviceInfo(Instance);
 
-pub struct LoginSolver(Instance);
+/// 该结构体未实现 [`LoginSolverTrait`], 如需使用相关功能请调用本实例的 `get_instance` 方法，获得 `Instance` 后直接操作。
+#[derive(GetInstanceDerive)]
+pub struct LoginSolver {
+    instance: Instance,
+}
 
 pub struct ContactListCache {
     instance: Instance,
@@ -501,6 +417,7 @@ impl Env {
             .unwrap();
         BotConfiguration {
             instance: bot_configuration,
+            _login_solver_holder: None,
         }
     }
     pub fn find_bot(&self, id: i64) -> Option<Bot> {
@@ -515,10 +432,10 @@ impl Env {
                     .unwrap()],
             )
             .unwrap();
-        if instance_is_null(&bot) {
-            None
-        } else {
+        if !instance_is_null(&bot) {
             Some(Bot { instance: bot, id })
+        } else {
+            None
         }
     }
     pub fn get_bots(&self) -> Vec<Bot> {
@@ -663,6 +580,7 @@ impl Certificate<[u8; 16]> for Env {
 
 pub struct BotConfiguration {
     instance: Instance,
+    _login_solver_holder: Option<(KtFunc2Raw, KtFunc2Raw, KtFunc1Raw, KtFunc2Raw)>,
 }
 
 impl GetEnvTrait for BotConfiguration {
@@ -681,14 +599,14 @@ impl BotConfiguration {
             .unwrap()
             .invoke(&bot.get_configuration().get_instance(), "copy", &[])
             .unwrap();
-        BotConfiguration { instance }
+        BotConfiguration { instance, _login_solver_holder: None }
     }
     pub fn get_default() -> Self {
         let instance = Jvm::attach_thread()
             .unwrap()
             .invoke_static("net.mamoe.mirai.utils.BotConfiguration", "getDefault", &[])
             .unwrap();
-        BotConfiguration { instance }
+        BotConfiguration { instance, _login_solver_holder: None }
     }
 }
 
@@ -841,12 +759,15 @@ impl BotConfiguration {
             .unwrap()
     }
     pub fn get_login_solver(&self) -> Option<LoginSolver> {
-        return Some(LoginSolver(
-            Jvm::attach_thread()
-                .unwrap()
-                .invoke(&self.instance, "getLoginSolver", &[])
-                .unwrap(),
-        ));
+        let instance = Jvm::attach_thread()
+            .unwrap()
+            .invoke(&self.instance, "getLoginSolver", &[])
+            .unwrap();
+        if !instance_is_null(&instance) {
+            Some(LoginSolver { instance })
+        } else {
+            None
+        }
     }
     pub fn get_network_logger_supplier(&self) -> Option<Instance> {
         return Some(
@@ -1080,15 +1001,20 @@ impl BotConfiguration {
             )
             .unwrap();
     }
-    pub fn set_login_solver(&self, login_solver: LoginSolver) {
-        Jvm::attach_thread()
-            .unwrap()
-            .invoke(
-                &self.instance,
-                "setLoginSolver",
-                &[InvocationArg::try_from(login_solver.0).unwrap()],
-            )
+    pub fn set_login_solver<T>(&mut self, _: T)
+        where
+            T: LoginSolverTrait,
+    {
+        let jvm = Jvm::attach_thread().unwrap();
+        let (instance, _1, _2, _3, _4) = T::__instance();
+        jvm.invoke(
+            &self.instance,
+            "setLoginSolver",
+            &[InvocationArg::try_from(instance).unwrap()],
+        )
             .unwrap();
+        // 防止 drop.
+        self._login_solver_holder = Some((_1, _2, _3, _4))
     }
     pub fn set_network_logger_supplier(&self) {
         Jvm::attach_thread()

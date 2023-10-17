@@ -1,6 +1,7 @@
-use crate::{event::event_trait::MiraiEventTrait, utils::ffi::InstanceWrapper};
+use crate::event::event_trait::MiraiEventTrait;
 use j4rs::{Instance, InvocationArg, Jvm};
 use std::mem::transmute;
+use crate::utils::internal::data_wrapper::DataWrapper;
 
 //需要由Env构造。
 pub struct EventChannel {
@@ -35,20 +36,20 @@ impl EventChannel {
     fn subscribe_internal_0_1<'a, E: MiraiEventTrait>(
         on_event: &'a Box<dyn Fn(E) -> ()>,
     ) -> [i8; 16] {
-        let call_from_java: Box<dyn Fn(InstanceWrapper) -> ()> = Box::new(|e: InstanceWrapper| {
+        let call_from_java: Box<dyn Fn(DataWrapper<Instance>) -> ()> = Box::new(|e: DataWrapper<Instance>| {
             let e: E = e.get::<E>();
             on_event(e);
         });
-        let call_from_java_raw: *mut dyn Fn(InstanceWrapper) = Box::into_raw(call_from_java);
+        let call_from_java_raw: *mut dyn Fn(DataWrapper<Instance>) = Box::into_raw(call_from_java);
         unsafe { transmute::<_, [i8; 16]>(call_from_java_raw) }
     }
     fn subscribe_internal_0_2<E: MiraiEventTrait>(on_event: Box<dyn FnOnce(E) -> ()>) -> [i8; 16] {
-        let call_from_java: Box<dyn FnOnce(InstanceWrapper) -> ()> =
-            Box::new(move |e: InstanceWrapper| {
+        let call_from_java: Box<dyn FnOnce(DataWrapper<Instance>) -> ()> =
+            Box::new(move |e: DataWrapper<Instance>| {
                 let e: E = e.get::<E>();
                 on_event(e);
             });
-        let call_from_java_raw: *mut dyn FnOnce(InstanceWrapper) = Box::into_raw(call_from_java);
+        let call_from_java_raw: *mut dyn FnOnce(DataWrapper<Instance>) = Box::into_raw(call_from_java);
         unsafe { transmute::<_, [i8; 16]>(call_from_java_raw) }
     }
     fn subscribe_internal_1_1<E: MiraiEventTrait>(
@@ -165,7 +166,7 @@ impl<E> Listener<'_, E> {
         todo!("低优先级：cancel")
     }
     pub fn complete(self) -> bool {
-        let call_from_java: *mut dyn Fn(InstanceWrapper) -> () =
+        let call_from_java: *mut dyn Fn(DataWrapper<Instance>) -> () =
             unsafe { transmute(self.call_from_java) };
         let call_from_java = unsafe { Box::from_raw(call_from_java) };
         drop(call_from_java);

@@ -1291,10 +1291,10 @@ impl RockPaperScissors {
                 &[InvocationArg::try_from(other.get_instance()).unwrap()],
             )
             .unwrap();
-        if instance_is_null(&result) {
-            None
-        } else {
+        if !instance_is_null(&result) {
             Some(jvm.to_rust(result).unwrap())
+        } else {
+            None
         }
     }
     pub fn random() -> Self {
@@ -1639,7 +1639,7 @@ impl TryFrom<Face> for SuperFace {
                 &[face],
             )
             .unwrap();
-        if instance_is_null(&instance) {
+        if !instance_is_null(&instance) {
             Ok(SuperFace::from_instance(instance))
         } else {
             Err(())

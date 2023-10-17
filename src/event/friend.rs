@@ -56,10 +56,10 @@ impl NewFriendRequestEvent {
     pub fn get_from_group(&self) -> Option<Group> {
         let jvm = Jvm::attach_thread().unwrap();
         let group = jvm.invoke(&self.instance, "getFromGroup", &[]).unwrap();
-        if instance_is_null(&group) {
-            None
-        } else {
+        if !instance_is_null(&group) {
             Some(Group::from_instance(group))
+        } else {
+            None
         }
     }
     pub fn get_from_group_id(&self) -> Option<i64> {

@@ -4,6 +4,7 @@
 #![feature(core_intrinsics)]
 #![feature(impl_trait_in_assoc_type)]
 #![feature(specialization)]
+#![feature(adt_const_params)]
 
 pub mod action;
 pub mod contact;

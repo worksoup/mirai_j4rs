@@ -1,10 +1,13 @@
-pub mod ffi;
-mod ffi_internal_test;
+pub(crate) mod ffi;
 pub(crate) mod internal;
+pub mod login_solver;
 pub mod other;
+pub mod contact;
 
 use crate::env::{FromInstance, GetEnvTrait};
-use crate::utils::ffi::{Comparator, Consumer, Function, Predicate};
+use crate::utils::ffi::callable_objects_in_jvm::{
+    comparator::Comparator, consumer::Consumer, function::Function, predicate::Predicate,
+};
 use crate::utils::internal::instance_is_null;
 use j4rs::{Instance, InvocationArg, Jvm};
 use std::{cmp::Ordering, marker::PhantomData};
@@ -52,20 +55,20 @@ impl<T: FromInstance> JavaStream<T> {
         array.sort_by(compare);
         array
     }
-    pub fn filter<P>(&self, p: P) -> JavaStream<T>
+    pub fn filter<P>(&self, p: &P) -> JavaStream<T>
         where
             P: Fn(T) -> bool,
             T: FromInstance,
     {
         let jvm = Jvm::attach_thread().unwrap();
         let p = Predicate::new(p);
-        let predicate = InvocationArg::try_from(p.get_instance()).unwrap();
+        let predicate = InvocationArg::try_from(p.to_instance()).unwrap();
         let instance = jvm.invoke(&self.instance, "filter", &[predicate]).unwrap();
-        drop(p);
+        let _ = p.drop_and_to_raw();
         JavaStream::from_instance(instance)
     }
 
-    pub fn map<B: FromInstance, F>(&self, f: F) -> JavaStream<B>
+    pub fn map<B: FromInstance, F>(&self, f: &F) -> JavaStream<B>
         where
             F: Fn(T) -> B,
             T: FromInstance,
@@ -73,21 +76,21 @@ impl<T: FromInstance> JavaStream<T> {
     {
         let jvm = Jvm::attach_thread().unwrap();
         let f = Function::new(f);
-        let mapper = InvocationArg::try_from(f.get_instance()).unwrap();
+        let mapper = InvocationArg::try_from(f.to_instance()).unwrap();
         let instance = jvm.invoke(&self.instance, "map", &[mapper]).unwrap();
-        drop(f);
+        let _ = f.drop_and_to_raw();
         JavaStream::from_instance(instance)
     }
 
-    pub fn for_each<F>(&self, f: F)
+    pub fn for_each<F>(&self, f: &F)
         where
             F: Fn(T),
     {
         let jvm = Jvm::attach_thread().unwrap();
         let f = Consumer::new(f);
-        let predicate = InvocationArg::try_from(f.get_instance()).unwrap();
+        let predicate = InvocationArg::try_from(f.to_instance()).unwrap();
         let _ = jvm.invoke(&self.instance, "filter", &[predicate]).unwrap();
-        drop(f);
+        let _ = f.drop_and_to_raw();
     }
 
     pub fn count(&self) -> i64 {
@@ -96,16 +99,16 @@ impl<T: FromInstance> JavaStream<T> {
         jvm.to_rust(instance).unwrap()
     }
 
-    pub fn flat_map<U: FromInstance, F>(&self, f: F) -> JavaStream<U>
+    pub fn flat_map<U: FromInstance, F>(&self, f: &F) -> JavaStream<U>
         where
             F: Fn(T) -> JavaStream<U>,
             T: FromInstance,
     {
         let jvm = Jvm::attach_thread().unwrap();
         let f = Function::new(f);
-        let mapper = InvocationArg::try_from(f.get_instance()).unwrap();
+        let mapper = InvocationArg::try_from(f.to_instance()).unwrap();
         let instance = jvm.invoke(&self.instance, "flatMap", &[mapper]).unwrap();
-        drop(f);
+        let _ = f.drop_and_to_raw();
         JavaStream::from_instance(instance)
     }
 
@@ -129,32 +132,32 @@ impl<T: FromInstance> JavaStream<T> {
         JavaStream::from_instance(instance)
     }
 
-    pub fn max_by<F>(&self, f: F) -> Option<T>
+    pub fn max_by<F>(&self, f: &F) -> Option<T>
         where
-            F: Fn(&T, &T) -> Ordering + 'static,
+            F: Fn(T, T) -> Ordering,
     {
         let jvm = Jvm::attach_thread().unwrap();
         let f = Comparator::new(f);
-        let compare = InvocationArg::try_from(f.get_instance()).unwrap();
+        let compare = InvocationArg::try_from(f.to_instance()).unwrap();
         let instance = jvm.invoke(&self.instance, "max", &[compare]).unwrap();
-        drop(f);
-        if instance_is_null(&instance) {
+        let _ = f.drop_and_to_raw();
+        if !instance_is_null(&instance) {
             Some(T::from_instance(instance))
         } else {
             None
         }
     }
 
-    pub fn min_by<F>(&self, f: F) -> Option<T>
+    pub fn min_by<F>(&self, f: &F) -> Option<T>
         where
-            F: Fn(&T, &T) -> Ordering + 'static,
+            F: Fn(T, T) -> Ordering,
     {
         let jvm = Jvm::attach_thread().unwrap();
         let f = Comparator::new(f);
-        let compare = InvocationArg::try_from(f.get_instance()).unwrap();
+        let compare = InvocationArg::try_from(f.to_instance()).unwrap();
         let instance = jvm.invoke(&self.instance, "min", &[compare]).unwrap();
-        drop(f);
-        if instance_is_null(&instance) {
+        let _ = f.drop_and_to_raw();
+        if !instance_is_null(&instance) {
             Some(T::from_instance(instance))
         } else {
             None
@@ -166,7 +169,7 @@ impl<T: FromInstance> JavaStream<T> {
         let instance = jvm.invoke(&self.instance, "toList", &[]).unwrap();
         loop {
             let has_next: bool = jvm
-                .to_rust(jvm.invoke(&instance, "hasNxt", &[]).unwrap())
+                .to_rust(jvm.invoke(&instance, "hasNext", &[]).unwrap())
                 .unwrap();
             if has_next {
                 let next = jvm.invoke(&instance, "next", &[]).unwrap();

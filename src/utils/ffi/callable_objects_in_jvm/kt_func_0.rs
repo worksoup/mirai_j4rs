@@ -3,6 +3,7 @@ use crate::utils::internal::data_wrapper::DataWrapper;
 use crate::utils::internal::instance_from_i8_16;
 use j4rs::{prelude::*, Instance, Jvm};
 use std::{marker::PhantomData, mem::transmute};
+use contact_derive::GetInstanceDerive;
 use j4rs_derive::*;
 
 #[call_from_java("rt.lea.LumiaKtFunc0.nativeInvoke")]
@@ -33,6 +34,21 @@ pub struct KtFunc0<'a, R: GetEnvTrait + FromInstance, >
     internal_closure_raw: [i8; 16],
     __a: PhantomData<&'a ()>,
     _r: PhantomData<R>,
+}
+
+#[derive(GetInstanceDerive)]
+pub struct KtFunc0Raw {
+    instance: Instance,
+    internal_closure_raw: [i8; 16],
+}
+
+impl KtFunc0Raw {
+    fn get_internal_closure_raw(&self) -> *mut dyn Fn(DataWrapper<Instance>) -> Instance {
+        unsafe { transmute(self.internal_closure_raw) }
+    }
+    pub fn drop_internal_closure_raw(&self) {
+        let _boxed = unsafe { Box::from_raw(self.get_internal_closure_raw()) };
+    }
 }
 
 impl<'a, R: GetEnvTrait + FromInstance, > KtFunc0<'a, R>
@@ -71,5 +87,11 @@ impl<'a, R: GetEnvTrait + FromInstance, > KtFunc0<'a, R>
     }
     pub(super) fn drop_internal_closure_raw(&self) {
         let _boxed = unsafe { Box::from_raw(self.get_internal_closure_raw()) };
+    }
+    pub fn to_raw(self) -> KtFunc0Raw {
+        let instance = self.to_instance();
+        let internal_closure_raw = self.internal_closure_raw;
+        std::mem::forget(self);
+        KtFunc0Raw { instance, internal_closure_raw }
     }
 }

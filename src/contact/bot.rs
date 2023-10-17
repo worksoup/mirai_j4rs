@@ -1,4 +1,5 @@
 use crate::contact::contact_trait::NudgeSupportedTrait;
+use crate::utils::contact::friend_group::FriendGroups;
 use crate::utils::internal::java_iter_to_rust_vec;
 use crate::utils::login_solver::{LoginSolverTrait, QrCodeLoginListenerTrait, State};
 use crate::{
@@ -23,100 +24,6 @@ use std::{
     collections::HashMap,
     path::{Path, PathBuf},
 };
-
-#[derive(GetInstanceDerive)]
-pub struct FriendGroup {
-    pub(crate) instance: Instance,
-}
-
-impl FromInstance for FriendGroup {
-    fn from_instance(instance: Instance) -> Self {
-        Self { instance }
-    }
-}
-
-impl FriendGroup {
-    pub fn delete(&self) -> bool {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "delete", &[]).unwrap())
-            .unwrap()
-    }
-    pub fn rename_to(&self, new_name: &str) -> bool {
-        let jvm = Jvm::attach_thread().unwrap();
-        let new_name = InvocationArg::try_from(new_name).unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "delete", &[new_name]).unwrap())
-            .unwrap()
-    }
-    pub fn move_in(&self, friend: Friend) -> bool {
-        let jvm = Jvm::attach_thread().unwrap();
-        let friend = InvocationArg::try_from(friend.get_instance()).unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "delete", &[friend]).unwrap())
-            .unwrap()
-    }
-    pub fn get_name(&self) -> String {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getName", &[]).unwrap())
-            .unwrap()
-    }
-    pub fn get_id(&self) -> i32 {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getId", &[]).unwrap())
-            .unwrap()
-    }
-    pub fn get_friends(&self) -> Vec<Friend> {
-        let jvm = Jvm::attach_thread().unwrap();
-        let collection = jvm.invoke(&self.instance, "getFriends", &[]).unwrap();
-        let iter = jvm.invoke(&collection, "iterator", &[]).unwrap();
-        java_iter_to_rust_vec(&jvm, iter)
-    }
-    pub fn get_count(&self) -> i32 {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getCount", &[]).unwrap())
-            .unwrap()
-    }
-}
-
-#[derive(GetInstanceDerive)]
-pub struct FriendGroups {
-    pub(crate) instance: Instance,
-}
-
-impl FriendGroups {
-    pub fn to_vec(&self) -> Vec<FriendGroup> {
-        let jvm = Jvm::attach_thread().unwrap();
-        let collection = jvm.invoke(&self.instance, "asCollection", &[]).unwrap();
-
-        let iter = jvm.invoke(&collection, "iterator", &[]).unwrap();
-        java_iter_to_rust_vec(&jvm, iter)
-    }
-    pub fn create(name: String) -> FriendGroup {
-        let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm
-            .invoke_static(
-                "net.mamoe.mirai.contact.friendgroup.FriendGroups",
-                "create",
-                &[name.try_into().unwrap()],
-            )
-            .unwrap();
-        FriendGroup { instance }
-    }
-    pub fn get(&self, id: i64) -> FriendGroup {
-        let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm
-            .invoke(
-                &self.instance,
-                "get",
-                &[InvocationArg::try_from(id).unwrap()],
-            )
-            .unwrap();
-        FriendGroup { instance }
-    }
-    pub fn get_default(&self) -> FriendGroup {
-        let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getDefault", &[]).unwrap();
-        FriendGroup { instance }
-    }
-}
 
 pub struct Bot {
     pub(crate) instance: Instance,
@@ -311,10 +218,11 @@ impl ContactOrBotTrait for Bot {
             AvatarSpec::XL.into()
         };
         // 这里 Mirai 源码中应该是 http 而不是 https.
-        "https://q.qlogo.cn/g?b=qq&nk=".to_string()
-            + self.get_id().to_string().as_str()
-            + "&s="
-            + size.to_string().as_str()
+        let mut url = "https://q.qlogo.cn/g?b=qq&nk=".to_string();
+        url.push_str(self.get_id().to_string().as_str());
+        url.push_str("&s=");
+        url.push_str(size.to_string().as_str());
+        url
     }
 }
 
@@ -1087,12 +995,11 @@ impl BotConfiguration {
             )
             .unwrap();
     }
-    pub fn set_login_solver<T, T2, >(
-        &self,
-        _: T,
-    ) where
-        T2: QrCodeLoginListenerTrait,
-        T: LoginSolverTrait<T2>, {
+    pub fn set_login_solver<'a, T>(&self, _: T)
+        where
+            T: LoginSolverTrait<'a>,
+    {
+        // TODO: 闭包会被忽略而被错误地 drop 掉，需要修改。
         Jvm::attach_thread()
             .unwrap()
             .invoke(

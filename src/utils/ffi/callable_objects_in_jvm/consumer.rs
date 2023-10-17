@@ -4,6 +4,7 @@ use crate::utils::internal::instance_from_i8_16;
 use j4rs::{prelude::*, Instance, InvocationArg, Jvm};
 use j4rs_derive::*;
 use std::{marker::PhantomData, mem::transmute};
+use contact_derive::GetInstanceDerive;
 
 #[call_from_java("rt.lea.LumiaConsumer.nativeAccept")]
 fn lumia_consumer_accept(consumer_as_i8_16: Instance, arg: Instance) {
@@ -29,6 +30,21 @@ pub struct Consumer<'a, T: FromInstance> {
     internal_closure_raw: [i8; 16],
     _t: PhantomData<T>,
     __a: PhantomData<&'a ()>,
+}
+
+#[derive(GetInstanceDerive)]
+pub struct ConsumerRaw {
+    instance: Instance,
+    internal_closure_raw: [i8; 16],
+}
+
+impl ConsumerRaw {
+    fn get_internal_closure_raw(&self) -> *mut dyn Fn(DataWrapper<Instance>) -> () {
+        unsafe { transmute(self.internal_closure_raw) }
+    }
+    pub fn drop_internal_closure_raw(&self) {
+        let _boxed = unsafe { Box::from_raw(self.get_internal_closure_raw()) };
+    }
 }
 
 impl<'a, T: FromInstance> Consumer<'a, T> {
@@ -70,5 +86,11 @@ impl<'a, T: FromInstance> Consumer<'a, T> {
     }
     pub(super) fn drop_internal_closure_raw(&self) {
         let _boxed = unsafe { Box::from_raw(self.get_internal_closure_raw()) };
+    }
+    pub fn to_raw(self) -> ConsumerRaw {
+        let instance = self.to_instance();
+        let internal_closure_raw = self.internal_closure_raw;
+        std::mem::forget(self);
+        ConsumerRaw { instance, internal_closure_raw }
     }
 }

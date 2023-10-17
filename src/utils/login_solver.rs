@@ -7,6 +7,8 @@ use crate::utils::internal::data_wrapper::DataWrapper;
 use contact_derive::GetInstanceDerive;
 use j4rs::{Instance, InvocationArg, Jvm};
 use std::ops::Deref;
+use crate::utils::ffi::callable_objects_in_jvm::kt_func_0::KtFunc0Raw;
+use crate::utils::ffi::callable_objects_in_jvm::kt_func_2::KtFunc2Raw;
 
 pub enum State {
     /// 等待扫描中，请在此阶段请扫描二维码.
@@ -37,8 +39,129 @@ impl FromInstance for State {
     }
 }
 
-pub trait QrCodeLoginListenerTrait where
-    Self: FromInstance + GetEnvTrait,
+pub struct QrCodeLoginListener {
+    instance: Option<Instance>,
+    on_fetch_qrcode: Option<Box<dyn Fn(Bot, DataWrapper<Vec<i8>>) -> DataWrapper<()>>>,
+    on_state_changed: Option<Box<dyn Fn(Bot, State) -> DataWrapper<()>>>,
+    on_interval_loop: Option<Box<dyn Fn() -> DataWrapper<()>>>,
+    on_completed: Option<Box<dyn Fn() -> DataWrapper<()>>>,
+    _1: Option<KtFunc2Raw>,
+    _2: Option<KtFunc2Raw>,
+    _3: Option<KtFunc0Raw>,
+    _4: Option<KtFunc0Raw>,
+}
+
+impl QrCodeLoginListener {
+    pub fn new<
+        const QR_CODE_SIZE: i32,
+        const QR_CODE_MARGIN: i32,
+        const QR_CODE_EC_LEVEL: i32,
+        const QR_CODE_STATE_UPDATE_INTERVAL: i64,
+        F: Fn(Bot, &Vec<i8>),
+        S: Fn(Bot, State),
+        I: Fn(),
+        C: Fn(),
+    >(
+        on_fetch_qrcode: &'static F,
+        on_state_changed: &'static S,
+        on_interval_loop: &'static I,
+        on_completed: &'static C,
+    ) -> Self {
+        let mut r = Self {
+            instance: None,
+            on_fetch_qrcode: Some(Box::new(|bot: Bot, data: DataWrapper<Vec<i8>>| -> DataWrapper<()> {
+                on_fetch_qrcode(bot, data.deref()).into()
+            })),
+            on_state_changed: Some(Box::new(|bot: Bot, state: State| -> DataWrapper<()> {
+                on_state_changed(bot, state).into()
+            })),
+            on_interval_loop: Some(Box::new(|| -> DataWrapper<()> {
+                on_interval_loop().into()
+            })),
+            on_completed: Some(Box::new(|| -> DataWrapper<()> {
+                on_completed().into()
+            })),
+            _1: None,
+            _2: None,
+            _3: None,
+            _4: None,
+        };
+        let jvm = Jvm::attach_thread().unwrap();
+
+        let qr_code_size = InvocationArg::try_from(QR_CODE_SIZE)
+            .unwrap()
+            .into_primitive()
+            .unwrap();
+        let qr_code_margin = InvocationArg::try_from(QR_CODE_MARGIN)
+            .unwrap()
+            .into_primitive()
+            .unwrap();
+        let qr_code_ec_level = InvocationArg::try_from(QR_CODE_EC_LEVEL)
+            .unwrap()
+            .into_primitive()
+            .unwrap();
+        let qr_code_state_update_interval =
+            InvocationArg::try_from(QR_CODE_STATE_UPDATE_INTERVAL)
+                .unwrap()
+                .into_primitive()
+                .unwrap();
+
+        r._1 = Some(KtFunc2::new(r.on_fetch_qrcode.as_ref().unwrap()).to_raw());
+        r._2 = Some(KtFunc2::new(r.on_state_changed.as_ref().unwrap()).to_raw());
+        r._3 = Some(KtFunc0::new(r.on_interval_loop.as_ref().unwrap()).to_raw());
+        r._4 = Some(KtFunc0::new(r.on_completed.as_ref().unwrap()).to_raw());
+
+        let on_fetch_qrcode = InvocationArg::try_from(r._1.as_ref().unwrap().get_instance()).unwrap();
+        let on_state_changed = InvocationArg::try_from(r._2.as_ref().unwrap().get_instance()).unwrap();
+        let on_interval_loop = InvocationArg::try_from(r._3.as_ref().unwrap().get_instance()).unwrap();
+        let on_completed = InvocationArg::try_from(r._4.as_ref().unwrap().get_instance()).unwrap();
+
+        let instance = jvm
+            .create_instance(
+                "rt.lea.LumiaQrCodeLoginListener",
+                &[
+                    qr_code_size,
+                    qr_code_margin,
+                    qr_code_ec_level,
+                    qr_code_state_update_interval,
+                    on_fetch_qrcode,
+                    on_state_changed,
+                    on_interval_loop,
+                    on_completed,
+                ],
+            )
+            .unwrap();
+        r.instance = Some(instance);
+        r
+    }
+}
+
+impl GetEnvTrait for QrCodeLoginListener {
+    fn get_instance(&self) -> Instance {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.clone_instance(self.instance.as_ref().unwrap()).unwrap()
+    }
+}
+
+impl FromInstance for QrCodeLoginListener {
+    fn from_instance(instance: Instance) -> Self {
+        Self {
+            instance: Some(instance),
+            on_fetch_qrcode: None,
+            on_state_changed: None,
+            on_interval_loop: None,
+            on_completed: None,
+            _1: None,
+            _2: None,
+            _3: None,
+            _4: None,
+        }
+    }
+}
+
+pub trait QrCodeLoginListenerTrait
+    where
+        Self: FromInstance + GetEnvTrait,
 {
     const QR_CODE_SIZE: i32 = 3;
     const QR_CODE_MARGIN: i32 = 4;
@@ -49,64 +172,6 @@ pub trait QrCodeLoginListenerTrait where
     fn on_interval_loop();
     fn on_completed();
 }
-
-trait InternalQrCodeLoginListenerTrait: QrCodeLoginListenerTrait + GetEnvTrait {
-    fn __on_fetch_qrcode(bot: Bot, data: DataWrapper<Vec<i8>>) -> DataWrapper<()> {
-        Self::on_fetch_qrcode(bot, data.deref()).into()
-    }
-
-    fn __on_state_changed(bot: Bot, state: State) -> DataWrapper<()> {
-        Self::on_state_changed(bot, state).into()
-    }
-
-    fn __on_interval_loop() -> DataWrapper<()> {
-        Self::on_interval_loop().into()
-    }
-    fn __on_completed() -> DataWrapper<()> {
-        Self::on_completed().into()
-    }
-    fn __instance(&self) -> Instance {
-        let jvm = Jvm::attach_thread().unwrap();
-        let qr_code_size = InvocationArg::try_from(Self::QR_CODE_SIZE)
-            .unwrap()
-            .into_primitive()
-            .unwrap();
-        let qr_code_margin = InvocationArg::try_from(Self::QR_CODE_MARGIN)
-            .unwrap()
-            .into_primitive()
-            .unwrap();
-        let qr_code_ec_level = InvocationArg::try_from(Self::QR_CODE_EC_LEVEL)
-            .unwrap()
-            .into_primitive()
-            .unwrap();
-        let qr_code_state_update_interval = InvocationArg::try_from(Self::QR_CODE_STATE_UPDATE_INTERVAL)
-            .unwrap()
-            .into_primitive()
-            .unwrap();
-
-        let on_fetch_qrcode = InvocationArg::try_from(KtFunc2::new(&Self::__on_fetch_qrcode).to_instance()).unwrap();
-        let on_state_changed = InvocationArg::try_from(KtFunc2::new(&Self::__on_state_changed).to_instance()).unwrap();
-        let on_interval_loop = InvocationArg::try_from(KtFunc0::new(&Self::__on_interval_loop).to_instance()).unwrap();
-        let on_completed = InvocationArg::try_from(KtFunc0::new(&Self::__on_completed).to_instance()).unwrap();
-
-        jvm.create_instance(
-            "rt.lea.LumiaQrCodeLoginListener",
-            &[
-                qr_code_size,
-                qr_code_margin,
-                qr_code_ec_level,
-                qr_code_state_update_interval,
-                on_fetch_qrcode,
-                on_state_changed,
-                on_interval_loop,
-                on_completed,
-            ],
-        )
-            .unwrap()
-    }
-}
-
-impl<T: QrCodeLoginListenerTrait> InternalQrCodeLoginListenerTrait for T {}
 
 #[derive(GetInstanceDerive)]
 pub struct SmsRequests {
@@ -195,10 +260,9 @@ impl FromInstance for DeviceVerificationResult {
     }
 }
 
-pub trait LoginSolverTrait<
-    QrCodeLoginListener,
-> where
-    QrCodeLoginListener: InternalQrCodeLoginListenerTrait,
+pub trait LoginSolverTrait<'a>
+    where
+        Self: 'a,
 {
     const IS_SLIDER_CAPTCHA_SUPPORTED: bool = true;
     fn on_solve_slider_captcha(bot: Bot, url: &str) -> String;
@@ -214,7 +278,7 @@ pub trait LoginSolverTrait<
     fn __on_solve_pic_captcha(bot: Bot, data: DataWrapper<Vec<i8>>) -> DataWrapper<String> {
         Self::on_solve_pic_captcha(bot, data.deref()).into()
     }
-    fn __create_qrcode_login_listener(bot: Bot) -> DataWrapper<QrCodeLoginListener> {
+    fn __create_qrcode_login_listener(bot: Bot) -> QrCodeLoginListener {
         Self::create_qrcode_login_listener(bot).into()
     }
     fn __instance() -> Instance {

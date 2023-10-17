@@ -2,7 +2,6 @@ use crate::contact::contact_trait::{NudgeSupportedTrait, SendMessageSupportedTra
 use crate::{
     action::nudges::{FriendNudge, NormalMemberNudge},
     contact::{
-        bot::FriendGroup,
         contact_trait::{
             AssertMemberPermissionTrait, ContactOrBotTrait, ContactTrait, MemberTrait,
             UserOrBotTrait, UserTrait,
@@ -20,6 +19,7 @@ use contact_derive::GetInstanceDerive;
 use j4rs::{Instance, InvocationArg, Jvm};
 use std::{marker::PhantomData, path::PathBuf};
 use crate::action::nudges::StrangerNudge;
+use crate::utils::contact::friend_group::FriendGroup;
 
 pub struct ContactList<T>
     where

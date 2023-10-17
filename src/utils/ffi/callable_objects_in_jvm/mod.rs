@@ -22,7 +22,6 @@ pub mod kt_func_0;
 pub mod kt_func_1;
 pub mod kt_func_2;
 
-
 use crate::env::{FromInstance, GetEnvTrait};
 
 impl<'a, T: FromInstance> Drop for comparator::Comparator<'a, T> {
@@ -62,6 +61,48 @@ impl<'a, P1: FromInstance, P2: FromInstance, R: GetEnvTrait + FromInstance> Drop
 }
 
 impl<'a, T: FromInstance> Drop for predicate::Predicate<'a, T> {
+    fn drop(&mut self) {
+        self.drop_internal_closure_raw()
+    }
+}
+
+impl Drop for comparator::ComparatorRaw {
+    fn drop(&mut self) {
+        self.drop_internal_closure_raw()
+    }
+}
+
+impl Drop for consumer::ConsumerRaw {
+    fn drop(&mut self) {
+        self.drop_internal_closure_raw()
+    }
+}
+
+impl Drop for function::FunctionRaw {
+    fn drop(&mut self) {
+        self.drop_internal_closure_raw()
+    }
+}
+
+impl Drop for kt_func_0::KtFunc0Raw {
+    fn drop(&mut self) {
+        self.drop_internal_closure_raw()
+    }
+}
+
+impl Drop for kt_func_1::KtFunc1Raw {
+    fn drop(&mut self) {
+        self.drop_internal_closure_raw()
+    }
+}
+
+impl Drop for kt_func_2::KtFunc2Raw {
+    fn drop(&mut self) {
+        self.drop_internal_closure_raw()
+    }
+}
+
+impl Drop for predicate::PredicateRaw {
     fn drop(&mut self) {
         self.drop_internal_closure_raw()
     }

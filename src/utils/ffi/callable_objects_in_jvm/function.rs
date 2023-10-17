@@ -2,6 +2,7 @@ use crate::{env::{FromInstance, GetEnvTrait}, utils::internal::{data_wrapper::Da
 use j4rs::{prelude::*, Instance, InvocationArg, Jvm};
 use j4rs_derive::*;
 use std::{marker::PhantomData, mem::transmute};
+use contact_derive::GetInstanceDerive;
 
 #[call_from_java("rt.lea.LumiaFunction.nativeApply")]
 fn lumia_function_apply(
@@ -31,6 +32,21 @@ pub struct Function<'a, T: FromInstance, R: GetEnvTrait + FromInstance> {
     __a: PhantomData<&'a ()>,
     _t: PhantomData<T>,
     _r: PhantomData<R>,
+}
+
+#[derive(GetInstanceDerive)]
+pub struct FunctionRaw {
+    instance: Instance,
+    internal_closure_raw: [i8; 16],
+}
+
+impl FunctionRaw {
+    fn get_internal_closure_raw(&self) -> *mut dyn Fn(DataWrapper<Instance>) -> Instance {
+        unsafe { transmute(self.internal_closure_raw) }
+    }
+    pub fn drop_internal_closure_raw(&self) {
+        let _boxed = unsafe { Box::from_raw(self.get_internal_closure_raw()) };
+    }
 }
 
 impl<'a, T: FromInstance, R: GetEnvTrait + FromInstance> Function<'a, T, R> {
@@ -74,5 +90,11 @@ impl<'a, T: FromInstance, R: GetEnvTrait + FromInstance> Function<'a, T, R> {
     }
     pub(super) fn drop_internal_closure_raw(&self) {
         let _boxed = unsafe { Box::from_raw(self.get_internal_closure_raw()) };
+    }
+    pub fn to_raw(self) -> (Instance, [i8; 16]) {
+        let instance = self.to_instance();
+        let internal_closure_raw = self.internal_closure_raw;
+        std::mem::forget(self);
+        (instance, internal_closure_raw)
     }
 }

@@ -4,6 +4,7 @@ use crate::utils::internal::instance_from_i8_16;
 use j4rs::{errors::J4RsError, prelude::*, Instance, InvocationArg, Jvm};
 use j4rs_derive::*;
 use std::{marker::PhantomData, mem::transmute};
+use contact_derive::GetInstanceDerive;
 
 #[call_from_java("rt.lea.LumiaPredicate.nativeTest")]
 fn lumia_predicate_test(
@@ -36,6 +37,23 @@ pub struct Predicate<'a, T>
     internal_closure_raw: [i8; 16],
     _t: PhantomData<T>,
     __a: PhantomData<&'a ()>,
+}
+
+#[derive(GetInstanceDerive)]
+pub struct PredicateRaw {
+    instance: Instance,
+    internal_closure_raw: [i8; 16],
+}
+
+impl PredicateRaw {
+    pub fn get_internal_closure_raw(
+        &self,
+    ) -> *mut dyn Fn(DataWrapper<Instance>) -> Result<InvocationArg, J4RsError> {
+        unsafe { transmute(self.internal_closure_raw) }
+    }
+    pub fn drop_internal_closure_raw(&self) {
+        let _boxed = unsafe { Box::from_raw(self.get_internal_closure_raw()) };
+    }
 }
 
 impl<'a, T> Predicate<'a, T>
@@ -83,5 +101,11 @@ impl<'a, T> Predicate<'a, T>
     }
     pub(super) fn drop_internal_closure_raw(&self) {
         let _boxed = unsafe { Box::from_raw(self.get_internal_closure_raw()) };
+    }
+    pub fn to_raw(self) -> PredicateRaw {
+        let instance = self.to_instance();
+        let internal_closure_raw = self.internal_closure_raw;
+        std::mem::forget(self);
+        PredicateRaw { instance, internal_closure_raw }
     }
 }

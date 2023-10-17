@@ -2,6 +2,7 @@ pub(crate) mod ffi;
 pub(crate) mod internal;
 pub mod login_solver;
 pub mod other;
+pub mod contact;
 
 use crate::env::{FromInstance, GetEnvTrait};
 use crate::utils::ffi::callable_objects_in_jvm::{

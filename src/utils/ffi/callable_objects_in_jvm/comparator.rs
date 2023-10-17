@@ -4,6 +4,7 @@ use crate::utils::internal::instance_from_i8_16;
 use j4rs::{Instance, InvocationArg, Jvm};
 use std::{cmp::Ordering, mem::transmute};
 use std::marker::PhantomData;
+use contact_derive::GetInstanceDerive;
 
 pub struct Comparator<'a, T: FromInstance>
 {
@@ -11,6 +12,21 @@ pub struct Comparator<'a, T: FromInstance>
     internal_closure_raw: [i8; 16],
     __a: PhantomData<&'a ()>,
     _t: PhantomData<T>,
+}
+
+#[derive(GetInstanceDerive)]
+pub struct ComparatorRaw {
+    instance: Instance,
+    internal_closure_raw: [i8; 16],
+}
+
+impl ComparatorRaw {
+    fn get_internal_closure_raw(&self) -> *mut dyn Fn(DataWrapper<Instance>) -> Instance {
+        unsafe { transmute(self.internal_closure_raw) }
+    }
+    pub fn drop_internal_closure_raw(&self) {
+        let _boxed = unsafe { Box::from_raw(self.get_internal_closure_raw()) };
+    }
 }
 
 impl<'a, T: FromInstance> Comparator<'a, T>
@@ -66,5 +82,11 @@ impl<'a, T: FromInstance> Comparator<'a, T>
     }
     pub(super) fn drop_internal_closure_raw(&self) {
         let _boxed = unsafe { Box::from_raw(self.get_internal_closure_raw()) };
+    }
+    pub fn to_raw(self) -> ComparatorRaw {
+        let instance = self.to_instance();
+        let internal_closure_raw = self.internal_closure_raw;
+        std::mem::forget(self);
+        ComparatorRaw { instance, internal_closure_raw }
     }
 }

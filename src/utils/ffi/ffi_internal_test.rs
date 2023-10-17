@@ -63,6 +63,7 @@ mod tests {
         let consumer = Consumer::new(&f);
         let test_instance = InvocationArg::try_from(true).unwrap();
         consumer.accept(test_instance);
+        let _ = consumer.drop_and_to_raw();
     }
 
     #[test]
@@ -76,6 +77,7 @@ mod tests {
         let function = Function::new(&f);
         let test_instance = InvocationArg::try_from(true).unwrap();
         let x = function.apply(test_instance);
+        let _ = function.drop_and_to_raw();
         println!("a = {a}\nThe class name is `{}`.", x.fuck());
     }
 
@@ -95,6 +97,7 @@ mod tests {
         let test_instance1 = InvocationArg::try_from(22).unwrap_or_else(|err| panic!("{}", err));
         let test_instance2 = InvocationArg::try_from(55).unwrap();
         let x = comparator.compare(test_instance1, test_instance2);
+        let _ = comparator.drop_and_to_raw();
         println!("a = {a}\nThe ordering is `{:?}`.", x);
     }
 
@@ -112,6 +115,7 @@ mod tests {
         // sleep(std::time::Duration::from_millis(10000));
         let test_value = InvocationArg::try_from(22).unwrap_or_else(|err| panic!("{}", err));
         let x = predicate.test(test_value);
+        let _ = predicate.drop_and_to_raw();
         println!("a = {a}\n And `test_value > 0` is `{:?}`.", x);
     }
 
@@ -130,6 +134,7 @@ mod tests {
         };
         let kt_func_0 = KtFunc0::new(&f);
         let x = kt_func_0.invoke();
+        let _ = kt_func_0.drop_and_to_raw();
         println!(
             "a = {a}\n And `x` is `{}`.",
             jvm.to_rust::<bool>(jvm.cast(&x.get_instance(), "java.lang.Boolean").unwrap())
@@ -148,6 +153,7 @@ mod tests {
         let kt_func_1 = KtFunc1::new(&f);
         let test_instance = InvocationArg::try_from(true).unwrap();
         let x = kt_func_1.invoke(test_instance);
+        let _ = kt_func_1.drop_and_to_raw();
         println!("a = {a}\nThe class name is `{}`.", x.fuck());
     }
 
@@ -172,6 +178,7 @@ mod tests {
         let test_instance1 = InvocationArg::try_from(22).unwrap_or_else(|err| panic!("{}", err));
         let test_instance2 = InvocationArg::try_from(55).unwrap();
         let x = kt_func_2.invoke(test_instance1, test_instance2);
+        let _ = kt_func_2.drop_and_to_raw();
         println!(
             "a = {a}\nThe ordering is `{:?}`.",
             top_jvm.to_rust::<i32>(x.get_instance()).unwrap()

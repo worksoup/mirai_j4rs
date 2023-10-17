@@ -82,10 +82,9 @@ impl<'a, T, R> KtFunc1<'a, T, R>
     pub(super) fn drop_internal_closure_raw(&self) {
         let _boxed = unsafe { Box::from_raw(self.get_internal_closure_raw()) };
     }
-    pub fn to_raw(self) -> KtFunc1Raw {
-        let instance = self.to_instance();
+    pub fn drop_and_to_raw(self) -> KtFunc1Raw {
+        let instance = self.instance;
         let internal_closure_raw = self.internal_closure_raw;
-        std::mem::forget(self);
         KtFunc1Raw { instance, internal_closure_raw }
     }
 }

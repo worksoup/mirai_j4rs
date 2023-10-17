@@ -64,7 +64,7 @@ impl<T: FromInstance> JavaStream<T> {
         let p = Predicate::new(p);
         let predicate = InvocationArg::try_from(p.to_instance()).unwrap();
         let instance = jvm.invoke(&self.instance, "filter", &[predicate]).unwrap();
-        drop(p);
+        let _ = p.drop_and_to_raw();
         JavaStream::from_instance(instance)
     }
 
@@ -78,7 +78,7 @@ impl<T: FromInstance> JavaStream<T> {
         let f = Function::new(f);
         let mapper = InvocationArg::try_from(f.to_instance()).unwrap();
         let instance = jvm.invoke(&self.instance, "map", &[mapper]).unwrap();
-        drop(f);
+        let _ = f.drop_and_to_raw();
         JavaStream::from_instance(instance)
     }
 
@@ -90,7 +90,7 @@ impl<T: FromInstance> JavaStream<T> {
         let f = Consumer::new(f);
         let predicate = InvocationArg::try_from(f.to_instance()).unwrap();
         let _ = jvm.invoke(&self.instance, "filter", &[predicate]).unwrap();
-        drop(f);
+        let _ = f.drop_and_to_raw();
     }
 
     pub fn count(&self) -> i64 {
@@ -108,7 +108,7 @@ impl<T: FromInstance> JavaStream<T> {
         let f = Function::new(f);
         let mapper = InvocationArg::try_from(f.to_instance()).unwrap();
         let instance = jvm.invoke(&self.instance, "flatMap", &[mapper]).unwrap();
-        drop(f);
+        let _ = f.drop_and_to_raw();
         JavaStream::from_instance(instance)
     }
 
@@ -140,7 +140,7 @@ impl<T: FromInstance> JavaStream<T> {
         let f = Comparator::new(f);
         let compare = InvocationArg::try_from(f.to_instance()).unwrap();
         let instance = jvm.invoke(&self.instance, "max", &[compare]).unwrap();
-        drop(f);
+        let _ = f.drop_and_to_raw();
         if !instance_is_null(&instance) {
             Some(T::from_instance(instance))
         } else {
@@ -156,7 +156,7 @@ impl<T: FromInstance> JavaStream<T> {
         let f = Comparator::new(f);
         let compare = InvocationArg::try_from(f.to_instance()).unwrap();
         let instance = jvm.invoke(&self.instance, "min", &[compare]).unwrap();
-        drop(f);
+        let _ = f.drop_and_to_raw();
         if !instance_is_null(&instance) {
             Some(T::from_instance(instance))
         } else {

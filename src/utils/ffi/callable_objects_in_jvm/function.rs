@@ -91,10 +91,9 @@ impl<'a, T: FromInstance, R: GetEnvTrait + FromInstance> Function<'a, T, R> {
     pub(super) fn drop_internal_closure_raw(&self) {
         let _boxed = unsafe { Box::from_raw(self.get_internal_closure_raw()) };
     }
-    pub fn to_raw(self) -> (Instance, [i8; 16]) {
-        let instance = self.to_instance();
+    pub fn drop_and_to_raw(self) -> FunctionRaw {
+        let instance = self.instance;
         let internal_closure_raw = self.internal_closure_raw;
-        std::mem::forget(self);
-        (instance, internal_closure_raw)
+        FunctionRaw { instance, internal_closure_raw }
     }
 }

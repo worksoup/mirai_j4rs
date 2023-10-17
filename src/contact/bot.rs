@@ -1,7 +1,7 @@
 use crate::contact::contact_trait::NudgeSupportedTrait;
 use crate::utils::contact::friend_group::FriendGroups;
 use crate::utils::internal::java_iter_to_rust_vec;
-use crate::utils::login_solver::{LoginSolverTrait, QrCodeLoginListenerTrait, State};
+use crate::utils::login_solver::{DeviceVerificationRequests, DeviceVerificationResult, LoginSolverTrait, QrCodeLoginListener};
 use crate::{
     action::nudges::BotNudge,
     contact::{
@@ -24,6 +24,8 @@ use std::{
     collections::HashMap,
     path::{Path, PathBuf},
 };
+use crate::utils::ffi::callable_objects_in_jvm::kt_func_1::KtFunc1Raw;
+use crate::utils::ffi::callable_objects_in_jvm::kt_func_2::KtFunc2Raw;
 
 pub struct Bot {
     pub(crate) instance: Instance,
@@ -93,6 +95,7 @@ impl Bot {
             .unwrap();
         BotConfiguration {
             instance: bot_configuration,
+            _login_solver_holder: None,
         }
     }
     pub fn get_event_channel(&self) -> EventChannel {
@@ -236,6 +239,7 @@ pub struct MiraiLogger(Instance);
 
 pub struct DeviceInfo(Instance);
 
+/// 该结构体未实现 [`LoginSolverTrait`], 如需使用相关功能请调用本实例的 `get_instance` 方法，获得 `Instance` 后直接操作。
 #[derive(GetInstanceDerive)]
 pub struct LoginSolver {
     instance: Instance,
@@ -413,6 +417,7 @@ impl Env {
             .unwrap();
         BotConfiguration {
             instance: bot_configuration,
+            _login_solver_holder: None,
         }
     }
     pub fn find_bot(&self, id: i64) -> Option<Bot> {
@@ -575,6 +580,7 @@ impl Certificate<[u8; 16]> for Env {
 
 pub struct BotConfiguration {
     instance: Instance,
+    _login_solver_holder: Option<(KtFunc2Raw, KtFunc2Raw, KtFunc1Raw, KtFunc2Raw)>,
 }
 
 impl GetEnvTrait for BotConfiguration {
@@ -593,14 +599,14 @@ impl BotConfiguration {
             .unwrap()
             .invoke(&bot.get_configuration().get_instance(), "copy", &[])
             .unwrap();
-        BotConfiguration { instance }
+        BotConfiguration { instance, _login_solver_holder: None }
     }
     pub fn get_default() -> Self {
         let instance = Jvm::attach_thread()
             .unwrap()
             .invoke_static("net.mamoe.mirai.utils.BotConfiguration", "getDefault", &[])
             .unwrap();
-        BotConfiguration { instance }
+        BotConfiguration { instance, _login_solver_holder: None }
     }
 }
 
@@ -995,19 +1001,20 @@ impl BotConfiguration {
             )
             .unwrap();
     }
-    pub fn set_login_solver<'a, T>(&self, _: T)
+    pub fn set_login_solver<T>(&mut self, _: T)
         where
-            T: LoginSolverTrait<'a>,
+            T: LoginSolverTrait,
     {
-        // TODO: 闭包会被忽略而被错误地 drop 掉，需要修改。
-        Jvm::attach_thread()
-            .unwrap()
-            .invoke(
-                &self.instance,
-                "setLoginSolver",
-                &[InvocationArg::try_from(T::__instance()).unwrap()],
-            )
+        let jvm = Jvm::attach_thread().unwrap();
+        let (instance, _1, _2, _3, _4) = T::__instance();
+        jvm.invoke(
+            &self.instance,
+            "setLoginSolver",
+            &[InvocationArg::try_from(instance).unwrap()],
+        )
             .unwrap();
+        // 防止 drop.
+        self._login_solver_holder = Some((_1, _2, _3, _4))
     }
     pub fn set_network_logger_supplier(&self) {
         Jvm::attach_thread()

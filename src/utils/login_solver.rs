@@ -8,6 +8,7 @@ use contact_derive::GetInstanceDerive;
 use j4rs::{Instance, InvocationArg, Jvm};
 use std::ops::Deref;
 use crate::utils::ffi::callable_objects_in_jvm::kt_func_0::KtFunc0Raw;
+use crate::utils::ffi::callable_objects_in_jvm::kt_func_1::KtFunc1Raw;
 use crate::utils::ffi::callable_objects_in_jvm::kt_func_2::KtFunc2Raw;
 
 pub enum State {
@@ -36,6 +37,20 @@ impl FromInstance for State {
             "CONFIRMED" => State::Confirmed,
             _ => State::Default,
         }
+    }
+}
+
+impl GetEnvTrait for State {
+    fn get_instance(&self) -> Instance {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.static_class_field("net.mamoe.mirai.auth.QRCodeLoginListener$State", match self {
+            State::WaitingForScan => { "WAITING_FOR_SCAN" }
+            State::WaitingForConfirm => { "WAITING_FOR_CONFIRM" }
+            State::Cancelled => { "CANCELLED" }
+            State::Timeout => { "TIMEOUT" }
+            State::Confirmed => { "CONFIRMED" }
+            State::Default => { "DEFAULT" }
+        }).unwrap()
     }
 }
 
@@ -106,10 +121,10 @@ impl QrCodeLoginListener {
                 .into_primitive()
                 .unwrap();
 
-        r._1 = Some(KtFunc2::new(r.on_fetch_qrcode.as_ref().unwrap()).to_raw());
-        r._2 = Some(KtFunc2::new(r.on_state_changed.as_ref().unwrap()).to_raw());
-        r._3 = Some(KtFunc0::new(r.on_interval_loop.as_ref().unwrap()).to_raw());
-        r._4 = Some(KtFunc0::new(r.on_completed.as_ref().unwrap()).to_raw());
+        r._1 = Some(KtFunc2::new(r.on_fetch_qrcode.as_ref().unwrap()).drop_and_to_raw());
+        r._2 = Some(KtFunc2::new(r.on_state_changed.as_ref().unwrap()).drop_and_to_raw());
+        r._3 = Some(KtFunc0::new(r.on_interval_loop.as_ref().unwrap()).drop_and_to_raw());
+        r._4 = Some(KtFunc0::new(r.on_completed.as_ref().unwrap()).drop_and_to_raw());
 
         let on_fetch_qrcode = InvocationArg::try_from(r._1.as_ref().unwrap().get_instance()).unwrap();
         let on_state_changed = InvocationArg::try_from(r._2.as_ref().unwrap().get_instance()).unwrap();
@@ -133,6 +148,60 @@ impl QrCodeLoginListener {
             .unwrap();
         r.instance = Some(instance);
         r
+    }
+
+    pub fn on_fetch_qrcode(&self, bot: Bot, data: &Vec<i8>) {
+        if let Some(ref internal_on_fetch_qrcode) = self.on_fetch_qrcode {
+            internal_on_fetch_qrcode(bot, data.clone().into());
+        } else {
+            let jvm = Jvm::attach_thread().unwrap();
+            let instance = self.instance.as_ref().unwrap();
+            let bot = InvocationArg::try_from(bot.get_instance()).unwrap();
+            let data = {
+                let mut tmp = Vec::new();
+                for item in data {
+                    tmp.push(
+                        InvocationArg::try_from(item)
+                            .unwrap()
+                            .into_primitive()
+                            .unwrap(),
+                    );
+                }
+                tmp
+            };
+            let data = jvm.create_java_array("byte", &data).unwrap();
+            let data = InvocationArg::try_from(data).unwrap().into_primitive().unwrap();
+            jvm.invoke(instance, "onFetchQRCode", &[bot, data]).unwrap();
+        }
+    }
+    pub fn on_state_changed(&self, bot: Bot, state: State) {
+        if let Some(ref internal_on_state_changed) = self.on_state_changed {
+            internal_on_state_changed(bot, state);
+        } else {
+            let jvm = Jvm::attach_thread().unwrap();
+            let instance = self.instance.as_ref().unwrap();
+            let bot = InvocationArg::try_from(bot.get_instance()).unwrap();
+            let state = InvocationArg::try_from(state.get_instance()).unwrap();
+            jvm.invoke(instance, "onStateChanged", &[bot, state]).unwrap();
+        }
+    }
+    pub fn on_interval_loop(&self) {
+        if let Some(ref internal_on_interval_loop) = self.on_interval_loop {
+            internal_on_interval_loop();
+        } else {
+            let jvm = Jvm::attach_thread().unwrap();
+            let instance = self.instance.as_ref().unwrap();
+            jvm.invoke(instance, "onIntervalLoop", &[]).unwrap();
+        }
+    }
+    pub fn on_completed(&self) {
+        if let Some(ref internal_on_completed) = self.on_completed {
+            internal_on_completed();
+        } else {
+            let jvm = Jvm::attach_thread().unwrap();
+            let instance = self.instance.as_ref().unwrap();
+            jvm.invoke(instance, "onCompleted", &[]).unwrap();
+        }
     }
 }
 
@@ -260,9 +329,7 @@ impl FromInstance for DeviceVerificationResult {
     }
 }
 
-pub trait LoginSolverTrait<'a>
-    where
-        Self: 'a,
+pub trait LoginSolverTrait
 {
     const IS_SLIDER_CAPTCHA_SUPPORTED: bool = true;
     fn on_solve_slider_captcha(bot: Bot, url: &str) -> String;
@@ -281,17 +348,23 @@ pub trait LoginSolverTrait<'a>
     fn __create_qrcode_login_listener(bot: Bot) -> QrCodeLoginListener {
         Self::create_qrcode_login_listener(bot).into()
     }
-    fn __instance() -> Instance {
+    fn __instance() -> (Instance, KtFunc2Raw, KtFunc2Raw, KtFunc1Raw, KtFunc2Raw) {
         let jvm = Jvm::attach_thread().unwrap();
-        let on_solve_slider_captcha = InvocationArg::try_from(KtFunc2::new(&Self::__on_solve_slider_captcha).to_instance()).unwrap();
-        let on_solve_pic_captcha = InvocationArg::try_from(KtFunc2::new(&Self::__on_solve_pic_captcha).to_instance()).unwrap();
+
+        let _1 = KtFunc2::new(&Self::__on_solve_slider_captcha);
+        let _2 = KtFunc2::new(&Self::__on_solve_pic_captcha);
+        let _3 = KtFunc1::new(&Self::__create_qrcode_login_listener);
+        let _4 = KtFunc2::new(&Self::on_solve_device_verification);
+
+        let on_solve_slider_captcha = InvocationArg::try_from(_1.to_instance()).unwrap();
+        let on_solve_pic_captcha = InvocationArg::try_from(_2.to_instance()).unwrap();
         let is_slider_captcha_supported =
             InvocationArg::try_from(Self::IS_SLIDER_CAPTCHA_SUPPORTED).unwrap();
         let create_qrcode_login_listener =
-            InvocationArg::try_from(KtFunc1::new(&Self::__create_qrcode_login_listener).to_instance()).unwrap();
+            InvocationArg::try_from(_3.to_instance()).unwrap();
         let on_solve_device_verification =
-            InvocationArg::try_from(KtFunc2::new(&Self::on_solve_device_verification).to_instance()).unwrap();
-        jvm.create_instance(
+            InvocationArg::try_from(_4.to_instance()).unwrap();
+        (jvm.create_instance(
             "rt.lea.LumiaLoginSolver",
             &[
                 on_solve_slider_captcha,
@@ -301,6 +374,6 @@ pub trait LoginSolverTrait<'a>
                 on_solve_device_verification,
             ],
         )
-            .unwrap()
+             .unwrap(), _1.drop_and_to_raw(), _2.drop_and_to_raw(), _3.drop_and_to_raw(), _4.drop_and_to_raw())
     }
 }

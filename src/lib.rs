@@ -1,7 +1,5 @@
 #![allow(incomplete_features)]
 #![feature(generic_const_exprs)]
-#![feature(return_position_impl_trait_in_trait)]
-#![feature(core_intrinsics)]
 #![feature(impl_trait_in_assoc_type)]
 #![feature(specialization)]
 #![feature(adt_const_params)]

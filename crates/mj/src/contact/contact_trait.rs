@@ -1,21 +1,23 @@
-use crate::action::nudges::Nudge;
-use crate::contact::group::{
-    AnnouncementParameters, MemberActive, OfflineAnnouncement, OnlineAnnouncement,
-};
-use crate::error::MiraiRsError;
-use crate::message::data::image::Image;
-use crate::message::message_receipt::MessageReceipt;
 use crate::{
+    contact::group::{
+        AnnouncementParameters, MemberActive, OfflineAnnouncement, OnlineAnnouncement,
+    },
     contact::{
         group::{Group, MemberPermission},
         Friend,
     },
-    message::message_trait::MessageTrait,
+    error::MiraiRsError,
+    message::{
+        action::nudges::Nudge, data::image::Image, message_receipt::MessageReceipt,
+        message_trait::MessageTrait,
+    },
     utils::other::enums::AvatarSpec,
 };
 use j4rs::{InvocationArg, Jvm};
-use mjbase::env::{FromInstance, GetEnvTrait};
-use mjbase::utils::{external_resource_close, external_resource_from_file};
+use mjbase::{
+    env::{FromInstance, GetEnvTrait},
+    utils::{external_resource_close, external_resource_from_file},
+};
 
 pub trait AssertMemberPermissionTrait: MemberTrait {
     fn is_owner(&self) -> bool;

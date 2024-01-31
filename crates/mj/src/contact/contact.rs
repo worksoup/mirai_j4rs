@@ -1,23 +1,23 @@
-use crate::action::nudges::StrangerNudge;
-use crate::contact::contact_trait::{NudgeSupportedTrait, SendMessageSupportedTrait};
-use crate::utils::contact::friend_group::FriendGroup;
 use crate::{
-    action::nudges::{FriendNudge, NormalMemberNudge},
     contact::{
         contact_trait::{
             AssertMemberPermissionTrait, ContactOrBotTrait, ContactTrait, MemberTrait,
             UserOrBotTrait, UserTrait,
         },
+        contact_trait::{NudgeSupportedTrait, SendMessageSupportedTrait},
         group::MemberPermission,
     },
     message::{
+        action::nudges::{FriendNudge, NormalMemberNudge, StrangerNudge},
         message_trait::{MessageHashCodeTrait, MessageTrait},
     },
-    utils::other::enums::AvatarSpec,
+    utils::{contact::friend_group::FriendGroup, other::enums::AvatarSpec},
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mjbase::env::{FromInstance, GetEnvTrait};
-use mjbase::utils::instance_is_null;
+use mjbase::{
+    env::{FromInstance, GetEnvTrait},
+    utils::instance_is_null,
+};
 use mjmacro::GetInstanceDerive;
 use std::marker::PhantomData;
 

@@ -4,7 +4,6 @@
 #![feature(specialization)]
 #![feature(adt_const_params)]
 
-pub mod action;
 pub mod contact;
 pub mod error;
 pub mod event;

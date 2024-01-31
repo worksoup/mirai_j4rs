@@ -1,6 +1,5 @@
-use crate::auth::bot_authorization::BotAuthorization;
 use crate::{
-    action::nudges::BotNudge,
+    auth::bot_authorization::BotAuthorization,
     contact::{
         contact_trait::{ContactOrBotTrait, NudgeSupportedTrait, UserOrBotTrait},
         group::{Group, MiraiMap},
@@ -8,6 +7,7 @@ use crate::{
     },
     error::MiraiRsError,
     event::EventChannel,
+    message::action::nudges::BotNudge,
     utils::{
         contact::friend_group::FriendGroups,
         login_solver::{

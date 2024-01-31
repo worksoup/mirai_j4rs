@@ -1,25 +1,9 @@
-[package]
-name = "mirai_j4rs"
-version = "0.1.0"
+[workspace]
+resolver = "2"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-[lib]
-crate-type = ["cdylib", "lib"] # cdylib 供 jvm_side 使用。
-
-[dependencies]
-contact_derive = { path = "./contact_derive" }
-j4rs = { git = "https://github.com/astonbitecode/j4rs.git" }
-j4rs_derive = { git = "https://github.com/astonbitecode/j4rs.git" }
-num_enum = "0.7"
-serde = { version = "1.0", features = ["derive"] }
-toml = "0.8"
-serde_json = "1.0"
-rand = "0.8"
-lazy_static = "1.4"
-regex = "1"
-# directories = "5.0"
-# num_cpus = "^1.15"
-# rust-crypto = "^0.2"
-# ring = "^0.16"
-# once_cell = "^1.16"
+members = [
+    "crates/mj",
+    "crates/mjbase",
+    "crates/mjclosures",
+    "crates/mjmacro",
+]

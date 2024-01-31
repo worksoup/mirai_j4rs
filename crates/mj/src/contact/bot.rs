@@ -1,3 +1,4 @@
+use crate::auth::bot_authorization::BotAuthorization;
 use crate::{
     action::nudges::BotNudge,
     contact::{
@@ -407,125 +408,44 @@ impl Env {
             .unwrap();
         EventChannel { jvm, instance }
     }
-}
-
-pub trait Certificate<T> {
-    fn new_bot(&self, id: i64, password: T, bot_configuration: Option<BotConfiguration>) -> Bot;
-}
-
-impl Certificate<String> for Env {
-    fn new_bot(
-        &self,
-        id: i64,
-        password: String,
-        bot_configuration: Option<BotConfiguration>,
-    ) -> Bot {
-        let bot = if let Some(bot_config) = bot_configuration {
-            Jvm::attach_thread()
-                .unwrap()
-                .invoke(
-                    &self.instance,
-                    "newBot",
-                    &[
-                        InvocationArg::try_from(id)
-                            .unwrap()
-                            .into_primitive()
-                            .unwrap(),
-                        InvocationArg::try_from(password).unwrap(),
-                        InvocationArg::try_from(bot_config.get_instance()).unwrap(),
-                    ],
-                )
-                .unwrap()
-        } else {
-            Jvm::attach_thread()
-                .unwrap()
-                .invoke(
-                    &self.instance,
-                    "newBot",
-                    &vec![
-                        InvocationArg::try_from(id)
-                            .unwrap()
-                            .into_primitive()
-                            .unwrap(),
-                        InvocationArg::try_from(password).unwrap(),
-                    ],
-                )
-                .unwrap()
-        };
+    pub fn new_bot(&self, id: i64, bot_authorization: BotAuthorization) -> Bot {
+        let bot = Jvm::attach_thread()
+            .unwrap()
+            .invoke(
+                &self.instance,
+                "newBot",
+                &vec![
+                    InvocationArg::try_from(id)
+                        .unwrap()
+                        .into_primitive()
+                        .unwrap(),
+                    InvocationArg::try_from(bot_authorization.get_instance()).unwrap(),
+                ],
+            )
+            .unwrap();
         Bot { instance: bot, id }
     }
-}
-
-impl Certificate<[u8; 16]> for Env {
-    fn new_bot(
+    pub fn new_bot_with_configuration(
         &self,
         id: i64,
-        password: [u8; 16],
-        bot_configuration: Option<BotConfiguration>,
+        bot_authorization: BotAuthorization,
+        bot_configuration: BotConfiguration,
     ) -> Bot {
-        let mut password_md5 = Vec::new();
-        for i in password {
-            password_md5.push(
-                InvocationArg::try_from(i.clone() as i8)
-                    .unwrap()
-                    .into_primitive()
-                    .unwrap(),
-            );
-        }
-        let bot = if let Some(bot_configuration) = bot_configuration {
-            Jvm::attach_thread()
-                .unwrap()
-                .invoke(
-                    &self
-                        .jvm
-                        .invoke(
-                            &self
-                                .jvm
-                                .invoke_static("net.mamoe.mirai.Mirai", "getInstance", &[])
-                                .unwrap(),
-                            "getBotFactory",
-                            &[],
-                        )
+        let bot = Jvm::attach_thread()
+            .unwrap()
+            .invoke(
+                &self.instance,
+                "newBot",
+                &[
+                    InvocationArg::try_from(id)
+                        .unwrap()
+                        .into_primitive()
                         .unwrap(),
-                    "newBot",
-                    &[
-                        InvocationArg::try_from(id)
-                            .unwrap()
-                            .into_primitive()
-                            .unwrap(),
-                        InvocationArg::try_from(
-                            Jvm::attach_thread()
-                                .unwrap()
-                                .create_java_array("byte", &password_md5)
-                                .unwrap(),
-                        )
-                        .unwrap(),
-                        InvocationArg::try_from(bot_configuration.get_instance()).unwrap(),
-                    ],
-                )
-                .unwrap()
-        } else {
-            Jvm::attach_thread()
-                .unwrap()
-                .invoke(
-                    &self.instance,
-                    "newBot",
-                    &vec![
-                        InvocationArg::try_from(id)
-                            .unwrap()
-                            .into_primitive()
-                            .unwrap(),
-                        InvocationArg::try_from(
-                            Jvm::attach_thread()
-                                .unwrap()
-                                .create_java_array("byte", &password_md5)
-                                .unwrap(),
-                        )
-                        .unwrap(),
-                    ],
-                )
-                .unwrap()
-        };
+                    InvocationArg::try_from(bot_authorization.get_instance()).unwrap(),
+                    InvocationArg::try_from(bot_configuration.get_instance()).unwrap(),
+                ],
+            )
+            .unwrap();
         Bot { instance: bot, id }
     }
 }
@@ -832,7 +752,7 @@ impl BotConfiguration {
             .unwrap();
     }
     pub fn set_bot_logger_supplier(&self) {
-        todo!("set_bot_logger_supplier");
+        todo!("not impl yet: set_bot_logger_supplier");
     }
     pub fn set_cache_dir(&self, path: &PathBuf) {
         let path = path.to_str().unwrap();
@@ -988,7 +908,7 @@ impl BotConfiguration {
             .invoke(
                 &self.instance,
                 "setProtocol",
-                &[crate::utils::other::protocol_enum_r2j(protocol).unwrap()],
+                &[crate::utils::other::protocol_enum_r2j(&protocol).unwrap()],
             )
             .unwrap();
     }
@@ -1276,8 +1196,7 @@ pub struct BotBuilder {
     pub env: Env,
     pub config: Option<BotConfiguration>,
     id: Option<i64>,
-    password: Option<String>,
-    password_md5: Option<[u8; 16]>,
+    bot_authorization: Option<BotAuthorization>,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -1340,20 +1259,15 @@ impl BotBuilder {
             env,
             config: None,
             id: None,
-            password: None,
-            password_md5: None,
+            bot_authorization: None,
         }
     }
     pub fn id(mut self, id: i64) -> Self {
         self.id = Some(id);
         self
     }
-    pub fn password(mut self, password: String) -> Self {
-        self.password = Some(password);
-        self
-    }
-    pub fn password_md5(mut self, password_md5: [u8; 16]) -> Self {
-        self.password_md5 = Some(password_md5);
+    pub fn authorization(mut self, bot_authorization: BotAuthorization) -> Self {
+        self.bot_authorization = Some(bot_authorization);
         self
     }
     /// 在被挤下线时自动重连。
@@ -1520,56 +1434,45 @@ impl BotBuilder {
         }
         self
     }
-    pub fn fix_protocol_version_fetch(self, protocol: MiraiProtocol, version: String) -> Self {
-        let jvm = Jvm::attach_thread().unwrap();
-        println!("fix protocol version - tmp - fetch");
-        let _ = jvm.invoke_static(
-            "xyz.cssxsh.mirai.tool.FixProtocolVersion",
-            "fetch",
-            &[
-                crate::utils::other::protocol_enum_r2j(protocol).unwrap(),
-                InvocationArg::try_from(version).unwrap(),
-            ],
-        );
-        self
-    }
-    pub fn fix_protocol_version_load(self, protocol: MiraiProtocol) -> Self {
-        let jvm = Jvm::attach_thread().unwrap();
-        println!("fix protocol version - tmp - load");
-        let _ = jvm.invoke_static(
-            "xyz.cssxsh.mirai.tool.FixProtocolVersion",
-            "load",
-            &[crate::utils::other::protocol_enum_r2j(protocol).unwrap()],
-        );
-        self
-    }
-    pub fn fix_protocol_version_info(&self) -> HashMap<String, String> {
-        let jvm = Jvm::attach_thread().unwrap();
-        println!("fix protocol version - tmp - info");
-        let map: MiraiMap<String, String> = MiraiMap {
-            instance: jvm
-                .invoke_static("xyz.cssxsh.mirai.tool.FixProtocolVersion", "info", &[])
-                .unwrap(),
-            _t: None,
-        };
-        map.to_hash_map()
-    }
-    pub fn fix_protocol_version_update(self) -> Self {
-        let jvm = Jvm::attach_thread().unwrap();
-        println!("fix protocol version - tmp - update");
-        let _ = jvm.invoke_static("xyz.cssxsh.mirai.tool.FixProtocolVersion", "update", &[]);
+    /// 使用协议类型。
+    pub fn set_protocol(mut self, protocol: MiraiProtocol) -> BotBuilder {
+        if let Some(config) = &self.config {
+            config.set_protocol(protocol);
+        } else {
+            let config = self.env.new_bot_configuration();
+            config.set_protocol(protocol);
+            self.config = Some(config);
+        }
         self
     }
     pub fn build(self) -> Bot {
-        if let Some(password) = self.password {
-            self.env
-                .new_bot(self.id.expect("请提供 id!"), password, self.config)
+        let id = if let Some(id) = self.id {
+            id
         } else {
-            self.env.new_bot(
-                self.id.expect("请提供 id!"),
-                self.password_md5.expect("请提供密码！"),
-                self.config,
-            )
+            panic!("请提供 id!")
+        };
+        let bot_authorization = if let Some(bot_authorization) = self.bot_authorization {
+            bot_authorization
+        } else {
+            eprintln!("没有提供登录方式！将尝试使用二维码登录！");
+            let bot_authorization = BotAuthorization::QrCode;
+            let is_qr_login_supported = if let Some(bot_config) = self.config.as_ref() {
+                let p = bot_config.get_protocol();
+                p.is_qr_login_supported()
+            } else {
+                MiraiProtocol::A.is_qr_login_supported()
+            };
+            if is_qr_login_supported {
+                bot_authorization
+            } else {
+                panic!("当前协议不支持二维码登录！")
+            }
+        };
+        if let Some(config) = self.config {
+            self.env
+                .new_bot_with_configuration(id, bot_authorization, config)
+        } else {
+            self.env.new_bot(id, bot_authorization)
         }
     }
 }

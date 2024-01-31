@@ -62,7 +62,7 @@ impl<'a, T: FromInstance> Consumer<'a, T> {
         let internal_closure_raw = Self::internal_closure_as_i8_16(closure);
         println!("closure_to_consumer");
         println!("{:?}", internal_closure_raw);
-        let jvm = Jvm::attach_thread().unwrap();
+        let _jvm = Jvm::attach_thread().unwrap();
         let instance = instance_from_i8_16::<"rt.lea.LumiaConsumer">(internal_closure_raw);
         Consumer {
             instance,

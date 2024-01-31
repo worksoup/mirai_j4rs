@@ -11,5 +11,6 @@ pub mod event;
 pub mod file;
 pub mod message;
 pub mod utils;
+pub mod auth;
 
 

@@ -3,6 +3,7 @@
 **ɒiM_J is Mirai_J4rs.**
 
 **近期听闻签名服务受到重创，由于本项目还未较好地适配安卓手表协议，所以请谨慎使用。**
+目前简单适配了 Mirai 的二维码登录。
 可以使用 `j4rs` 库直接操作 Jvm 对象使用该协议。
 
 使用 [`j4rs`](https://crates.io/crates/j4rs) 库简易(陋)地封装了一下 [`Mirai`](https://docs.mirai.mamoe.net/), api
@@ -108,10 +109,8 @@ use mirai_j4rs::prelude::*; // prelude 还没写。请自行导入所需的模�
 fn main(){
     let bot = BotBuilder::new()
         .id(i64/*这里是你机器人的 id.*/)
-        // 两种密码二选一，如果都有优先使用明文密码登陆。
-        // 暂不支持 Mirai 2.15.0 的二维码登陆。
-        .password(String/*这里是你的明文密码。*/)
-        .password([u8;16]/*这里是你的密码的 MD5.*/)
+        // 通过 `BotAuthorization` 枚举选择登录方式，可选：`Password`, `Md5`, `QrCode`
+        .authorization(/*这里选择登录方式，为 `BotAuthorization` 枚举。*/)
         // 这些配置函数几乎一一对应于 Mirai 中
         // BotConfiguration 类，只是 mirai_j4rs 均使用蛇形命名法。
         // 对于一些在 Mirai 中有可选参数的函数，以 Option 值代替。
@@ -134,9 +133,7 @@ fn main(){
     let config = env.new_bot_configuration();
     config.file_based_device_info(None);
     config.setProtocol(MiraiProtocol::W);
-    // 此处实现了两个 trait, 明文密码和 md5 密码是同名的函数。
-    // TODO: 添加 passwprd_md5 函数，移除这两个特征，使函数功能更加明确。
-    let bot = env.new_bot(id, password, config);
+    let bot = env.new_bot_with_configuration(id, bot_authorization, config);
     bot.login();
 }
 ```

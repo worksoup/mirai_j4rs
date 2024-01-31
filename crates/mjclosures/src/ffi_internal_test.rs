@@ -1,13 +1,11 @@
 #[cfg(test)]
 mod tests {
     use crate::{
-        env::{FromInstance, GetEnvTrait},
-        utils::ffi::callable_objects_in_jvm::{
-            comparator::Comparator, consumer::Consumer, function::Function, kt_func_0::KtFunc0,
-            kt_func_1::KtFunc1, kt_func_2::KtFunc2, predicate::Predicate,
-        },
+        comparator::Comparator, consumer::Consumer, function::Function, kt_func_0::KtFunc0,
+        kt_func_1::KtFunc1, kt_func_2::KtFunc2, predicate::Predicate,
     };
     use j4rs::{ClasspathEntry, Instance, InvocationArg, Jvm, JvmBuilder};
+    use mjbase::env::{FromInstance, GetEnvTrait};
     use std::cmp::Ordering;
 
     struct X {
@@ -44,7 +42,7 @@ mod tests {
     fn get_a_jvm_for_test() -> Jvm {
         match JvmBuilder::new()
             .classpath_entry(ClasspathEntry::new(
-                "/run/media/leart/5A98CD5F98CD3A71/Users/15102/Works/Mirai/MiraiRS/jvm_side.jar",
+                "/home/leart/Applications/dev/Mirai/MiraiRS/MiraiRS.jar",
             ))
             .build()
         {

@@ -2,9 +2,12 @@ use j4rs::{InvocationArg, Jvm};
 
 use crate::utils::other::enums::MiraiProtocol;
 
+use mjbase::env::GetEnvTrait;
+
 pub mod enums {
+    use crate::utils::other::{protocol_enum_r2j, protocol_str2enum};
     use j4rs::{Instance, Jvm};
-    use mjbase::env::FromInstance;
+    use mjbase::env::{FromInstance, GetEnvTrait};
     use num_enum::IntoPrimitive;
 
     pub enum HeartbeatStrategy {
@@ -35,6 +38,38 @@ pub mod enums {
         /// `MiraiProtocol.MACOS`
         #[doc(alias = "MACOS")]
         M,
+    }
+
+    impl GetEnvTrait for MiraiProtocol {
+        fn get_instance(&self) -> Instance {
+            // let _ = Jvm::attach_thread().unwrap();
+            protocol_enum_r2j(self).unwrap().instance().unwrap()
+        }
+    }
+
+    impl FromInstance for MiraiProtocol {
+        fn from_instance(instance: Instance) -> Self {
+            let jvm = Jvm::attach_thread().unwrap();
+            let mp: String = jvm.to_rust(instance).unwrap();
+            protocol_str2enum(mp)
+        }
+    }
+
+    impl MiraiProtocol {
+        pub fn is_nudge_supported(&self) -> bool {
+            let jvm = Jvm::attach_thread().unwrap();
+            let b = jvm
+                .invoke(&self.get_instance(), "isNudgeSupported", &[])
+                .unwrap();
+            jvm.to_rust(b).unwrap()
+        }
+        pub fn is_qr_login_supported(&self) -> bool {
+            let jvm = Jvm::attach_thread().unwrap();
+            let b = jvm
+                .invoke(&self.get_instance(), "isQRLoginSupported", &[])
+                .unwrap();
+            jvm.to_rust(b).unwrap()
+        }
     }
 
     #[derive(IntoPrimitive)]
@@ -141,7 +176,7 @@ pub mod enums {
 
 #[inline]
 pub fn protocol_enum_r2j(
-    protocol: MiraiProtocol,
+    protocol: &MiraiProtocol,
 ) -> Result<InvocationArg, std::convert::Infallible> {
     InvocationArg::try_from(
         Jvm::attach_thread()

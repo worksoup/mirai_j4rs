@@ -8,7 +8,7 @@
 使用 [`j4rs`](https://crates.io/crates/j4rs) 库简易(陋)地封装了一下 [`Mirai`](https://docs.mirai.mamoe.net/), api
 基本与 `Mirai` 保持一致。
 
-同时集成了 [`fix-protocol-version`](https://github.com/cssxsh/fix-protocol-version) 以解决登陆问题。
+~~同时集成了 [`fix-protocol-version`](https://github.com/cssxsh/fix-protocol-version) 以解决登陆问题。~~ 移除了。
 
 一直都是自己的其他项目在用，所以完全没有什么设计可言，也没有完全覆盖 `Mirai` 的功能。
 
@@ -116,8 +116,6 @@ fn main(){
         // BotConfiguration 类，只是 mirai_j4rs 均使用蛇形命名法。
         // 对于一些在 Mirai 中有可选参数的函数，以 Option 值代替。
         .file_based_device_info(None)
-        // 集成了 fix_protocol_version, 需要调用相关方法使其生效。
-        .fix_protocol_version_fetch(MiraiProtocol::A, "latest".to_string())
         .build();
     bot.login();
 }
@@ -131,8 +129,7 @@ fn main(){
     // 以下语句中的两参数均为 `Vec<String>` 类型。
     let env = mirai_j4rs::contact::bot::Env::new(jar_paths, java_opts);
     // env 和 config 中各有一部分配置项。
-    // env 中一般是一些集成进去的插件（暂时只有 fix-protocol-version 插件）的功能。
-    env.fix_protocol_version_fetch(MiraiProtocol::A, "latest".to_string());
+    // env 中一般是一些集成进去的插件（暂时没有额外集成的插件）的功能。
     // 而 config 则是由 BotConfiguration 类提供的配置项。
     let config = env.new_bot_configuration();
     config.file_based_device_info(None);

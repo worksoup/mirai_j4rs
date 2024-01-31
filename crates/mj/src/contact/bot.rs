@@ -362,59 +362,6 @@ impl Env {
             .unwrap();
         Self { jvm, instance }
     }
-    pub fn fix_protocol_version_fetch(&self, protocol: MiraiProtocol, version: String) -> () {
-        println!("fix protocol version - tmp - fetch");
-        let _ = self.jvm.invoke_static(
-            "xyz.cssxsh.mirai.tool.FixProtocolVersion",
-            "fetch",
-            &[
-                crate::utils::other::protocol_enum_r2j(protocol).unwrap(),
-                InvocationArg::try_from(version).unwrap(),
-            ],
-        );
-    }
-    pub fn fix_protocol_version_load(&self, protocol: MiraiProtocol) -> () {
-        println!("fix protocol version - tmp - load");
-        let _ = self.jvm.invoke_static(
-            "xyz.cssxsh.mirai.tool.FixProtocolVersion",
-            "load",
-            &[crate::utils::other::protocol_enum_r2j(protocol).unwrap()],
-        );
-    }
-    pub fn fix_protocol_version_load_form_file(&self, protocol: MiraiProtocol, file: &str) -> () {
-        println!("fix protocol version - tmp - load");
-        let file = InvocationArg::try_from(
-            self.jvm
-                .create_instance("java.io.File", &[InvocationArg::try_from(file).unwrap()])
-                .unwrap(),
-        )
-        .unwrap();
-        let _ = self.jvm.invoke_static(
-            "xyz.cssxsh.mirai.tool.FixProtocolVersion",
-            "load",
-            &[
-                crate::utils::other::protocol_enum_r2j(protocol).unwrap(),
-                file,
-            ],
-        );
-    }
-    pub fn fix_protocol_version_info(&self) -> HashMap<String, String> {
-        println!("fix protocol version - tmp - info");
-        let map: MiraiMap<String, String> = MiraiMap {
-            instance: Jvm::attach_thread()
-                .unwrap()
-                .invoke_static("xyz.cssxsh.mirai.tool.FixProtocolVersion", "info", &[])
-                .unwrap(),
-            _t: None,
-        };
-        map.to_hash_map()
-    }
-    pub fn fix_protocol_version_update(&self) -> () {
-        println!("fix protocol version - tmp - update");
-        let _ = self
-            .jvm
-            .invoke_static("xyz.cssxsh.mirai.tool.FixProtocolVersion", "update", &[]);
-    }
     pub fn new_bot_configuration(&self) -> BotConfiguration {
         let bot_configuration = Jvm::attach_thread()
             .unwrap()

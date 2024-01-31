@@ -3,12 +3,14 @@ use crate::contact::group::{
     AnnouncementParameters, MemberActive, OfflineAnnouncement, OnlineAnnouncement,
 };
 use crate::error::MiraiRsError;
+use crate::message::data::image::Image;
+use crate::message::message_receipt::MessageReceipt;
 use crate::{
     contact::{
         group::{Group, MemberPermission},
         Friend,
     },
-    message::{message_trait::MessageTrait, Image, MessageReceipt},
+    message::message_trait::MessageTrait,
     utils::other::enums::AvatarSpec,
 };
 use j4rs::{InvocationArg, Jvm};
@@ -134,9 +136,7 @@ pub trait SendMessageSupportedTrait: ContactTrait {
             .unwrap();
         // Mirai 文档里说要 close.
         external_resource_close(&jvm, resource);
-        Image {
-            instance: image_instance,
-        }
+        Image::from_instance(image_instance)
     }
 }
 

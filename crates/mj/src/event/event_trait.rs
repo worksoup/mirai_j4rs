@@ -1,4 +1,5 @@
-use crate::{contact::bot::Bot, message::MessageChain};
+use crate::contact::bot::Bot;
+use crate::message::data::message_chain::MessageChain;
 use j4rs::Jvm;
 use mjbase::env::{FromInstance, GetClassTypeTrait, GetEnvTrait};
 

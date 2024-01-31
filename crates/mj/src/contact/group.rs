@@ -2,6 +2,8 @@ use crate::contact::contact_trait::{
     AnnouncementTrait, PublishAnnouncementSupportedTrait, SendMessageSupportedTrait,
 };
 use crate::error::MiraiRsError;
+use crate::message::data::message_chain::MessageChain;
+use crate::message::data::message_source::MessageSource;
 use crate::message::message_trait::MessageHashCodeTrait;
 use crate::utils::other::enums::{GroupHonorType, MemberMedalType};
 use crate::utils::JavaStream;
@@ -11,7 +13,6 @@ use crate::{
         contact_trait::{ContactOrBotTrait, ContactTrait, FileSupportedTrait},
         ContactList, NormalMember,
     },
-    message::{MessageChain, MessageSource},
     utils::other::enums::AvatarSpec,
 };
 use j4rs::{Instance, InvocationArg, Jvm};

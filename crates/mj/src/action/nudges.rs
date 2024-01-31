@@ -9,7 +9,7 @@ use crate::{
 };
 use j4rs::{Instance, InvocationArg, Jvm};
 use mjbase::env::{FromInstance, GetEnvTrait};
-use mjmacro::GetInstanceDerive;
+use mjmacro::{FromInstanceDerive, GetInstanceDerive};
 
 pub trait Nudge: GetEnvTrait + MessageHashCodeTrait + FromInstance {
     type UserOrBot: UserOrBotTrait;
@@ -41,19 +41,13 @@ pub trait Nudge: GetEnvTrait + MessageHashCodeTrait + FromInstance {
     }
 }
 
-#[derive(GetInstanceDerive)]
+#[derive(GetInstanceDerive, FromInstanceDerive)]
 pub struct BotNudge {
-    pub(crate) instance: Instance,
+    instance: Instance,
 }
 
 impl Nudge for BotNudge {
     type UserOrBot = Bot;
-}
-
-impl FromInstance for BotNudge {
-    fn from_instance(instance: Instance) -> Self {
-        Self { instance }
-    }
 }
 
 impl MessageHashCodeTrait for BotNudge {}

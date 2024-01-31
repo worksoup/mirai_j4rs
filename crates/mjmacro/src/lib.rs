@@ -17,6 +17,19 @@ pub fn get_instance_derive(input: TokenStream) -> TokenStream {
     };
     gen.into()
 }
+#[proc_macro_derive(FromInstanceDerive)]
+pub fn from_instance_derive(input: TokenStream) -> TokenStream {
+    let ast: &syn::DeriveInput = &syn::parse(input).unwrap();
+    let name = &ast.ident;
+    let gen = quote! {
+        impl mjbase::env::FromInstance for #name {
+            fn from_instance(instance: j4rs::Instance) -> Self{
+                Self{instance}
+            }
+        }
+    };
+    gen.into()
+}
 
 /// 获取 java 中的 Class 对象。
 #[proc_macro_derive(GetClassTypeDerive)]

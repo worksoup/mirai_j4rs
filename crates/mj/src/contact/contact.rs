@@ -12,7 +12,6 @@ use crate::{
     },
     message::{
         message_trait::{MessageHashCodeTrait, MessageTrait},
-        Image, MessageReceipt,
     },
     utils::other::enums::AvatarSpec,
 };

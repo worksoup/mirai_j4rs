@@ -1,4 +1,5 @@
-use crate::{contact::group::Group, message::FileMessage, utils::JavaStream};
+use crate::message::data::file_message::FileMessage;
+use crate::{contact::group::Group, utils::JavaStream};
 use j4rs::{Instance, InvocationArg, Jvm};
 use mjbase::env::{FromInstance, GetEnvTrait};
 use mjbase::utils::is_instance_of;
@@ -242,7 +243,7 @@ impl AbsoluteFile {
     pub fn to_message(&self) -> FileMessage {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm.invoke(&self.instance, "refreshed", &[]).unwrap();
-        FileMessage { instance }
+        FileMessage::from_instance(instance)
     }
 }
 

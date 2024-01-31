@@ -40,15 +40,12 @@ mod tests {
     }
 
     fn get_a_jvm_for_test() -> Jvm {
-        match JvmBuilder::new()
+        JvmBuilder::new()
             .classpath_entry(ClasspathEntry::new(
                 "/home/leart/Applications/dev/Mirai/MiraiRS/MiraiRS.jar",
             ))
             .build()
-        {
-            Ok(jvm) => jvm,
-            Err(_) => Jvm::attach_thread().unwrap(),
-        }
+            .unwrap_or_else(|_| Jvm::attach_thread().unwrap())
     }
 
     #[test]

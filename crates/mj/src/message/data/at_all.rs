@@ -3,7 +3,6 @@ use crate::message::message_trait::{
     SingleMessageTrait,
 };
 use j4rs::{Instance, Jvm};
-use mjbase::env::FromInstance;
 use mjmacro::{FromInstanceDerive, GetInstanceDerive};
 
 #[derive(GetInstanceDerive, FromInstanceDerive)]

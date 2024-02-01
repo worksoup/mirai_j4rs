@@ -2,9 +2,9 @@
 
 这里存放了本项目拆分出的几个 crates.
 
-## mj
+## mj_internal
 
-如果用本项目的话，只需依赖该文件夹下的 crate. 包名为 "mirai_j4rs". 其他几个名字与文件名相同。
+`mirai_j4rs` 即对此 crate 的重新导出。
 
 ## mj_base
 

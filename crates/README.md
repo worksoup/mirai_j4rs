@@ -4,7 +4,7 @@
 
 ## mj
 
-一般而言你使用本项目的话以来这个文件夹下的 crate 即可。crates 名为 "mirai_j4rs". 其他几个名字与文件名相同。
+如果用本项目的话，只需依赖该文件夹下的 crate. crates 名为 "mirai_j4rs". 其他几个名字与文件名相同。
 
 ## mj_base
 

@@ -25,7 +25,7 @@ use mj_base::{
         java_iter_to_rust_hash_set, java_iter_to_rust_vec,
     },
 };
-use mj_macro::GetInstanceDerive;
+use mj_macro::{java_type, GetInstanceDerive};
 use std::{
     cmp::Ordering,
     collections::{HashMap, HashSet},
@@ -336,6 +336,7 @@ impl AnnouncementTrait for OfflineAnnouncement {}
 ///
 /// 另见 [`Announcement`] 与 [`AnnouncementTrait`]
 #[derive(GetInstanceDerive)]
+#[java_type("net.mamoe.mirai.contact.announcement.OnlineAnnouncement")]
 pub struct OnlineAnnouncement {
     instance: Instance,
 }

@@ -7,7 +7,8 @@ use crate::{
     message::IMAGE_ID_REGEX,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::{env::GetEnvTrait, utils::get_bytes_md5_and_cast_to_i8_16};
+use mj_base::env::GetEnvTrait;
+use mj_base::utils::primitive_byte_array_to_string;
 use mj_macro::{FromInstanceDerive, GetInstanceDerive};
 use regex::Regex;
 
@@ -110,9 +111,26 @@ impl Image {
     pub fn get_image_id_regex() -> Regex {
         return IMAGE_ID_REGEX.clone();
     }
-    pub fn get_md5(&self) -> [i8; 16] {
+
+    /// 获取图片 MD5.
+    ///
+    /// 需要注意的是，目前已知原版 `Mirai-2.16.0` 存在 Bug, 返回的 MD5 不是固定的 16 字节。
+    /// 所以此处以字符串形式返回。
+    /// 该 Bug 大致原因是某些字节被额外转义了。
+    /// 比如 `0x0a` 代表回车，被转移为了 `\n`, 即 `0x5c6e`, 这样结果就会多出一个字节。
+    /// 已知部分转义情况：
+    /// 0x00 -> 0x5c30 -- \0
+    /// 0x0a -> 0x5c6e -- \n
+    /// 0x0d -> 0x5c72 -- \r
+    /// 0x1a -> 0x5c5a -- \Z
+    /// 0x22 -> 0x5c22 -- \"
+    /// 0x27 -> 0x5c27 -- \'
+    /// 0x5c -> 0x5c5c -- \\
+    pub fn get_md5(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        get_bytes_md5_and_cast_to_i8_16(jvm, &self.instance)
+        let bytes = jvm.invoke(&self.instance, "getMd5", &[]).unwrap();
+        let bytes = primitive_byte_array_to_string(&jvm, &bytes);
+        jvm.to_rust(bytes).unwrap()
     }
     pub fn get_size(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();

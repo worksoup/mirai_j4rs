@@ -12,11 +12,14 @@ pub struct AtAll {
 
 impl AtAll {
     pub fn new() -> AtAll {
-        let instance = Jvm::attach_thread()
-            .unwrap()
-            .static_class("net.mamoe.mirai.message.data.AtAll$INSTANCE")
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm
+            .invoke_static("rt.lea.LumiaUtils", "getAtAll", &[])
             .unwrap();
         AtAll { instance }
+    }
+    pub fn get_display() -> String {
+        "@全体成员".into()
     }
 }
 

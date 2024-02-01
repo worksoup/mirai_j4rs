@@ -8,7 +8,7 @@ use mj_base::{
     env::{FromInstance, GetClassTypeTrait},
     utils::instance_is_null,
 };
-use mj_macro::GetInstanceDerive;
+use mj_macro::{java_type, GetInstanceDerive};
 
 pub struct FriendRemarkChangeEvent {}
 
@@ -17,27 +17,12 @@ pub struct FriendAddEvent {}
 pub struct FriendDeleteEvent {}
 
 #[derive(GetInstanceDerive)]
+#[java_type("net.mamoe.mirai.event.events.NewFriendRequestEvent")]
 pub struct NewFriendRequestEvent {
     instance: Instance,
 }
 
-impl GetClassTypeTrait for NewFriendRequestEvent {
-    fn get_class_type() -> Instance {
-        Jvm::attach_thread()
-            .unwrap()
-            .invoke_static(
-                "rt.lea.LumiaUtils",
-                "forName",
-                &[j4rs::InvocationArg::try_from(NewFriendRequestEvent::get_class_name()).unwrap()],
-            )
-            .unwrap()
-    }
-}
-
 impl NewFriendRequestEvent {
-    fn get_class_name() -> String {
-        "net.mamoe.mirai.event.events.NewFriendRequestEvent".to_string()
-    }
     pub fn accept(&self) {
         let jvm = Jvm::attach_thread().unwrap();
         let _ = jvm.invoke(&self.instance, "accept", &[]).unwrap();

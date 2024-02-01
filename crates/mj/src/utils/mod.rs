@@ -3,6 +3,7 @@ pub mod login_solver;
 pub mod other;
 
 use j4rs::{Instance, InvocationArg, Jvm};
+use mj_base::env::GetClassTypeTrait;
 use mj_base::{
     env::{FromInstance, GetEnvTrait},
     utils::instance_is_null,
@@ -23,12 +24,12 @@ pub trait MiraiRsCollectionTrait {
 pub trait MiraiRsIterableTrait: Iterator {}
 
 /// 对应 Stream<AbsoluteFileFolder>
-pub struct JavaStream<T: FromInstance> {
+pub struct JavaStream<T: FromInstance + GetClassTypeTrait> {
     pub(crate) instance: Instance,
     pub(crate) _unused: PhantomData<T>,
 }
 
-impl<T: FromInstance> GetEnvTrait for JavaStream<T> {
+impl<T: FromInstance + GetClassTypeTrait> GetEnvTrait for JavaStream<T> {
     fn get_instance(&self) -> Instance {
         Jvm::attach_thread()
             .unwrap()
@@ -37,7 +38,7 @@ impl<T: FromInstance> GetEnvTrait for JavaStream<T> {
     }
 }
 
-impl<T: FromInstance> FromInstance for JavaStream<T> {
+impl<T: FromInstance + GetClassTypeTrait> FromInstance for JavaStream<T> {
     fn from_instance(instance: Instance) -> Self {
         JavaStream {
             instance,
@@ -46,7 +47,7 @@ impl<T: FromInstance> FromInstance for JavaStream<T> {
     }
 }
 
-impl<T: FromInstance> JavaStream<T> {
+impl<T: FromInstance + GetClassTypeTrait> JavaStream<T> {
     pub fn sorted_array_by<F>(&self, compare: F) -> Vec<T>
     where
         F: FnMut(&T, &T) -> Ordering,
@@ -68,7 +69,7 @@ impl<T: FromInstance> JavaStream<T> {
         JavaStream::from_instance(instance)
     }
 
-    pub fn map<B: FromInstance, F>(&self, f: &F) -> JavaStream<B>
+    pub fn map<B: FromInstance + GetClassTypeTrait, F>(&self, f: &F) -> JavaStream<B>
     where
         F: Fn(T) -> B,
         T: FromInstance,
@@ -99,7 +100,7 @@ impl<T: FromInstance> JavaStream<T> {
         jvm.to_rust(instance).unwrap()
     }
 
-    pub fn flat_map<U: FromInstance, F>(&self, f: &F) -> JavaStream<U>
+    pub fn flat_map<U: FromInstance + GetClassTypeTrait, F>(&self, f: &F) -> JavaStream<U>
     where
         F: Fn(T) -> JavaStream<U>,
         T: FromInstance,
@@ -167,13 +168,14 @@ impl<T: FromInstance> JavaStream<T> {
         let jvm = Jvm::attach_thread().unwrap();
         let mut array = Vec::new();
         let instance = jvm.invoke(&self.instance, "toList", &[]).unwrap();
+        let instance = jvm.invoke(&instance, "iterator", &[]).unwrap();
         loop {
             let has_next: bool = jvm
                 .to_rust(jvm.invoke(&instance, "hasNext", &[]).unwrap())
                 .unwrap();
             if has_next {
                 let next = jvm.invoke(&instance, "next", &[]).unwrap();
-                array.push(T::from_instance(next))
+                array.push(T::from_instance(T::cast_to_this_type(next)))
             } else {
                 break;
             }

@@ -55,7 +55,10 @@ impl From<FaceEnum> for Face {
             .unwrap()
             .create_instance(
                 "net.mamoe.mirai.message.data.Face",
-                &[InvocationArg::try_from(id).unwrap()],
+                &[InvocationArg::try_from(id)
+                    .unwrap()
+                    .into_primitive()
+                    .unwrap()],
             )
             .unwrap();
         Face { name, id, instance }

@@ -7,19 +7,32 @@ use crate::{
     },
 };
 use j4rs::{Instance, InvocationArg, Jvm};
+use mj_base::env::FromInstance;
+use mj_base::utils::instance_is_null;
 use mj_macro::{FromInstanceDerive, GetInstanceDerive};
 
+///  # 文件消息。
+///  
+///  注: [`FileMessage`] 不可二次发送，包括转发消息。
+///  
+///  ## 文件操作
+///  要下载这个文件, 可通过 [`FileMessage::to_absolute_file`] 获取到 [`AbsoluteFile`] 然后操作。
+///  
+///  要获取到 [`FileMessage`]，可以通过 [`MessageEvent`] 获取，或通过 [`AbsoluteFile::to_message`] 得到。
+// TODO: 实现 SendSupportedTrait, 限制某些消息的发送。
 #[derive(GetInstanceDerive, FromInstanceDerive)]
 pub struct FileMessage {
     instance: Instance,
 }
 
 impl FileMessage {
+    /// 获取文件名。
     pub fn get_name(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.to_rust(jvm.invoke(&self.instance, "getName", &[]).unwrap())
             .unwrap()
     }
+    /// 获取文件大小。单位为字节。
     pub fn get_size(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.to_rust(jvm.invoke(&self.instance, "getSize", &[]).unwrap())
@@ -56,10 +69,11 @@ impl FileMessage {
             .unwrap();
         FileMessage { instance }
     }
+    /// 获取一个对应的 [`AbsoluteFile`]. 当目标群或好友不存在这个文件时返回 `None`.
     pub fn to_absolute_file<FileSupported: FileSupportedTrait>(
         &self,
         contact: FileSupported,
-    ) -> AbsoluteFile {
+    ) -> Option<AbsoluteFile> {
         let jvm = Jvm::attach_thread().unwrap();
         // let instance = InvocationArg::try_from(self.get_instance()).unwrap();
         let contact = InvocationArg::try_from(
@@ -79,8 +93,12 @@ impl FileMessage {
         //         "callToAbsoluteFile",
         //         &[instance, contact],
         //     )
-        //     .unwrap();
-        AbsoluteFile { instance }
+        //
+        if instance_is_null(&instance) {
+            None
+        } else {
+            Some(AbsoluteFile::from_instance(instance))
+        }
     }
 }
 

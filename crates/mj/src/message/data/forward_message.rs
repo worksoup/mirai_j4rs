@@ -9,6 +9,7 @@ use crate::{
     },
 };
 use j4rs::{Instance, InvocationArg, Jvm};
+use mj_base::env::{FromInstance, GetEnvTrait};
 use mj_macro::{FromInstanceDerive, GetInstanceDerive};
 
 #[derive(GetInstanceDerive)]
@@ -16,28 +17,8 @@ pub struct ForwardMessageBuilder {
     instance: Instance,
 }
 
-pub trait ForwardMessageBuilderAddByUserAndMessageTrait: Sized {
-    fn add(self, user_or_bot: impl UserOrBotTrait, message: impl MessageTrait, time: i32);
-}
-
-impl ForwardMessageBuilderAddByUserAndMessageTrait for ForwardMessageBuilder {
-    fn add(self, user_or_bot: impl UserOrBotTrait, message: impl MessageTrait, time: i32) {
-        self.internal_add_1(user_or_bot, message, time);
-    }
-}
-
-pub trait ForwardMessageBuilderAddByIdNameAndMessageTrait: Sized {
-    fn add(self, sender_id: i64, sender_name: &str, message: impl MessageTrait, time: i32);
-}
-
-impl ForwardMessageBuilderAddByIdNameAndMessageTrait for ForwardMessageBuilder {
-    fn add(self, sender_id: i64, sender_name: &str, message: impl MessageTrait, time: i32) {
-        self.internal_add_2(sender_id, sender_name, message, time);
-    }
-}
-
 impl ForwardMessageBuilder {
-    pub fn new(contact: impl ContactTrait) -> Self {
+    pub fn new(contact: &impl ContactTrait) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let contact = contact.get_instance();
         let contact = InvocationArg::try_from(contact).unwrap();
@@ -49,10 +30,9 @@ impl ForwardMessageBuilder {
             .unwrap();
         Self { instance }
     }
-    /// add(user_or_bot, message)
-    fn internal_add_1(
+    pub fn add(
         self,
-        user_or_bot: impl UserOrBotTrait,
+        user_or_bot: &impl UserOrBotTrait,
         message: impl MessageTrait,
         time: i32,
     ) -> Self {
@@ -69,7 +49,7 @@ impl ForwardMessageBuilder {
         self
     }
     /// add(sender_id, sender_name, message)
-    fn internal_add_2(
+    pub fn add_(
         self,
         sender_id: i64,
         sender_name: &str,
@@ -77,6 +57,7 @@ impl ForwardMessageBuilder {
         time: i32,
     ) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
+        let builder = InvocationArg::try_from(self.get_instance()).unwrap();
         let sender_id = InvocationArg::try_from(sender_id)
             .unwrap()
             .into_primitive()
@@ -88,10 +69,10 @@ impl ForwardMessageBuilder {
             .into_primitive()
             .unwrap();
         let _ = jvm
-            .invoke(
-                &self.instance,
-                "add",
-                &[sender_id, sender_name, message, time],
+            .invoke_static(
+                "rt.lea.LumiaUtils",
+                "callAdd_",
+                &[builder, sender_id, sender_name, message, time],
             )
             .unwrap();
         self
@@ -105,6 +86,12 @@ impl ForwardMessageBuilder {
         summary: String,
     ) -> Self {
         todo!("set_display_strategy")
+    }
+
+    pub fn build(&self) -> ForwardMessage {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke(&self.instance, "build", &[]).unwrap();
+        ForwardMessage::from_instance(instance)
     }
 }
 

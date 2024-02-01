@@ -31,12 +31,13 @@ pub fn from_instance_derive(input: TokenStream) -> TokenStream {
     gen.into()
 }
 
-/// 获取 java 中的 Class 对象。
-#[proc_macro_derive(GetClassTypeDerive)]
-pub fn get_class_type_derive(input: TokenStream) -> TokenStream {
+#[proc_macro_attribute]
+pub fn java_type(type_name: TokenStream, input: TokenStream) -> TokenStream {
     let ast: &syn::DeriveInput = &syn::parse(input).unwrap();
+    let type_name: &syn::LitStr = &syn::parse(type_name).expect("类型名称请用字符串表示！");
     let name = &ast.ident;
     let gen = quote! {
+        #ast
         impl mj_base::env::GetClassTypeTrait for #name {
             fn get_class_type() -> j4rs::Instance {
                 j4rs::Jvm::attach_thread()
@@ -45,11 +46,16 @@ pub fn get_class_type_derive(input: TokenStream) -> TokenStream {
                         "rt.lea.LumiaUtils",
                         "forName",
                         &[j4rs::InvocationArg::try_from(
-                            #name::get_class_name(),
+                            #type_name,
                         )
                         .unwrap()],
                     )
                     .unwrap()
+            }
+            fn cast_to_this_type(instance: j4rs::Instance) -> j4rs::Instance{
+                let jvm = j4rs::Jvm::attach_thread()
+                    .unwrap();
+                jvm.cast(&instance, #type_name).unwrap()
             }
         }
     };

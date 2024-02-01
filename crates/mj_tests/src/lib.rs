@@ -9,6 +9,8 @@ use std::path::Path;
 pub(crate) struct Config {
     pub id: i64,
     pub passwd: String,
+    pub group_id: i64,
+    pub member_id: i64,
 }
 
 lazy_static! {
@@ -26,17 +28,17 @@ pub fn get_test_bot() -> Bot {
         .id(CONFIG.id)
         .authorization(bot_authorization)
         .file_based_device_info(None)
-        .set_protocol(MiraiProtocol::M)
+        .set_protocol(MiraiProtocol::W)
         .build()
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+pub fn get_group_id() -> i64 {
+    CONFIG.group_id
 }
+
+pub fn get_member_id() -> i64 {
+    CONFIG.member_id
+}
+
+#[cfg(test)]
+mod tests {}

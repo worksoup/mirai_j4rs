@@ -4,21 +4,15 @@ use crate::{
 };
 use j4rs::{Instance, Jvm};
 use mj_base::env::FromInstance;
-use mj_macro::{GetClassTypeDerive, GetInstanceDerive};
+use mj_macro::{java_type, GetInstanceDerive};
 
-#[derive(GetInstanceDerive, GetClassTypeDerive)]
+#[derive(GetInstanceDerive)]
+#[java_type("net.mamoe.mirai.event.events.GroupMessageEvent")]
 pub struct GroupMessageEvent {
     instance: Instance,
 }
 
-impl GroupMessageEvent {
-    // 该函数被 GetClassTypeDerive 宏使用。该宏实现了 GetClassTypeTrait。
-    // 这个特征可以返回 java 中 Class 对象，监听事件的时候用。
-    // 为了做泛型搞的。之后可能会改动。
-    fn get_class_name() -> String {
-        "net.mamoe.mirai.event.events.GroupMessageEvent".to_owned()
-    }
-}
+impl GroupMessageEvent {}
 
 impl FromInstance for GroupMessageEvent {
     fn from_instance(instance: Instance) -> Self {
@@ -73,16 +67,13 @@ impl MessageEventTrait for GroupMessageEvent {
     }
 }
 
-#[derive(GetInstanceDerive, GetClassTypeDerive)]
+#[derive(GetInstanceDerive)]
+#[java_type("net.mamoe.mirai.event.events.FriendMessageEvent")]
 pub struct FriendMessageEvent {
     instance: Instance,
 }
 
-impl FriendMessageEvent {
-    fn get_class_name() -> String {
-        "net.mamoe.mirai.event.events.FriendMessageEvent".to_owned()
-    }
-}
+impl FriendMessageEvent {}
 
 impl FromInstance for FriendMessageEvent {
     fn from_instance(instance: Instance) -> Self {

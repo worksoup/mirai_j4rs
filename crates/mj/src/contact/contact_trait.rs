@@ -1,3 +1,4 @@
+use crate::file::RemoteFiles;
 use crate::{
     contact::group::{
         AnnouncementParameters, MemberActive, OfflineAnnouncement, OnlineAnnouncement,
@@ -146,6 +147,17 @@ pub trait FileSupportedTrait
 where
     Self: ContactTrait,
 {
+    fn get_files(&self) -> RemoteFiles {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm
+            .cast(
+                &self.get_instance(),
+                "net.mamoe.mirai.contact.FileSupported",
+            )
+            .unwrap();
+        let instance = jvm.invoke(&instance, "getFiles", &[]).unwrap();
+        RemoteFiles::from_instance(instance)
+    }
 }
 
 pub trait AudioSupportedTrait

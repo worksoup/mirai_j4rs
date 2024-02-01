@@ -29,7 +29,7 @@ impl At {
             .unwrap();
         At { id, instance }
     }
-    pub fn to_display_string(&self, group: Group) -> String {
+    pub fn to_display_string(&self, group: &Group) -> String {
         Jvm::attach_thread()
             .unwrap()
             .to_rust(

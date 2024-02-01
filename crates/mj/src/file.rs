@@ -1,12 +1,11 @@
 use crate::{contact::group::Group, message::data::file_message::FileMessage, utils::JavaStream};
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::utils::get_bytes_md5_and_cast_to_i8_16;
+use mj_base::utils::primitive_byte_array_to_string;
 use mj_base::{
-    env::{FromInstance, GetEnvTrait},
-    utils::is_instance_of,
-    utils::{external_resource_close, external_resource_from_file},
+    env::{FromInstance, GetClassTypeTrait, GetEnvTrait},
+    utils::{external_resource_close, external_resource_from_file, is_instance_of},
 };
-use mj_macro::GetInstanceDerive;
+use mj_macro::{java_type, FromInstanceDerive, GetInstanceDerive};
 
 pub trait AbsoluteFileFolderTrait: Sized + GetEnvTrait {
     fn delete(&self) -> bool {
@@ -72,7 +71,8 @@ pub trait AbsoluteFileFolderTrait: Sized + GetEnvTrait {
     }
     fn get_name(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.chain(&self.get_instance())
+        let instance = self.get_instance();
+        jvm.chain(&instance)
             .unwrap()
             .invoke("getName", &[])
             .unwrap()
@@ -102,11 +102,11 @@ pub trait AbsoluteFileFolderTrait: Sized + GetEnvTrait {
             .to_rust()
             .unwrap()
     }
-    fn get_upload_id(&self) -> i64 {
+    fn get_uploader_id(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(&self.get_instance())
             .unwrap()
-            .invoke("getUploadId", &[])
+            .invoke("getUploaderId", &[])
             .unwrap()
             .to_rust()
             .unwrap()
@@ -120,6 +120,11 @@ pub trait AbsoluteFileFolderTrait: Sized + GetEnvTrait {
             .to_rust()
             .unwrap()
     }
+    fn to_file(&self) -> AbsoluteFile {
+        let instance = self.get_instance();
+        let instance = AbsoluteFile::cast_to_this_type(instance);
+        AbsoluteFile::from_instance(instance)
+    }
     fn is_folder(&self) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(&self.get_instance())
@@ -128,6 +133,11 @@ pub trait AbsoluteFileFolderTrait: Sized + GetEnvTrait {
             .unwrap()
             .to_rust()
             .unwrap()
+    }
+    fn to_folder(&self) -> AbsoluteFolder {
+        let instance = self.get_instance();
+        let instance = AbsoluteFolder::cast_to_this_type(instance);
+        AbsoluteFolder::from_instance(instance)
     }
     fn refresh(&self) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
@@ -139,6 +149,8 @@ pub trait AbsoluteFileFolderTrait: Sized + GetEnvTrait {
             .unwrap()
     }
     fn refreshed(&self) -> Self;
+
+    /// 重命名，目前会失败。
     fn rename_to(&self, name: &str) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(&self.get_instance())
@@ -159,15 +171,10 @@ pub trait AbsoluteFileFolderTrait: Sized + GetEnvTrait {
     }
 }
 
-#[derive(GetInstanceDerive)]
+#[derive(GetInstanceDerive, FromInstanceDerive)]
+#[java_type("net.mamoe.mirai.contact.file.AbsoluteFile")]
 pub struct AbsoluteFile {
-    pub(crate) instance: Instance,
-}
-
-impl FromInstance for AbsoluteFile {
-    fn from_instance(instance: Instance) -> Self {
-        AbsoluteFile { instance }
-    }
+    instance: Instance,
 }
 
 impl AbsoluteFile {
@@ -182,34 +189,44 @@ impl AbsoluteFile {
             .unwrap()
     }
     /// 文件内容 MD5.
-    pub fn get_md5(&self) -> [i8; 16] {
+    ///
+    /// 需要注意的是，目前已知原版 `Mirai-2.16.0` 存在 Bug, 返回的 MD5 不是固定的 16 字节。
+    /// 所以此处以字符串形式返回。
+    /// 该 Bug 大致原因是某些字节被额外转义了。
+    /// 比如 `0x0a` 代表回车，被转移为了 `\n`, 即 `0x5c6e`, 这样结果就会多出一个字节。
+    /// 已知部分转义情况：
+    /// 0x00 -> 0x5c30 -- \0
+    /// 0x0a -> 0x5c6e -- \n
+    /// 0x0d -> 0x5c72 -- \r
+    /// 0x1a -> 0x5c5a -- \Z
+    /// 0x22 -> 0x5c22 -- \"
+    /// 0x27 -> 0x5c27 -- \'
+    /// 0x5c -> 0x5c5c -- \\
+    pub fn get_md5(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        get_bytes_md5_and_cast_to_i8_16(jvm, &self.instance)
+        let bytes = jvm.invoke(&self.instance, "getMd5", &[]).unwrap();
+        let bytes = primitive_byte_array_to_string(&jvm, &bytes);
+        jvm.to_rust(bytes).unwrap()
     }
-    /// 文件内容 SHA-1. 我记着是 20 位来着，记着测试。TODO: 测试一下。
-    pub fn get_sha1(&self) -> [i8; 20] {
+    /// 文件内容 SHA-1.
+    ///
+    /// 需要注意的是，目前已知原版 `Mirai-2.16.0` 存在 Bug, 返回的 MD5 不是固定的 16 字节。
+    /// 所以此处以字符串形式返回。
+    /// 该 Bug 大致原因是某些字节被额外转义了。
+    /// 比如 `0x0a` 代表回车，被转移为了 `\n`, 即 `0x5c6e`, 这样结果就会多出一个字节。
+    /// 已知部分转义情况：
+    /// 0x00 -> 0x5c30 -- \0
+    /// 0x0a -> 0x5c6e -- \n
+    /// 0x0d -> 0x5c72 -- \r
+    /// 0x1a -> 0x5c5a -- \Z
+    /// 0x22 -> 0x5c22 -- \"
+    /// 0x27 -> 0x5c27 -- \'
+    /// 0x5c -> 0x5c5c -- \\
+    pub fn get_sha1(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         let bytes = jvm.invoke(&self.instance, "getSha1", &[]).unwrap();
-        let instance = jvm
-            .invoke_static(
-                "org.apache.commons.lang3.ArrayUtils",
-                "toObject",
-                &[InvocationArg::try_from(bytes).unwrap()],
-            )
-            .unwrap();
-        let instance = jvm
-            .invoke_static(
-                "java.util.Array",
-                "stream",
-                &[InvocationArg::try_from(instance).unwrap()],
-            )
-            .unwrap();
-        jvm.chain(&instance)
-            .unwrap()
-            .invoke("toList", &[])
-            .unwrap()
-            .to_rust()
-            .unwrap()
+        let bytes = primitive_byte_array_to_string(&jvm, &bytes);
+        jvm.to_rust(bytes).unwrap()
     }
     /// 文件大小 (占用空间), 单位 byte.
     pub fn get_size(&self) -> i64 {
@@ -257,6 +274,7 @@ impl AbsoluteFileFolderTrait for AbsoluteFile {
     }
 }
 
+#[java_type("net.mamoe.mirai.contact.file.AbsoluteFileFolder")]
 pub enum AbsoluteFileFolder {
     AbsoluteFile(AbsoluteFile),
     AbsoluteFolder(AbsoluteFolder),
@@ -296,15 +314,10 @@ impl AbsoluteFileFolderTrait for AbsoluteFileFolder {
 /// 精确表示一个远程目录。不会受同名文件或目录的影响。
 /// Mirai 中有些方法会返回 Flow 或 Stream, 后者的方法名称有 Stream 后缀，
 /// 这里包装的全部都是 Stream 版本，哪怕没有后缀。这些方法会返回一个迭代器，以此模拟其操作。
-#[derive(GetInstanceDerive)]
+#[derive(GetInstanceDerive, FromInstanceDerive)]
+#[java_type("net.mamoe.mirai.contact.file.AbsoluteFolder")]
 pub struct AbsoluteFolder {
-    pub(crate) instance: Instance,
-}
-
-impl FromInstance for AbsoluteFolder {
-    fn from_instance(instance: Instance) -> Self {
-        AbsoluteFolder { instance }
-    }
+    instance: Instance,
 }
 
 impl AbsoluteFolder {
@@ -401,14 +414,17 @@ impl AbsoluteFolder {
         AbsoluteFolder { instance }
     }
     /// 上传新文件。
-    pub fn upload_new_file(&self, path: &str) -> AbsoluteFile {
+    pub fn upload_new_file(&self, file_name: &str, path: &str) -> AbsoluteFile {
         let jvm = Jvm::attach_thread().unwrap();
         let res = external_resource_from_file(&jvm, path);
         let instance = jvm
             .invoke(
                 &self.instance,
                 "uploadNewFile",
-                &[InvocationArg::try_from(jvm.clone_instance(&res).unwrap()).unwrap()],
+                &[
+                    InvocationArg::try_from(file_name).unwrap(),
+                    InvocationArg::try_from(jvm.clone_instance(&res).unwrap()).unwrap(),
+                ],
             )
             .unwrap();
         // Mirai 文档里说要 close.
@@ -429,9 +445,9 @@ impl AbsoluteFileFolderTrait for AbsoluteFolder {
     }
 }
 
-#[derive(GetInstanceDerive)]
+#[derive(GetInstanceDerive, FromInstanceDerive)]
 pub struct RemoteFiles {
-    pub(crate) instance: Instance,
+    instance: Instance,
 }
 
 impl RemoteFiles {

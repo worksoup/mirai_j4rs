@@ -1,6 +1,5 @@
-
 [package]
-name = "mirai_j4rs"
+name = "mj_internal"
 version = "0.1.0"
 edition = "2021"
 

@@ -1,7 +1,9 @@
 use lazy_static::lazy_static;
-use mirai_j4rs::auth::bot_authorization::BotAuthorization;
-use mirai_j4rs::contact::bot::{Bot, BotBuilder};
-use mirai_j4rs::utils::other::enums::MiraiProtocol;
+use mj_internal::{
+    auth::bot_authorization::BotAuthorization,
+    contact::bot::{Bot, BotBuilder},
+    utils::other::enums::MiraiProtocol,
+};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 

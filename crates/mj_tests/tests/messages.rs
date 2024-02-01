@@ -1,4 +1,4 @@
-use mirai_j4rs::{
+use mj_internal::{
     contact::{
         contact_trait::{ContactOrBotTrait, FileSupportedTrait, SendMessageSupportedTrait},
         group::Group,

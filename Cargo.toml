@@ -1,10 +1,18 @@
+[package]
+name = "mirai_j4rs"
+version = "0.1.0"
+edition = "2021"
+readme = "README.md"
+
 [workspace]
 resolver = "2"
 edition = "2021"
 members = [
-    "crates/mj",
+    "crates/mj_internal",
     "crates/mj_base",
     "crates/mj_closures",
     "crates/mj_macro",
     "crates/mj_tests"
 ]
+[dependencies]
+mj_internal = { path = "crates/mj_internal" }

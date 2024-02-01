@@ -1,9 +1,11 @@
 ```rust
+use mirai_j4rs::auth::bot_authorization::BotAuthorization;
 use mirai_j4rs::contact::group::Group;
 use mirai_j4rs::event::message::FriendMessageEvent;
 use mirai_j4rs::file::AbsoluteFileFolderTrait;
+use mirai_j4rs::message::data::rock_paper_scissors::RockPaperScissors;
+use mirai_j4rs::message::data::single_message::SingleMessage;
 use mirai_j4rs::message::message_trait::MarketFaceTrait;
-use mirai_j4rs::message::{RockPaperScissors, SingleMessage};
 use mirai_j4rs::{
     contact::bot::BotBuilder,
     event::{event_trait::MessageEventTrait, message::GroupMessageEvent},
@@ -12,7 +14,6 @@ use mirai_j4rs::{
 };
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-use mirai_j4rs::contact::contact_trait::{SendMessageSupportedTrait};
 
 #[derive(Deserialize, Serialize)]
 pub(crate) struct BotInfo {
@@ -42,7 +43,10 @@ fn match_single_message(msg: SingleMessage, contact: Option<Group>) {
                 // to_absolute_file 本不应当拿走 contact 的所有权，之后我会修改一下。
                 println!(
                     "文件 {}",
-                    file_message.to_absolute_file(contact).get_absolute_path()
+                    file_message
+                        .to_absolute_file(contact)
+                        .unwrap()
+                        .get_absolute_path()
                 )
             }
         }
@@ -90,6 +94,9 @@ fn match_single_message(msg: SingleMessage, contact: Option<Group>) {
         SingleMessage::VipFace(vip_face) => {
             println!("VIP表情 {}", vip_face.to_string())
         }
+        SingleMessage::SuperFace(super_face) => {
+            println!("VIP表情 {}", super_face.to_string())
+        }
     }
 }
 
@@ -123,9 +130,9 @@ fn main() {
     let config_dir = Path::new(".");
     let bot = BotBuilder::new(config_dir)
         .id(bot_info.bot_id)
-        .password(bot_info.bot_passwd.clone())
+        .set_protocol(MiraiProtocol::W)
+        .authorization(BotAuthorization::Password(bot_info.bot_passwd.clone()))
         .file_based_device_info(None)
-        .fix_protocol_version_fetch(MiraiProtocol::A, "latest".to_string())
         .build();
     bot.login();
     let event_channel = bot.get_event_channel();

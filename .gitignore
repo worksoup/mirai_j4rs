@@ -6,3 +6,5 @@ contact_derive/Cargo.lock
 .idea/
 .settings/
 .project
+crates/mj_tests/config.toml
+crates/mj_tests/env_config.toml

@@ -33,8 +33,8 @@ pub mod member {
         message::message_trait::MessageHashCodeTrait,
     };
     use j4rs::{Instance, InvocationArg, Jvm};
-    use mjbase::env::FromInstance;
-    use mjmacro::{GetClassTypeDerive, GetInstanceDerive};
+    use mj_base::env::FromInstance;
+    use mj_macro::{GetClassTypeDerive, GetInstanceDerive};
 
     pub enum MemberJoinEvent {
         Invite,

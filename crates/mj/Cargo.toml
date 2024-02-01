@@ -9,9 +9,9 @@ edition = "2021"
 crate-type = ["cdylib", "lib"] # cdylib 供 jvm_side 使用。
 
 [dependencies]
-mjmacro = { path = "../mjmacro" }
-mjbase = {path = "../mjbase"}
-mjclosures = {path = "../mjclosures"}
+mj_macro = { path = "../mj_macro" }
+mj_base = {path = "../mj_base" }
+mj_closures = {path = "../mj_closures" }
 j4rs = { git = "https://github.com/astonbitecode/j4rs.git" }
 j4rs_derive = { git = "https://github.com/astonbitecode/j4rs.git" }
 num_enum = "0.7"

@@ -1,10 +1,13 @@
 [package]
-name = "mjbase"
+name = "mj_macro"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[lib]
+proc-macro = true
+
 [dependencies]
-j4rs = { git = "https://github.com/astonbitecode/j4rs.git" }
-j4rs_derive = { git = "https://github.com/astonbitecode/j4rs.git" }
+syn = "*"
+quote = "*"

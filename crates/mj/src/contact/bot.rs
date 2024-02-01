@@ -18,12 +18,12 @@ use crate::{
     },
 };
 use j4rs::{ClasspathEntry, Instance, InvocationArg, JavaOpt, Jvm, JvmBuilder};
-use mjbase::{
+use mj_base::{
     env::{FromInstance, GetEnvTrait},
     utils::{instance_is_null, java_iter_to_rust_vec},
 };
-use mjclosures::{kt_func_1::KtFunc1Raw, kt_func_2::KtFunc2Raw};
-use mjmacro::GetInstanceDerive;
+use mj_closures::{kt_func_1::KtFunc1Raw, kt_func_2::KtFunc2Raw};
+use mj_macro::GetInstanceDerive;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
@@ -1222,12 +1222,12 @@ impl BotBuilder {
         dir_tmp.push("base_config.toml");
         // 如果 `base_config.toml` 不存在则创建一个默认的。
         if let Ok(base_config_file) = std::fs::metadata(&dir_tmp) {
-            if base_config_file.is_file() {
-            } else {
-                std::fs::remove_dir(&dir_tmp).unwrap();
-                let _ = std::fs::File::create(&dir_tmp).unwrap();
-                let contents = toml::to_string(&default_base_config).unwrap();
-                let _ = std::fs::write(&dir_tmp, contents).unwrap();
+            if !base_config_file.is_file() {
+                // std::fs::remove_dir(&dir_tmp).unwrap();
+                // let _ = std::fs::File::create(&dir_tmp).unwrap();
+                // let contents = toml::to_string(&default_base_config).unwrap();
+                // let _ = std::fs::write(&dir_tmp, contents).unwrap();
+                panic!("`base_config.toml` 不是文件！")
             }
         } else {
             let _ = std::fs::File::create(&dir_tmp).unwrap();

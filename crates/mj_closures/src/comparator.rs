@@ -1,10 +1,7 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-use mjbase::data_wrapper::DataWrapper;
-use mjbase::env::FromInstance;
-use mjbase::utils::instance_from_i8_16;
-use mjmacro::GetInstanceDerive;
-use std::marker::PhantomData;
-use std::{cmp::Ordering, mem::transmute};
+use mj_base::{data_wrapper::DataWrapper, env::FromInstance, utils::instance_from_i8_16};
+use mj_macro::GetInstanceDerive;
+use std::{cmp::Ordering, marker::PhantomData, mem::transmute};
 
 pub struct Comparator<'a, T: FromInstance> {
     instance: Instance,

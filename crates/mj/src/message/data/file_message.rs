@@ -1,11 +1,13 @@
-use crate::contact::contact_trait::FileSupportedTrait;
-use crate::file::AbsoluteFile;
-use crate::message::message_trait::{
-    CodableMessageTrait, ConstrainSingleTrait, MessageContentTrait, MessageTrait,
-    SingleMessageTrait,
+use crate::{
+    contact::contact_trait::FileSupportedTrait,
+    file::AbsoluteFile,
+    message::message_trait::{
+        CodableMessageTrait, ConstrainSingleTrait, MessageContentTrait, MessageTrait,
+        SingleMessageTrait,
+    },
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mjmacro::{FromInstanceDerive, GetInstanceDerive};
+use mj_macro::{FromInstanceDerive, GetInstanceDerive};
 
 #[derive(GetInstanceDerive, FromInstanceDerive)]
 pub struct FileMessage {

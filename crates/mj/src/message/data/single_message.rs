@@ -1,24 +1,12 @@
-use crate::message::data::message_source::MessageSource;
-use crate::message::data::quote_reply::QuoteReply;
-
-use crate::message::data::at::At;
-use crate::message::data::at_all::AtAll;
-use crate::message::data::dice::Dice;
-use crate::message::data::face::Face;
-use crate::message::data::file_message::FileMessage;
-use crate::message::data::forward_message::ForwardMessage;
-use crate::message::data::image::Image;
-use crate::message::data::light_app::LightApp;
-use crate::message::data::market_face::MarketFace;
-use crate::message::data::music_share::MusicShare;
-use crate::message::data::plain_text::PlainText;
-use crate::message::data::poke_message::PokeMessage;
-use crate::message::data::rock_paper_scissors::RockPaperScissors;
-use crate::message::data::super_face::SuperFace;
-use crate::message::data::unsupported_message::UnsupportedMessage;
-use crate::message::data::vip_face::VipFace;
+use crate::message::data::{
+    at::At, at_all::AtAll, dice::Dice, face::Face, file_message::FileMessage,
+    forward_message::ForwardMessage, image::Image, light_app::LightApp, market_face::MarketFace,
+    message_source::MessageSource, music_share::MusicShare, plain_text::PlainText,
+    poke_message::PokeMessage, quote_reply::QuoteReply, rock_paper_scissors::RockPaperScissors,
+    super_face::SuperFace, unsupported_message::UnsupportedMessage, vip_face::VipFace,
+};
 use j4rs::Instance;
-use mjbase::env::GetEnvTrait;
+use mj_base::env::GetEnvTrait;
 
 // TODO: 需要知道 Java 或者 MessageChain 会不会返回除了以下消息之外的 SingleMessage
 // TODO: 还有一些如 Audio 等消息没有实现，需要补上。

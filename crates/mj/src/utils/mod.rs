@@ -3,9 +3,11 @@ pub mod login_solver;
 pub mod other;
 
 use j4rs::{Instance, InvocationArg, Jvm};
-use mjbase::env::{FromInstance, GetEnvTrait};
-use mjbase::utils::instance_is_null;
-use mjclosures::{
+use mj_base::{
+    env::{FromInstance, GetEnvTrait},
+    utils::instance_is_null,
+};
+use mj_closures::{
     comparator::Comparator, consumer::Consumer, function::Function, predicate::Predicate,
 };
 use std::{cmp::Ordering, marker::PhantomData};

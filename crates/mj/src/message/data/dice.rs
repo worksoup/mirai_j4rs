@@ -3,7 +3,7 @@ use crate::message::message_trait::{
     MessageHashCodeTrait, MessageTrait, SingleMessageTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mjmacro::{FromInstanceDerive, GetInstanceDerive};
+use mj_macro::{FromInstanceDerive, GetInstanceDerive};
 
 #[derive(GetInstanceDerive, FromInstanceDerive)]
 pub struct Dice {

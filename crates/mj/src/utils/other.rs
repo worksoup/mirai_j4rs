@@ -2,12 +2,12 @@ use j4rs::{InvocationArg, Jvm};
 
 use crate::utils::other::enums::MiraiProtocol;
 
-use mjbase::env::GetEnvTrait;
+use mj_base::env::GetEnvTrait;
 
 pub mod enums {
     use crate::utils::other::{protocol_enum_r2j, protocol_str2enum};
     use j4rs::{Instance, Jvm};
-    use mjbase::env::{FromInstance, GetEnvTrait};
+    use mj_base::env::{FromInstance, GetEnvTrait};
     use num_enum::IntoPrimitive;
 
     pub enum HeartbeatStrategy {

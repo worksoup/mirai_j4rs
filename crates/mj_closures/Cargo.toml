@@ -1,5 +1,5 @@
 [package]
-name = "mjclosures"
+name = "mj_closures"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,5 +8,5 @@ edition = "2021"
 [dependencies]
 j4rs = { git = "https://github.com/astonbitecode/j4rs.git" }
 j4rs_derive = { git = "https://github.com/astonbitecode/j4rs.git" }
-mjbase = { path = "../mjbase" }
-mjmacro = { path = "../mjmacro" }
+mj_base = { path = "../mj_base" }
+mj_macro = { path = "../mj_macro" }

@@ -3,8 +3,8 @@ use crate::{
     event::event_trait::{MessageEventTrait, MiraiEventTrait},
 };
 use j4rs::{Instance, Jvm};
-use mjbase::env::FromInstance;
-use mjmacro::{GetClassTypeDerive, GetInstanceDerive};
+use mj_base::env::FromInstance;
+use mj_macro::{GetClassTypeDerive, GetInstanceDerive};
 
 #[derive(GetInstanceDerive, GetClassTypeDerive)]
 pub struct GroupMessageEvent {

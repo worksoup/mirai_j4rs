@@ -1,7 +1,10 @@
-use std::hint::unreachable_unchecked;
+use crate::message::message_trait::{
+    CodableMessageTrait, ConstrainSingleTrait, MessageContentTrait, MessageHashCodeTrait,
+    MessageTrait, SingleMessageTrait,
+};
 use j4rs::{Instance, InvocationArg, Jvm};
-use mjbase::env::{FromInstance, GetEnvTrait};
-use crate::message::message_trait::{CodableMessageTrait, ConstrainSingleTrait, MessageContentTrait, MessageHashCodeTrait, MessageTrait, SingleMessageTrait};
+use mj_base::env::{FromInstance, GetEnvTrait};
+use std::hint::unreachable_unchecked;
 
 pub enum PokeMessage {
     戳一戳,
@@ -156,7 +159,7 @@ impl GetEnvTrait for PokeMessage {
             "net.mamoe.mirai.message.data.PokeMessage",
             &[name, poke_type, id],
         )
-            .unwrap()
+        .unwrap()
     }
 }
 

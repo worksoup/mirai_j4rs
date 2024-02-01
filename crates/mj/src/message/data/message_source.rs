@@ -1,7 +1,7 @@
 use crate::message::message_trait::{ConstrainSingleTrait, MessageTrait, SingleMessageTrait};
 use j4rs::{Instance, InvocationArg, Jvm};
-use mjbase::env::{FromInstance, GetEnvTrait};
-use mjmacro::GetInstanceDerive;
+use mj_base::env::{FromInstance, GetEnvTrait};
+use mj_macro::GetInstanceDerive;
 
 // TODO
 #[derive(GetInstanceDerive)]

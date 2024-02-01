@@ -1,5 +1,5 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-use mjbase::env::GetEnvTrait;
+use mj_base::env::GetEnvTrait;
 
 pub enum BotAuthorization {
     Password(String),

@@ -5,7 +5,7 @@ mod tests {
         kt_func_1::KtFunc1, kt_func_2::KtFunc2, predicate::Predicate,
     };
     use j4rs::{ClasspathEntry, Instance, InvocationArg, Jvm, JvmBuilder};
-    use mjbase::env::{FromInstance, GetEnvTrait};
+    use mj_base::env::{FromInstance, GetEnvTrait};
     use std::cmp::Ordering;
 
     struct X {

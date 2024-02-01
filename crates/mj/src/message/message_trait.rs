@@ -1,8 +1,9 @@
-use crate::contact::contact_trait::ContactTrait;
-use crate::message::data::message_chain::MessageChain;
-use crate::message::data::single_message::SingleMessage;
+use crate::{
+    contact::contact_trait::ContactTrait,
+    message::data::{message_chain::MessageChain, single_message::SingleMessage},
+};
 use j4rs::{InvocationArg, Jvm};
-use mjbase::env::GetEnvTrait;
+use mj_base::env::GetEnvTrait;
 
 //TODO : message_chain_builder
 pub trait MessageTrait

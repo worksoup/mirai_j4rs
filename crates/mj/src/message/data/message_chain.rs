@@ -1,32 +1,23 @@
-use crate::message::data::dice::Dice;
-use crate::message::data::face::Face;
-use crate::message::data::file_message::FileMessage;
-use crate::message::data::forward_message::ForwardMessage;
-use crate::message::data::image::Image;
-use crate::message::data::light_app::LightApp;
-use crate::message::data::market_face::MarketFace;
-use crate::message::data::music_share::MusicShare;
-use crate::message::data::poke_message::PokeMessage;
-use crate::message::data::rock_paper_scissors::RockPaperScissors;
-use crate::message::data::super_face::SuperFace;
-use crate::message::data::unsupported_message::UnsupportedMessage;
-use crate::message::data::vip_face::VipFace;
 use crate::{
     message::{
         data::{
-            at::At, at_all::AtAll, message_source::MessageSource, plain_text::PlainText,
-            quote_reply::QuoteReply, single_message::SingleMessage,
+            at::At, at_all::AtAll, dice::Dice, face::Face, file_message::FileMessage,
+            forward_message::ForwardMessage, image::Image, light_app::LightApp,
+            market_face::MarketFace, message_source::MessageSource, music_share::MusicShare,
+            plain_text::PlainText, poke_message::PokeMessage, quote_reply::QuoteReply,
+            rock_paper_scissors::RockPaperScissors, single_message::SingleMessage,
+            super_face::SuperFace, unsupported_message::UnsupportedMessage, vip_face::VipFace,
         },
         message_trait::{CodableMessageTrait, MessageChainTrait, MessageTrait},
     },
     utils::MiraiRsCollectionTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mjbase::{
+use mj_base::{
     env::{FromInstance, GetEnvTrait},
     utils::is_instance_of,
 };
-use mjmacro::GetInstanceDerive;
+use mj_macro::GetInstanceDerive;
 
 #[derive(GetInstanceDerive)]
 pub struct MessageChain {

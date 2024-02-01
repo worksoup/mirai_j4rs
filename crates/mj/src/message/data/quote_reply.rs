@@ -1,12 +1,13 @@
-use crate::message::data::message_chain::MessageChain;
-use crate::message::data::message_source::MessageSource;
-use crate::message::message_trait::{
-    ConstrainSingleTrait, MessageHashCodeTrait, MessageMetaDataTrait, MessageTrait,
-    SingleMessageTrait,
+use crate::message::{
+    data::{message_chain::MessageChain, message_source::MessageSource},
+    message_trait::{
+        ConstrainSingleTrait, MessageHashCodeTrait, MessageMetaDataTrait, MessageTrait,
+        SingleMessageTrait,
+    },
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mjbase::env::{FromInstance, GetEnvTrait};
-use mjmacro::GetInstanceDerive;
+use mj_base::env::{FromInstance, GetEnvTrait};
+use mj_macro::GetInstanceDerive;
 
 #[derive(GetInstanceDerive)]
 pub struct QuoteReply {

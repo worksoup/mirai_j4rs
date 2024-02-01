@@ -1,8 +1,10 @@
 use crate::contact::Friend;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mjbase::env::{FromInstance, GetEnvTrait};
-use mjbase::utils::java_iter_to_rust_vec;
-use mjmacro::GetInstanceDerive;
+use mj_base::{
+    env::{FromInstance, GetEnvTrait},
+    utils::java_iter_to_rust_vec,
+};
+use mj_macro::GetInstanceDerive;
 
 #[derive(GetInstanceDerive)]
 pub struct FriendGroup {

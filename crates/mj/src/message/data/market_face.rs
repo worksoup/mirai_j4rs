@@ -2,7 +2,7 @@ use crate::message::message_trait::{
     ConstrainSingleTrait, MarketFaceTrait, MessageContentTrait, MessageTrait, SingleMessageTrait,
 };
 use j4rs::Instance;
-use mjmacro::{FromInstanceDerive, GetInstanceDerive};
+use mj_macro::{FromInstanceDerive, GetInstanceDerive};
 
 #[derive(GetInstanceDerive, FromInstanceDerive)]
 pub struct MarketFace {

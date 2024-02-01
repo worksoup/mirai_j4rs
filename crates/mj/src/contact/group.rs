@@ -1,30 +1,36 @@
-use crate::contact::contact_trait::{
-    AnnouncementTrait, PublishAnnouncementSupportedTrait, SendMessageSupportedTrait,
-};
-use crate::error::MiraiRsError;
-use crate::message::data::message_chain::MessageChain;
-use crate::message::data::message_source::MessageSource;
-use crate::message::message_trait::MessageHashCodeTrait;
-use crate::utils::other::enums::{GroupHonorType, MemberMedalType};
-use crate::utils::JavaStream;
 use crate::{
+    contact::contact_trait::{
+        AnnouncementTrait, PublishAnnouncementSupportedTrait, SendMessageSupportedTrait,
+    },
     contact::{
         bot::Bot,
         contact_trait::{ContactOrBotTrait, ContactTrait, FileSupportedTrait},
         ContactList, NormalMember,
     },
-    utils::other::enums::AvatarSpec,
+    error::MiraiRsError,
+    message::{
+        data::{message_chain::MessageChain, message_source::MessageSource},
+        message_trait::MessageHashCodeTrait,
+    },
+    utils::{
+        other::enums::{AvatarSpec, GroupHonorType, MemberMedalType},
+        JavaStream,
+    },
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mjbase::env::{FromInstance, GetEnvTrait};
-use mjbase::utils::instance_is_null;
-use mjbase::utils::{
-    external_resource_close, external_resource_from_file, is_instance_of,
-    java_iter_to_rust_hash_set, java_iter_to_rust_vec,
+use mj_base::{
+    env::{FromInstance, GetEnvTrait},
+    utils::{
+        external_resource_close, external_resource_from_file, instance_is_null, is_instance_of,
+        java_iter_to_rust_hash_set, java_iter_to_rust_vec,
+    },
 };
-use mjmacro::GetInstanceDerive;
-use std::collections::HashSet;
-use std::{cmp::Ordering, collections::HashMap, marker::PhantomData};
+use mj_macro::GetInstanceDerive;
+use std::{
+    cmp::Ordering,
+    collections::{HashMap, HashSet},
+    marker::PhantomData,
+};
 
 pub struct GroupSettings {
     instance: Instance,

@@ -3,8 +3,8 @@ use crate::message::message_trait::{
     SingleMessageTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mjbase::env::FromInstance;
-use mjmacro::GetInstanceDerive;
+use mj_base::env::FromInstance;
+use mj_macro::GetInstanceDerive;
 
 #[derive(GetInstanceDerive)]
 pub struct PlainText {

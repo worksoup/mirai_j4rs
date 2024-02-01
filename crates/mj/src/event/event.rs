@@ -1,6 +1,6 @@
 use crate::event::event_trait::MiraiEventTrait;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mjbase::data_wrapper::DataWrapper;
+use mj_base::data_wrapper::DataWrapper;
 use std::mem::transmute;
 
 //需要由Env构造。

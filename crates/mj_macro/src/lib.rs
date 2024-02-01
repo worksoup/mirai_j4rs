@@ -9,7 +9,7 @@ pub fn get_instance_derive(input: TokenStream) -> TokenStream {
     let ast: &syn::DeriveInput = &syn::parse(input).unwrap();
     let name = &ast.ident;
     let gen = quote! {
-        impl mjbase::env::GetEnvTrait for #name {
+        impl mj_base::env::GetEnvTrait for #name {
             fn get_instance(&self) -> j4rs::Instance{
                 j4rs::Jvm::attach_thread().unwrap().clone_instance(&self.instance).unwrap()
             }
@@ -22,7 +22,7 @@ pub fn from_instance_derive(input: TokenStream) -> TokenStream {
     let ast: &syn::DeriveInput = &syn::parse(input).unwrap();
     let name = &ast.ident;
     let gen = quote! {
-        impl mjbase::env::FromInstance for #name {
+        impl mj_base::env::FromInstance for #name {
             fn from_instance(instance: j4rs::Instance) -> Self{
                 Self{instance}
             }
@@ -37,7 +37,7 @@ pub fn get_class_type_derive(input: TokenStream) -> TokenStream {
     let ast: &syn::DeriveInput = &syn::parse(input).unwrap();
     let name = &ast.ident;
     let gen = quote! {
-        impl mjbase::env::GetClassTypeTrait for #name {
+        impl mj_base::env::GetClassTypeTrait for #name {
             fn get_class_type() -> j4rs::Instance {
                 j4rs::Jvm::attach_thread()
                     .unwrap()

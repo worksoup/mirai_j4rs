@@ -3,7 +3,8 @@ resolver = "2"
 edition = "2021"
 members = [
     "crates/mj",
-    "crates/mjbase",
-    "crates/mjclosures",
-    "crates/mjmacro",
+    "crates/mj_base",
+    "crates/mj_closures",
+    "crates/mj_macro",
+    "crates/mj_tests"
 ]

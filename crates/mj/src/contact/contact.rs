@@ -14,11 +14,11 @@ use crate::{
     utils::{contact::friend_group::FriendGroup, other::enums::AvatarSpec},
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mjbase::{
+use mj_base::{
     env::{FromInstance, GetEnvTrait},
     utils::instance_is_null,
 };
-use mjmacro::GetInstanceDerive;
+use mj_macro::GetInstanceDerive;
 use std::marker::PhantomData;
 
 pub struct ContactList<T>

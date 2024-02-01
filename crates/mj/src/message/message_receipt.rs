@@ -1,9 +1,10 @@
-use crate::contact::contact_trait::ContactTrait;
-use crate::error::MiraiRsError;
-use crate::message::data::quote_reply::QuoteReply;
-use crate::message::message_trait::MessageTrait;
+use crate::{
+    contact::contact_trait::ContactTrait,
+    error::MiraiRsError,
+    message::{data::quote_reply::QuoteReply, message_trait::MessageTrait},
+};
 use j4rs::{Instance, InvocationArg, Jvm};
-use mjbase::env::FromInstance as _;
+use mj_base::env::FromInstance as _;
 
 pub struct MessageReceipt<'a, T>
 where

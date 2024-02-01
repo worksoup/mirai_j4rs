@@ -1,9 +1,11 @@
 use j4rs::{prelude::*, Instance, InvocationArg, Jvm};
 use j4rs_derive::*;
-use mjbase::data_wrapper::DataWrapper;
-use mjbase::env::{FromInstance, GetEnvTrait};
-use mjbase::utils::instance_from_i8_16;
-use mjmacro::GetInstanceDerive;
+use mj_base::{
+    data_wrapper::DataWrapper,
+    env::{FromInstance, GetEnvTrait},
+    utils::instance_from_i8_16,
+};
+use mj_macro::GetInstanceDerive;
 use std::{marker::PhantomData, mem::transmute};
 
 #[call_from_java("rt.lea.LumiaFunction.nativeApply")]

@@ -1,26 +1,34 @@
-use mjbase::utils::instance_from_i8_16;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mjbase::data_wrapper::DataWrapper;
-use mjbase::env::{FromInstance, GetEnvTrait};
-use mjmacro::GetInstanceDerive;
+use mj_base::{
+    data_wrapper::DataWrapper,
+    env::{FromInstance, GetEnvTrait},
+    utils::instance_from_i8_16,
+};
+use mj_macro::GetInstanceDerive;
 use std::{marker::PhantomData, mem::transmute};
 
-pub struct KtFunc1<'a, T: FromInstance, R: GetEnvTrait + FromInstance> {
+pub struct KtFunc2<'a, P1, P2, R>
+where
+    P1: FromInstance,
+    P2: FromInstance,
+    R: GetEnvTrait + FromInstance,
+{
     instance: Instance,
     internal_closure_raw: [i8; 16],
-    _t: PhantomData<T>,
-    _r: PhantomData<R>,
+    _p1: PhantomData<P1>,
+    _p2: PhantomData<P2>,
     __a: PhantomData<&'a ()>,
+    _r: PhantomData<R>,
 }
 
 #[derive(GetInstanceDerive)]
-pub struct KtFunc1Raw {
+pub struct KtFunc2Raw {
     instance: Instance,
     internal_closure_raw: [i8; 16],
 }
 
-impl KtFunc1Raw {
-    fn get_internal_closure_raw(&self) -> *mut dyn Fn(DataWrapper<Instance>) -> Instance {
+impl KtFunc2Raw {
+    pub fn get_internal_closure_raw(&self) -> *mut dyn Fn(DataWrapper<Instance>) -> Instance {
         unsafe { transmute(self.internal_closure_raw) }
     }
     pub fn drop_internal_closure_raw(&self) {
@@ -28,37 +36,40 @@ impl KtFunc1Raw {
     }
 }
 
-impl<'a, T, R> KtFunc1<'a, T, R>
+impl<'a, P1, P2, R> KtFunc2<'a, P1, P2, R>
 where
-    T: FromInstance,
+    P1: FromInstance,
+    P2: FromInstance,
     R: GetEnvTrait + FromInstance,
 {
     #[inline]
-    fn internal_closure_as_i8_16<F: Fn(T) -> R>(f: &'a F) -> [i8; 16] {
+    fn internal_closure_as_i8_16<F: Fn(P1, P2) -> R>(f: &'a F) -> [i8; 16] {
         let call_from_java = |value: DataWrapper<Instance>| -> Instance {
-            let value = value.get::<T>();
-            f(value).get_instance()
+            let value = value.get::<DataWrapper<(P1, P2)>>();
+            let (val1, val2) = value.get_pair();
+            f(val1, val2).get_instance()
         };
         let call_from_java_raw: *mut dyn Fn(DataWrapper<Instance>) -> Instance =
             Box::into_raw(Box::new(call_from_java));
         unsafe { transmute::<_, [i8; 16]>(call_from_java_raw) }
     }
-    pub fn new<F: Fn(T) -> R>(closure: &'a F) -> KtFunc1<'a, T, R> {
+    pub fn new<F: Fn(P1, P2) -> R>(closure: &'a F) -> KtFunc2<'a, P1, P2, R> {
         let jvm = Jvm::attach_thread().unwrap();
         let internal_closure_raw = Self::internal_closure_as_i8_16(closure);
-        let lumia_function = instance_from_i8_16::<"rt.lea.LumiaFunction">(internal_closure_raw);
+        let kt_func_2 = instance_from_i8_16::<"rt.lea.LumiaFunction">(internal_closure_raw);
         let instance = jvm
             .create_instance(
-                "rt.lea.LumiaKtFunc1",
-                &[InvocationArg::try_from(lumia_function).unwrap()],
+                "rt.lea.LumiaKtFunc2",
+                &[InvocationArg::try_from(kt_func_2).unwrap()],
             )
             .unwrap();
-        KtFunc1 {
+        KtFunc2 {
             instance,
             internal_closure_raw,
-            _t: PhantomData::default(),
-            _r: PhantomData::default(),
+            _p1: PhantomData::default(),
+            _p2: PhantomData::default(),
             __a: PhantomData::default(),
+            _r: PhantomData::default(),
         }
     }
     pub fn to_instance(&self) -> Instance {
@@ -67,21 +78,22 @@ where
             .clone_instance(&self.instance)
             .unwrap()
     }
-    pub fn invoke(&self, val1: InvocationArg) -> R {
+    pub fn invoke(&self, val1: InvocationArg, val2: InvocationArg) -> R {
         let jvm = Jvm::attach_thread().unwrap();
-        let result = jvm.invoke(&self.instance, "invoke", &[val1]).unwrap();
+        let result = jvm.invoke(&self.instance, "invoke", &[val1, val2]).unwrap();
         R::from_instance(result)
     }
-    fn get_internal_closure_raw(&self) -> *mut dyn Fn(DataWrapper<Instance>) -> Instance {
+
+    pub fn get_internal_closure_raw(&self) -> *mut dyn Fn(DataWrapper<Instance>) -> Instance {
         unsafe { transmute(self.internal_closure_raw) }
     }
     pub(super) fn drop_internal_closure_raw(&self) {
         let _boxed = unsafe { Box::from_raw(self.get_internal_closure_raw()) };
     }
-    pub fn drop_and_to_raw(self) -> KtFunc1Raw {
+    pub fn drop_and_to_raw(self) -> KtFunc2Raw {
         let instance = self.instance;
         let internal_closure_raw = self.internal_closure_raw;
-        KtFunc1Raw {
+        KtFunc2Raw {
             instance,
             internal_closure_raw,
         }

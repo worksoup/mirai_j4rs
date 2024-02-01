@@ -2,7 +2,7 @@ use crate::contact::group::MemberPermission;
 use crate::error::MiraiRsErrorEnum::LumiaException;
 use j4rs::errors::J4RsError;
 use j4rs::Instance;
-use mjbase::env::{FromInstance, GetEnvTrait};
+use mj_base::env::{FromInstance, GetEnvTrait};
 use std::{
     error::Error,
     fmt::{Display, Formatter},

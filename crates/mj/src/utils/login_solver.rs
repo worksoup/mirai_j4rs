@@ -1,14 +1,14 @@
 use crate::contact::bot::Bot;
-use mjclosures::kt_func_0::KtFunc0Raw;
-use mjclosures::kt_func_1::KtFunc1Raw;
-use mjclosures::kt_func_2::KtFunc2Raw;
-use mjclosures::{
-    kt_func_0::KtFunc0, kt_func_1::KtFunc1, kt_func_2::KtFunc2,
-};
 use j4rs::{Instance, InvocationArg, Jvm};
-use mjbase::data_wrapper::DataWrapper;
-use mjbase::env::{FromInstance, GetEnvTrait};
-use mjmacro::GetInstanceDerive;
+use mj_base::{
+    data_wrapper::DataWrapper,
+    env::{FromInstance, GetEnvTrait},
+};
+use mj_closures::{
+    kt_func_0::KtFunc0, kt_func_0::KtFunc0Raw, kt_func_1::KtFunc1, kt_func_1::KtFunc1Raw,
+    kt_func_2::KtFunc2, kt_func_2::KtFunc2Raw,
+};
+use mj_macro::GetInstanceDerive;
 use std::ops::Deref;
 
 pub enum State {

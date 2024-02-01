@@ -8,8 +8,8 @@ use crate::{
     message::message_trait::MessageHashCodeTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mjbase::env::{FromInstance, GetEnvTrait};
-use mjmacro::{FromInstanceDerive, GetInstanceDerive};
+use mj_base::env::{FromInstance, GetEnvTrait};
+use mj_macro::{FromInstanceDerive, GetInstanceDerive};
 
 pub trait Nudge: GetEnvTrait + MessageHashCodeTrait + FromInstance {
     type UserOrBot: UserOrBotTrait;

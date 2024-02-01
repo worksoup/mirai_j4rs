@@ -3,9 +3,9 @@ use crate::message::message_trait::{
     MessageHashCodeTrait, MessageTrait, SingleMessageTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mjbase::env::GetEnvTrait as _;
-use mjbase::utils::instance_is_null;
-use mjmacro::{FromInstanceDerive, GetInstanceDerive};
+use mj_base::env::GetEnvTrait as _;
+use mj_base::utils::instance_is_null;
+use mj_macro::{FromInstanceDerive, GetInstanceDerive};
 
 #[derive(GetInstanceDerive, FromInstanceDerive)]
 pub struct RockPaperScissors {

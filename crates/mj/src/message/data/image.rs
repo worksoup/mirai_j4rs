@@ -1,12 +1,14 @@
-use crate::contact::bot::Bot;
-use crate::message::message_trait::{
-    CodableMessageTrait, MessageContentTrait, MessageHashCodeTrait, MessageTrait,
-    SingleMessageTrait,
+use crate::{
+    contact::bot::Bot,
+    message::message_trait::{
+        CodableMessageTrait, MessageContentTrait, MessageHashCodeTrait, MessageTrait,
+        SingleMessageTrait,
+    },
+    message::IMAGE_ID_REGEX,
 };
-use crate::message::IMAGE_ID_REGEX;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mjbase::env::GetEnvTrait;
-use mjmacro::{FromInstanceDerive, GetInstanceDerive};
+use mj_base::{env::GetEnvTrait, utils::get_bytes_md5_and_cast_to_i8_16};
+use mj_macro::{FromInstanceDerive, GetInstanceDerive};
 use regex::Regex;
 
 #[derive(Debug)]
@@ -110,7 +112,7 @@ impl Image {
     }
     pub fn get_md5(&self) -> [i8; 16] {
         let jvm = Jvm::attach_thread().unwrap();
-        mjbase::utils::get_bytes_md5_and_cast_to_i8_16(jvm, &self.instance)
+        get_bytes_md5_and_cast_to_i8_16(jvm, &self.instance)
     }
     pub fn get_size(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();

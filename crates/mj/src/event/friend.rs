@@ -4,9 +4,11 @@ use crate::{
     message::message_trait::MessageHashCodeTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mjbase::env::{FromInstance, GetClassTypeTrait};
-use mjbase::utils::instance_is_null;
-use mjmacro::GetInstanceDerive;
+use mj_base::{
+    env::{FromInstance, GetClassTypeTrait},
+    utils::instance_is_null,
+};
+use mj_macro::GetInstanceDerive;
 
 pub struct FriendRemarkChangeEvent {}
 

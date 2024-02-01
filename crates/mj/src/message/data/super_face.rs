@@ -1,12 +1,16 @@
-use crate::message::data::face::Face;
-use crate::message::message_trait::{
-    CodableMessageTrait, ConstrainSingleTrait, MessageContentTrait, MessageHashCodeTrait,
-    MessageTrait, SingleMessageTrait,
+use crate::message::{
+    data::face::Face,
+    message_trait::{
+        CodableMessageTrait, ConstrainSingleTrait, MessageContentTrait, MessageHashCodeTrait,
+        MessageTrait, SingleMessageTrait,
+    },
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mjbase::env::{FromInstance, GetEnvTrait as _};
-use mjbase::utils::instance_is_null;
-use mjmacro::GetInstanceDerive;
+use mj_base::{
+    env::{FromInstance, GetEnvTrait as _},
+    utils::instance_is_null,
+};
+use mj_macro::GetInstanceDerive;
 
 #[derive(GetInstanceDerive)]
 pub struct SuperFace {

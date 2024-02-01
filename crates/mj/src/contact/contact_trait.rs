@@ -14,7 +14,7 @@ use crate::{
     utils::other::enums::AvatarSpec,
 };
 use j4rs::{InvocationArg, Jvm};
-use mjbase::{
+use mj_base::{
     env::{FromInstance, GetEnvTrait},
     utils::{external_resource_close, external_resource_from_file},
 };

@@ -1,10 +1,12 @@
-use crate::message::data::file_message::FileMessage;
-use crate::{contact::group::Group, utils::JavaStream};
+use crate::{contact::group::Group, message::data::file_message::FileMessage, utils::JavaStream};
 use j4rs::{Instance, InvocationArg, Jvm};
-use mjbase::env::{FromInstance, GetEnvTrait};
-use mjbase::utils::is_instance_of;
-use mjbase::utils::{external_resource_close, external_resource_from_file};
-use mjmacro::GetInstanceDerive;
+use mj_base::utils::get_bytes_md5_and_cast_to_i8_16;
+use mj_base::{
+    env::{FromInstance, GetEnvTrait},
+    utils::is_instance_of,
+    utils::{external_resource_close, external_resource_from_file},
+};
+use mj_macro::GetInstanceDerive;
 
 pub trait AbsoluteFileFolderTrait: Sized + GetEnvTrait {
     fn delete(&self) -> bool {
@@ -182,7 +184,7 @@ impl AbsoluteFile {
     /// 文件内容 MD5.
     pub fn get_md5(&self) -> [i8; 16] {
         let jvm = Jvm::attach_thread().unwrap();
-        mjbase::utils::get_bytes_md5_and_cast_to_i8_16(jvm, &self.instance)
+        get_bytes_md5_and_cast_to_i8_16(jvm, &self.instance)
     }
     /// 文件内容 SHA-1. 我记着是 20 位来着，记着测试。TODO: 测试一下。
     pub fn get_sha1(&self) -> [i8; 20] {

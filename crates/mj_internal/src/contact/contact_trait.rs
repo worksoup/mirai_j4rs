@@ -1,6 +1,6 @@
 use crate::{
     contact::{
-        file::{external_resource_close, external_resource_from_file, RemoteFiles},
+        file::{ExternalResource, RemoteFiles},
         group::{
             AnnouncementParameters, Group, MemberActive, MemberPermission, OfflineAnnouncement,
             OnlineAnnouncement,
@@ -121,9 +121,8 @@ pub trait SendMessageSupportedTrait: ContactTrait {
             .unwrap();
         MessageReceipt::new(instance, &self)
     }
-    fn upload_image_from_file(&self, path: &str) -> Image {
+    fn upload_image(&self, resource: &ExternalResource) -> Image {
         let jvm = Jvm::attach_thread().unwrap();
-        let resource = external_resource_from_file(&jvm, path);
         // 存疑：是否需要传入 Group(java) 本身？
         // 新：似乎不需要？
         // 新：前两条注释说的是什么来着？
@@ -131,12 +130,21 @@ pub trait SendMessageSupportedTrait: ContactTrait {
             .invoke(
                 &self.get_instance(),
                 "uploadImage",
-                &[InvocationArg::try_from(jvm.clone_instance(&resource).unwrap()).unwrap()],
+                &[
+                    InvocationArg::try_from(jvm.clone_instance(&resource.get_instance()).unwrap())
+                        .unwrap(),
+                ],
             )
             .unwrap();
-        // Mirai 文档里说要 close.
-        external_resource_close(&jvm, resource);
         Image::from_instance(image_instance)
+    }
+    fn upload_image_from_file(&self, path: &str) -> Image {
+        let jvm = Jvm::attach_thread().unwrap();
+        let resource = ExternalResource::create_from_file(path);
+        let image = self.upload_image(&resource);
+        // Mirai 文档里说要 close.
+        resource.close();
+        image
     }
 }
 

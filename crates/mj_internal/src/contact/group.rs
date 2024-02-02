@@ -1,3 +1,4 @@
+use crate::message::data::image::Image;
 use crate::{
     contact::{
         bot::Bot,
@@ -5,7 +6,7 @@ use crate::{
             AnnouncementTrait, ContactOrBotTrait, ContactTrait, FileSupportedTrait,
             PublishAnnouncementSupportedTrait, SendMessageSupportedTrait,
         },
-        file::{external_resource_close, external_resource_from_file},
+        file::ExternalResource,
         ContactList, NormalMember,
     },
     error::MiraiRsError,
@@ -23,7 +24,7 @@ use mj_base::{
     env::{FromInstance, GetInstanceTrait},
     utils::{instance_is_null, is_instance_of, java_iter_to_rust_hash_set, java_iter_to_rust_vec},
 };
-use mj_macro::{java_type, GetInstanceDerive};
+use mj_macro::{java_type, FromInstanceDerive, GetInstanceDerive};
 use std::{
     cmp::Ordering,
     collections::{HashMap, HashSet},
@@ -484,7 +485,7 @@ impl FromInstance for Announcement {
 
 impl AnnouncementTrait for Announcement {}
 
-#[derive(GetInstanceDerive)]
+#[derive(GetInstanceDerive, FromInstanceDerive)]
 pub struct AnnouncementImage {
     instance: Instance,
 }
@@ -572,13 +573,25 @@ impl Announcements {
         let fid = InvocationArg::try_from(fid).unwrap();
         let _ = jvm.invoke(&self.instance, "remind", &[fid]).unwrap();
     }
-    pub fn upload_image_from_file(&self, path: &str) -> AnnouncementImage {
+    pub fn upload_image(&self, resource: &ExternalResource) -> AnnouncementImage {
         let jvm = Jvm::attach_thread().unwrap();
-        let res = external_resource_from_file(&jvm, path);
-        let a = InvocationArg::try_from(jvm.clone_instance(&res).unwrap()).unwrap();
-        let instance = jvm.invoke(&self.instance, "uploadImage", &[a]).unwrap();
-        external_resource_close(&jvm, res);
-        AnnouncementImage { instance }
+        let image_instance = jvm
+            .invoke(
+                &self.instance,
+                "uploadImage",
+                &[
+                    InvocationArg::try_from(jvm.clone_instance(&resource.get_instance()).unwrap())
+                        .unwrap(),
+                ],
+            )
+            .unwrap();
+        AnnouncementImage::from_instance(image_instance)
+    }
+    pub fn upload_image_from_file(&self, path: &str) -> AnnouncementImage {
+        let res = ExternalResource::create_from_file(path);
+        let a = self.upload_image(&res);
+        res.close();
+        a
     }
 }
 

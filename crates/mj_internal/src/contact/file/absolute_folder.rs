@@ -1,12 +1,9 @@
 use crate::{
-    contact::file::{
-        external_resource_close, external_resource_from_file, AbsoluteFile, AbsoluteFileFolder,
-        AbsoluteFileFolderTrait,
-    },
+    contact::file::{AbsoluteFile, AbsoluteFileFolder, AbsoluteFileFolderTrait, ExternalResource},
     utils::JavaStream,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::FromInstance;
+use mj_base::env::{FromInstance, GetInstanceTrait};
 use mj_macro::{java_type, FromInstanceDerive, GetInstanceDerive};
 
 /// # 绝对目录标识。
@@ -113,21 +110,19 @@ impl AbsoluteFolder {
         AbsoluteFolder { instance }
     }
     /// 上传新文件。
-    pub fn upload_new_file(&self, file_name: &str, path: &str) -> AbsoluteFile {
+    pub fn upload_new_file(&self, file_name: &str, resource: &ExternalResource) -> AbsoluteFile {
         let jvm = Jvm::attach_thread().unwrap();
-        let res = external_resource_from_file(&jvm, path);
         let instance = jvm
             .invoke(
                 &self.instance,
                 "uploadNewFile",
                 &[
                     InvocationArg::try_from(file_name).unwrap(),
-                    InvocationArg::try_from(jvm.clone_instance(&res).unwrap()).unwrap(),
+                    InvocationArg::try_from(jvm.clone_instance(&resource.get_instance()).unwrap())
+                        .unwrap(),
                 ],
             )
             .unwrap();
-        // Mirai 文档里说要 close.
-        external_resource_close(&jvm, res);
         AbsoluteFile::from_instance(instance)
     }
     /// 上传新文件，传入的 callback 可以获取到当前上传文件的进度。

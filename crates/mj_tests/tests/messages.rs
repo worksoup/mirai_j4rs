@@ -2,7 +2,7 @@ use mj_internal::{
     contact::{
         contact_trait::NudgeSupportedTrait,
         contact_trait::{ContactOrBotTrait, FileSupportedTrait, SendMessageSupportedTrait},
-        file::AbsoluteFileFolderTrait,
+        file::{AbsoluteFileFolderTrait, ExternalResource},
         group::Group,
     },
     message::{
@@ -104,7 +104,9 @@ fn file_message() {
             }
         }
     }
-    let _ = root.upload_new_file("aaa.toml", "./base_config.toml");
+    let res = ExternalResource::create_from_file("./base_config.toml");
+    let _ = root.upload_new_file("aaa.toml", &res);
+    res.close();
     bot.close();
 }
 

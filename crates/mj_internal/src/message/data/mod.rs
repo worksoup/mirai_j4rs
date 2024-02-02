@@ -1,5 +1,6 @@
 pub mod at;
 pub mod at_all;
+pub mod audio;
 pub mod dice;
 pub mod face;
 pub mod file_message;
@@ -19,7 +20,11 @@ pub mod super_face;
 pub mod unsupported_message;
 pub mod vip_face;
 
-// #[derive(GetEnvDerive)]
+// use j4rs::Instance;
+// use mj_macro::{FromInstanceDerive, GetInstanceDerive};
+// use crate::message::message_trait::{CodableMessageTrait, ConstrainSingleTrait, MessageContentTrait, MessageTrait, SingleMessageTrait};
+//
+// #[derive(GetInstanceDerive,FromInstanceDerive)]
 // pub struct  {
 //     instance: Instance,
 // }

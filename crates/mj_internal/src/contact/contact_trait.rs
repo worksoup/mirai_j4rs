@@ -15,10 +15,7 @@ use crate::{
     utils::other::enums::AvatarSpec,
 };
 use j4rs::{InvocationArg, Jvm};
-use mj_base::{
-    env::{FromInstance, GetInstanceTrait},
-    utils::{external_resource_close, external_resource_from_file},
-};
+use mj_base::env::{FromInstance, GetInstanceTrait};
 
 pub trait AssertMemberPermissionTrait: MemberTrait {
     fn is_owner(&self) -> bool;

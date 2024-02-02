@@ -7,6 +7,10 @@ pub trait GetClassTypeTrait {
     fn get_class_type() -> Instance;
 
     fn cast_to_this_type(instance: Instance) -> Instance;
+
+    fn get_type_name() -> &'static str;
+
+    fn is_this_type(instance: &Instance) -> bool;
 }
 
 pub trait GetInstanceTrait {

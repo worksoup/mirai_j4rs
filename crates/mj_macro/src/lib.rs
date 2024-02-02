@@ -31,6 +31,7 @@ pub fn from_instance_derive(input: TokenStream) -> TokenStream {
     gen.into()
 }
 
+/// 不要求结构体有 `instance: Instance` 字段。
 #[proc_macro_attribute]
 pub fn java_type(type_name: TokenStream, input: TokenStream) -> TokenStream {
     let ast: &syn::DeriveInput = &syn::parse(input).unwrap();
@@ -52,10 +53,16 @@ pub fn java_type(type_name: TokenStream, input: TokenStream) -> TokenStream {
                     )
                     .unwrap()
             }
-            fn cast_to_this_type(instance: j4rs::Instance) -> j4rs::Instance{
+            fn cast_to_this_type(instance: j4rs::Instance) -> j4rs::Instance {
                 let jvm = j4rs::Jvm::attach_thread()
                     .unwrap();
                 jvm.cast(&instance, #type_name).unwrap()
+            }
+            fn get_type_name() -> &'static str {
+                #type_name
+            }
+            fn is_this_type(instance: &j4rs::Instance) -> bool {
+                mj_base::utils::is_instance_of(&instance, #type_name)
             }
         }
     };

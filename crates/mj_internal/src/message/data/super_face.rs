@@ -7,12 +7,13 @@ use crate::message::{
 };
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::{
-    env::{FromInstance, GetInstanceTrait as _},
+    env::{FromInstance, GetClassTypeTrait as _, GetInstanceTrait as _},
     utils::instance_is_null,
 };
-use mj_macro::GetInstanceDerive;
+use mj_macro::{java_type, FromInstanceDerive, GetInstanceDerive};
 
-#[derive(GetInstanceDerive)]
+#[derive(GetInstanceDerive, FromInstanceDerive)]
+#[java_type("net.mamoe.mirai.message.data.SuperFace")]
 pub struct SuperFace {
     instance: Instance,
 }
@@ -30,10 +31,7 @@ impl SuperFace {
             .into_primitive()
             .unwrap();
         let instance = jvm
-            .create_instance(
-                "net.mamoe.mirai.message.data.SuperFace",
-                &[face_id, id, r#type],
-            )
+            .create_instance(Self::get_type_name(), &[face_id, id, r#type])
             .unwrap();
         Self { instance }
     }
@@ -84,22 +82,12 @@ impl TryFrom<Face> for SuperFace {
         let jvm = Jvm::attach_thread().unwrap();
         let face = InvocationArg::try_from(face.get_instance()).unwrap();
         let instance = jvm
-            .invoke_static(
-                "net.mamoe.mirai.message.data.SuperFace",
-                "fromOrNull",
-                &[face],
-            )
+            .invoke_static(Self::get_type_name(), "fromOrNull", &[face])
             .unwrap();
         if !instance_is_null(&instance) {
             Ok(SuperFace::from_instance(instance))
         } else {
             Err(())
         }
-    }
-}
-
-impl FromInstance for SuperFace {
-    fn from_instance(instance: Instance) -> Self {
-        Self { instance }
     }
 }

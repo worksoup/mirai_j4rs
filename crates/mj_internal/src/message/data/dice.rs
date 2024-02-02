@@ -3,17 +3,18 @@ use crate::message::message_trait::{
     MessageHashCodeTrait, MessageTrait, SingleMessageTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_macro::{FromInstanceDerive, GetInstanceDerive};
+use mj_base::env::GetClassTypeTrait;
+use mj_macro::{java_type, FromInstanceDerive, GetInstanceDerive};
 
 #[derive(GetInstanceDerive, FromInstanceDerive)]
+#[java_type("net.mamoe.mirai.message.data.Dice")]
 pub struct Dice {
     instance: Instance,
 }
 
+/// 魔法表情骰子。
+/// 新版客户端只能显示动画而不能显示点数。
 impl Dice {
-    /// 竟然可以直接指定值，太离谱了。。。
-    /// 不知道新版 QQ 这个表情还能用不能。需要测试。
-    /// TODO: 测试。
     pub fn new(mut value: u8) -> Self {
         if value > 6 {
             value = 1;
@@ -22,7 +23,7 @@ impl Dice {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .create_instance(
-                "net.mamoe.mirai.message.data.Dice",
+                Self::get_type_name(),
                 &[InvocationArg::try_from(value)
                     .unwrap()
                     .into_primitive()

@@ -1,17 +1,16 @@
-use mj_internal::contact::contact_trait::NudgeSupportedTrait;
-use mj_internal::message::action::nudges::{BotNudge, Nudge};
-use mj_internal::message::data::poke_message::PokeMessage;
 use mj_internal::{
     contact::{
+        contact_trait::NudgeSupportedTrait,
         contact_trait::{ContactOrBotTrait, FileSupportedTrait, SendMessageSupportedTrait},
+        file::AbsoluteFileFolderTrait,
         group::Group,
     },
-    file::AbsoluteFileFolderTrait,
     message::{
+        action::nudges::{BotNudge, Nudge},
         data::{
             at::At, at_all::AtAll, dice::Dice, face::Face, forward_message::ForwardMessageBuilder,
             image::Image, market_face::MarketFace, plain_text::PlainText,
-            rock_paper_scissors::RockPaperScissors,
+            poke_message::PokeMessage, rock_paper_scissors::RockPaperScissors,
         },
         message_trait::{CodableMessageTrait, MessageHashCodeTrait, MessageTrait},
     },

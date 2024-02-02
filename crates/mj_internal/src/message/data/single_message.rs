@@ -1,58 +1,108 @@
-use crate::message::data::{
-    at::At, at_all::AtAll, dice::Dice, face::Face, file_message::FileMessage,
-    forward_message::ForwardMessage, image::Image, light_app::LightApp, market_face::MarketFace,
-    message_source::MessageSource, music_share::MusicShare, plain_text::PlainText,
-    poke_message::PokeMessage, quote_reply::QuoteReply, rock_paper_scissors::RockPaperScissors,
-    super_face::SuperFace, unsupported_message::UnsupportedMessage, vip_face::VipFace,
+use crate::message::{
+    data::{
+        at::At, at_all::AtAll, audio::Audio, face::Face, file_message::FileMessage,
+        forward_message::ForwardMessage, image::Image, light_app::LightApp,
+        market_face::MarketFaceAll, message_source::MessageSource, music_share::MusicShare,
+        plain_text::PlainText, poke_message::PokeMessage, quote_reply::QuoteReply,
+        super_face::SuperFace, unsupported_message::UnsupportedMessage, vip_face::VipFace,
+    },
+    message_trait::{MessageTrait, SingleMessageTrait},
 };
 use j4rs::Instance;
-use mj_base::env::GetInstanceTrait;
+use mj_base::env::{FromInstance, GetClassTypeTrait, GetInstanceTrait};
+use mj_macro::java_type;
 
 // TODO: 需要知道 Java 或者 MessageChain 会不会返回除了以下消息之外的 SingleMessage
 // TODO: 还有一些如 Audio 等消息没有实现，需要补上。
+#[java_type("net.mamoe.mirai.message.data.SingleMessage")]
 pub enum SingleMessage {
     At(At),
     AtAll(AtAll),
-    Dice(Dice),
+    Audio(Audio),
     Face(Face),
     FileMessage(FileMessage),
     ForwardMessage(ForwardMessage),
     Image(Image),
     LightApp(LightApp),
-    MarketFace(MarketFace),
+    MarketFaceAll(MarketFaceAll),
     MessageSource(MessageSource),
     MusicShare(MusicShare),
     PlainText(PlainText),
     PokeMessage(PokeMessage),
     QuoteReply(QuoteReply),
-    RockPaperScissors(RockPaperScissors),
     SuperFace(SuperFace),
-    UnsupportedMessage(UnsupportedMessage),
     VipFace(VipFace),
+    UnsupportedMessage(UnsupportedMessage),
     // 以下这个应该不会被 MessageChain 返回吧？
 }
 
 impl GetInstanceTrait for SingleMessage {
     fn get_instance(&self) -> Instance {
-        match self {
-            SingleMessage::At(a) => a.get_instance(),
-            SingleMessage::AtAll(a) => a.get_instance(),
-            SingleMessage::Dice(a) => a.get_instance(),
-            SingleMessage::Face(a) => a.get_instance(),
-            SingleMessage::FileMessage(a) => a.get_instance(),
-            SingleMessage::ForwardMessage(a) => a.get_instance(),
-            SingleMessage::Image(a) => a.get_instance(),
-            SingleMessage::LightApp(a) => a.get_instance(),
-            SingleMessage::MarketFace(a) => a.get_instance(),
-            SingleMessage::MessageSource(a) => a.get_instance(),
-            SingleMessage::MusicShare(a) => a.get_instance(),
-            SingleMessage::PlainText(a) => a.get_instance(),
-            SingleMessage::PokeMessage(a) => a.get_instance(),
-            SingleMessage::QuoteReply(a) => a.get_instance(),
-            SingleMessage::RockPaperScissors(a) => a.get_instance(),
-            SingleMessage::SuperFace(a) => a.get_instance(),
-            SingleMessage::UnsupportedMessage(a) => a.get_instance(),
-            SingleMessage::VipFace(a) => a.get_instance(),
+        macro_rules! branch {
+            ($($e:ident),*) => {
+                match self {
+                    $(
+                    SingleMessage::$e(a) => a.get_instance(),
+                    )*
+                    SingleMessage::UnsupportedMessage(a) => a.get_instance()
+                }
+            };
         }
+        // 注意没有 `UnsupportedMessage`.
+        branch!(
+            At,
+            AtAll,
+            Audio,
+            Face,
+            FileMessage,
+            ForwardMessage,
+            Image,
+            LightApp,
+            MarketFaceAll,
+            MessageSource,
+            MusicShare,
+            PlainText,
+            PokeMessage,
+            QuoteReply,
+            SuperFace,
+            VipFace
+        )
     }
 }
+
+impl FromInstance for SingleMessage {
+    fn from_instance(instance: Instance) -> Self {
+        macro_rules! branch {
+            ($($e:ident),*) => {
+                $(if $e::is_this_type(&instance){
+                    SingleMessage::$e($e::from_instance($e::cast_to_this_type(instance)))
+                } else)*{
+                    SingleMessage::UnsupportedMessage(UnsupportedMessage::from_instance(instance))
+                }
+            };
+        }
+        // 注意没有 `UnsupportedMessage`.
+        branch!(
+            At,
+            AtAll,
+            Audio,
+            Face,
+            FileMessage,
+            ForwardMessage,
+            Image,
+            LightApp,
+            MarketFaceAll,
+            MessageSource,
+            MusicShare,
+            PlainText,
+            PokeMessage,
+            QuoteReply,
+            SuperFace,
+            VipFace
+        )
+    }
+}
+
+impl MessageTrait for SingleMessage {}
+
+impl SingleMessageTrait for SingleMessage {}

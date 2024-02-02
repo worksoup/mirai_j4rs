@@ -3,20 +3,25 @@ use crate::message::message_trait::{
     MessageHashCodeTrait, MessageTrait, SingleMessageTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::GetInstanceTrait as _;
-use mj_base::utils::instance_is_null;
-use mj_macro::{FromInstanceDerive, GetInstanceDerive};
+use mj_base::{
+    env::{GetClassTypeTrait as _, GetInstanceTrait as _},
+    utils::instance_is_null,
+};
+use mj_macro::{java_type, FromInstanceDerive, GetInstanceDerive};
 
 #[derive(GetInstanceDerive, FromInstanceDerive)]
+#[java_type("net.mamoe.mirai.message.data.RockPaperScissors")]
 pub struct RockPaperScissors {
     instance: Instance,
 }
 
+/// 魔法表情猜拳。
+/// 新版客户端只能显示动画而不能显示结果。
 impl RockPaperScissors {
     fn new(field: &str) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
-            .static_class_field("net.mamoe.mirai.message.data.RockPaperScissors", field)
+            .static_class_field(Self::get_type_name(), field)
             .unwrap();
         Self { instance }
     }

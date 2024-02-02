@@ -12,7 +12,6 @@ use mj_closures::{
     comparator::Comparator, consumer::Consumer, function::Function, predicate::Predicate,
 };
 use std::{cmp::Ordering, marker::PhantomData};
-
 pub trait MiraiRsCollectionTrait {
     type Element;
     fn get_size(&self) -> i32;

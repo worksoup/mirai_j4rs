@@ -7,7 +7,7 @@ use crate::{
 use j4rs::{Instance, InvocationArg, Jvm};
 use lazy_static::lazy_static;
 use mj_base::{env::GetInstanceTrait, utils::primitive_byte_array_to_string};
-use mj_macro::{FromInstanceDerive, GetInstanceDerive};
+use mj_macro::{java_type, FromInstanceDerive, GetInstanceDerive};
 use regex::Regex;
 
 lazy_static! {
@@ -52,6 +52,7 @@ impl ImageType {
 }
 
 #[derive(GetInstanceDerive, FromInstanceDerive)]
+#[java_type("net.mamoe.mirai.message.data.Image")]
 pub struct Image {
     instance: Instance,
 }

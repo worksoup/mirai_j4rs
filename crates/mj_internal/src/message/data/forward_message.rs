@@ -10,7 +10,7 @@ use crate::{
 };
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::{FromInstance, GetInstanceTrait};
-use mj_macro::{FromInstanceDerive, GetInstanceDerive};
+use mj_macro::{java_type, FromInstanceDerive, GetInstanceDerive};
 
 #[derive(GetInstanceDerive)]
 pub struct ForwardMessageBuilder {
@@ -98,6 +98,7 @@ impl ForwardMessageBuilder {
 // TODO: RawForwardMessage is necessary for set_display_strategy.
 // TODO: to_forward_message for message and chain, etc.
 #[derive(GetInstanceDerive, FromInstanceDerive)]
+#[java_type("net.mamoe.mirai.message.data.ForwardMessage")]
 pub struct ForwardMessage {
     instance: Instance,
 }

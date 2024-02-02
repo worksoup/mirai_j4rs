@@ -3,9 +3,11 @@ use crate::message::message_trait::{
     MessageTrait, SingleMessageTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstance, GetInstanceTrait};
+use mj_base::env::{FromInstance, GetClassTypeTrait, GetInstanceTrait};
+use mj_macro::java_type;
 use std::hint::unreachable_unchecked;
 
+#[java_type("net.mamoe.mirai.message.data.PokeMessage")]
 pub enum PokeMessage {
     戳一戳,
     比心,

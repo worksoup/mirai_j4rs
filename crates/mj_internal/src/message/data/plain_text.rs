@@ -4,9 +4,11 @@ use crate::message::message_trait::{
 };
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::FromInstance;
-use mj_macro::GetInstanceDerive;
+use mj_base::env::GetClassTypeTrait;
+use mj_macro::{java_type, GetInstanceDerive};
 
 #[derive(GetInstanceDerive)]
+#[java_type("net.mamoe.mirai.message.data.PlainText")]
 pub struct PlainText {
     content: String,
     instance: Instance,
@@ -19,7 +21,7 @@ impl From<&str> for PlainText {
             content: value.to_string(),
             instance: jvm
                 .create_instance(
-                    "net.mamoe.mirai.message.data.PlainText",
+                    Self::get_type_name(),
                     &[InvocationArg::try_from(value).unwrap()],
                 )
                 .unwrap(),
@@ -32,7 +34,7 @@ impl From<String> for PlainText {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .create_instance(
-                "net.mamoe.mirai.message.data.PlainText",
+                Self::get_type_name(),
                 &[InvocationArg::try_from(&value).unwrap()],
             )
             .unwrap();

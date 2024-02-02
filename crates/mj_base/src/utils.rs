@@ -102,25 +102,3 @@ pub fn java_iter_to_rust_hash_set<T: FromInstance + Hash + Eq>(
     }
     res
 }
-
-/// 请注意 close.
-#[inline]
-pub fn external_resource_from_file(jvm: &Jvm, path: &str) -> Instance {
-    jvm.invoke_static(
-        "net.mamoe.mirai.utils.ExternalResource",
-        "create",
-        &[InvocationArg::try_from(
-            Jvm::attach_thread()
-                .unwrap()
-                .create_instance("java.io.File", &[InvocationArg::try_from(path).unwrap()])
-                .unwrap(),
-        )
-        .unwrap()],
-    )
-    .unwrap()
-}
-
-#[inline]
-pub fn external_resource_close(jvm: &Jvm, resource: Instance) {
-    let _ = jvm.invoke(&resource, "close", &[]);
-}

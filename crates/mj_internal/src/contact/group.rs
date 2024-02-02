@@ -1,10 +1,11 @@
 use crate::{
-    contact::contact_trait::{
-        AnnouncementTrait, PublishAnnouncementSupportedTrait, SendMessageSupportedTrait,
-    },
     contact::{
         bot::Bot,
-        contact_trait::{ContactOrBotTrait, ContactTrait, FileSupportedTrait},
+        contact_trait::{
+            AnnouncementTrait, ContactOrBotTrait, ContactTrait, FileSupportedTrait,
+            PublishAnnouncementSupportedTrait, SendMessageSupportedTrait,
+        },
+        file::{external_resource_close, external_resource_from_file},
         ContactList, NormalMember,
     },
     error::MiraiRsError,
@@ -20,10 +21,7 @@ use crate::{
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::{
     env::{FromInstance, GetInstanceTrait},
-    utils::{
-        external_resource_close, external_resource_from_file, instance_is_null, is_instance_of,
-        java_iter_to_rust_hash_set, java_iter_to_rust_vec,
-    },
+    utils::{instance_is_null, is_instance_of, java_iter_to_rust_hash_set, java_iter_to_rust_vec},
 };
 use mj_macro::{java_type, GetInstanceDerive};
 use std::{

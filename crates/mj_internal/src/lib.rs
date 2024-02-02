@@ -4,12 +4,9 @@
 #![feature(specialization)]
 #![feature(adt_const_params)]
 
+pub mod auth;
 pub mod contact;
 pub mod error;
 pub mod event;
-pub mod file;
 pub mod message;
 pub mod utils;
-pub mod auth;
-
-

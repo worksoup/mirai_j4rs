@@ -1,10 +1,10 @@
-use crate::file::RemoteFiles;
 use crate::{
-    contact::group::{
-        AnnouncementParameters, MemberActive, OfflineAnnouncement, OnlineAnnouncement,
-    },
     contact::{
-        group::{Group, MemberPermission},
+        file::{external_resource_close, external_resource_from_file, RemoteFiles},
+        group::{
+            AnnouncementParameters, Group, MemberActive, MemberPermission, OfflineAnnouncement,
+            OnlineAnnouncement,
+        },
         Friend,
     },
     error::MiraiRsError,

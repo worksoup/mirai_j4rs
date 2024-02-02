@@ -7,6 +7,7 @@ pub enum BotAuthorization {
     QrCode,
 }
 
+// TODO: 测试是否可以直接直接转换。
 impl GetInstanceTrait for BotAuthorization {
     fn get_instance(&self) -> Instance {
         let jvm = Jvm::attach_thread().unwrap();
@@ -19,15 +20,12 @@ impl GetInstanceTrait for BotAuthorization {
                 )
                 .unwrap(),
             BotAuthorization::Md5(md5) => {
-                let mut password_md5 = Vec::new();
-                for i in md5 {
-                    password_md5.push(
-                        InvocationArg::try_from(i.clone() as i8)
-                            .unwrap()
-                            .into_primitive()
-                            .unwrap(),
-                    );
-                }
+                let password_md5 = md5.map(|e| {
+                    InvocationArg::try_from(e as i8)
+                        .unwrap()
+                        .into_primitive()
+                        .unwrap()
+                });
                 let arg = jvm.create_java_array("byte", &password_md5).unwrap();
                 let arg = InvocationArg::try_from(arg).unwrap();
                 jvm.invoke_static(

@@ -1,6 +1,6 @@
 use crate::{
     contact::contact_trait::FileSupportedTrait,
-    file::AbsoluteFile,
+    contact::file::AbsoluteFile,
     message::message_trait::{
         CodableMessageTrait, ConstrainSingleTrait, MessageContentTrait, MessageTrait,
         SingleMessageTrait,

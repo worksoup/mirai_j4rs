@@ -9,10 +9,10 @@ crate-type = ["cdylib", "lib"] # cdylib 供 jvm_side 使用。
 
 [dependencies]
 mj_macro = { path = "../mj_macro" }
-mj_base = {path = "../mj_base" }
-mj_closures = {path = "../mj_closures" }
-j4rs = { git = "https://github.com/astonbitecode/j4rs.git" }
-j4rs_derive = { git = "https://github.com/astonbitecode/j4rs.git" }
+mj_base = { path = "../mj_base" }
+mj_closures = { path = "../mj_closures" }
+j4rs = "0.17"
+j4rs_derive = "0.1"
 num_enum = "0.7"
 serde = { version = "1.0", features = ["derive"] }
 toml = "0.8"
@@ -20,6 +20,7 @@ serde_json = "1.0"
 rand = "0.8"
 lazy_static = "1.4"
 regex = "1.10"
+# thiserror = "1.0"
 # directories = "5.0"
 # num_cpus = "^1.15"
 # rust-crypto = "^0.2"

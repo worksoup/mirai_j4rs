@@ -19,7 +19,7 @@
 
 ## 协议支持
 
-请查看 该 [issue](https://github.com/worksoup/mirai_j4rs/issues/2#issue-2114138266).
+请查看该 [issue](https://github.com/worksoup/mirai_j4rs/issues/2#issue-2114138266).
 
 # 使用方法：
 

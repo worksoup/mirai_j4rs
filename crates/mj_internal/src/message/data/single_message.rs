@@ -6,7 +6,7 @@ use crate::message::data::{
     super_face::SuperFace, unsupported_message::UnsupportedMessage, vip_face::VipFace,
 };
 use j4rs::Instance;
-use mj_base::env::GetEnvTrait;
+use mj_base::env::GetInstanceTrait;
 
 // TODO: 需要知道 Java 或者 MessageChain 会不会返回除了以下消息之外的 SingleMessage
 // TODO: 还有一些如 Audio 等消息没有实现，需要补上。
@@ -32,7 +32,7 @@ pub enum SingleMessage {
     // 以下这个应该不会被 MessageChain 返回吧？
 }
 
-impl GetEnvTrait for SingleMessage {
+impl GetInstanceTrait for SingleMessage {
     fn get_instance(&self) -> Instance {
         match self {
             SingleMessage::At(a) => a.get_instance(),

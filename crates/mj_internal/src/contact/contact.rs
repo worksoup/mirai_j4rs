@@ -15,7 +15,7 @@ use crate::{
 };
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::{
-    env::{FromInstance, GetEnvTrait},
+    env::{FromInstance, GetInstanceTrait},
     utils::instance_is_null,
 };
 use mj_macro::GetInstanceDerive;
@@ -38,7 +38,7 @@ impl<T: ContactTrait + FromInstance> FromInstance for ContactList<T> {
     }
 }
 
-impl<T: ContactTrait + FromInstance> GetEnvTrait for ContactList<T> {
+impl<T: ContactTrait + FromInstance> GetInstanceTrait for ContactList<T> {
     fn get_instance(&self) -> Instance {
         Jvm::attach_thread()
             .unwrap()
@@ -418,7 +418,7 @@ pub enum Member {
     AnonymousMember(AnonymousMember),
 }
 
-impl GetEnvTrait for Member {
+impl GetInstanceTrait for Member {
     fn get_instance(&self) -> Instance {
         match self {
             Member::NormalMember(member) => member.get_instance(),

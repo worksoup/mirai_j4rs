@@ -1,11 +1,11 @@
 use crate::contact::bot::Bot;
 use crate::message::data::message_chain::MessageChain;
 use j4rs::Jvm;
-use mj_base::env::{FromInstance, GetClassTypeTrait, GetEnvTrait};
+use mj_base::env::{FromInstance, GetClassTypeTrait, GetInstanceTrait};
 
 pub trait MiraiEventTrait
 where
-    Self: GetEnvTrait + GetClassTypeTrait + FromInstance,
+    Self: GetInstanceTrait + GetClassTypeTrait + FromInstance,
 {
     fn cancel(&self) {
         let jvm = Jvm::attach_thread().unwrap();

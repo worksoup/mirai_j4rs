@@ -29,7 +29,7 @@
 - [x] `FileMessage` 群文件消息
 - [x] `ForwardMessage` 合并转发
 - [x] `Image`（包括自定义表情）
-- [x] `LightApp` 小程序
+- [ ] `LightApp` 小程序
 - [x] `MarketFaceTrait` 市场表情
     - [x] `Dice` 🎲
     - [x] `RockPaperScissors` 锤子包袱剪

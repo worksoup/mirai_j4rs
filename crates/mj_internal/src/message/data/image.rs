@@ -1,17 +1,20 @@
 use crate::{
     contact::bot::Bot,
     message::message_trait::{
-        CodableMessageTrait, MessageContentTrait, MessageHashCodeTrait, MessageTrait,
-        SingleMessageTrait,
+        CodableMessageTrait, MessageContentTrait, MessageTrait, SingleMessageTrait,
     },
-    message::IMAGE_ID_REGEX,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::GetEnvTrait;
-use mj_base::utils::primitive_byte_array_to_string;
+use lazy_static::lazy_static;
+use mj_base::{env::GetInstanceTrait, utils::primitive_byte_array_to_string};
 use mj_macro::{FromInstanceDerive, GetInstanceDerive};
 use regex::Regex;
 
+lazy_static! {
+    pub static ref IMAGE_ID_REGEX: Regex =
+        Regex::new(r#"\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\..{3,5}"#)
+            .expect("失效的正则表达式。");
+}
 #[derive(Debug)]
 pub enum ImageType {
     PNG,
@@ -222,4 +225,4 @@ impl SingleMessageTrait for Image {}
 
 impl MessageContentTrait for Image {}
 
-impl MessageHashCodeTrait for Image {}
+// impl MessageHashCodeTrait for Image {}

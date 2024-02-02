@@ -19,7 +19,7 @@ use crate::{
 };
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::{
-    env::{FromInstance, GetEnvTrait},
+    env::{FromInstance, GetInstanceTrait},
     utils::{
         external_resource_close, external_resource_from_file, instance_is_null, is_instance_of,
         java_iter_to_rust_hash_set, java_iter_to_rust_vec,
@@ -211,7 +211,7 @@ impl AnnouncementParameters {
     }
 }
 
-impl GetEnvTrait for AnnouncementParameters {
+impl GetInstanceTrait for AnnouncementParameters {
     fn get_instance(&self) -> Instance {
         let jvm = Jvm::attach_thread().unwrap();
         let mut builder = jvm
@@ -462,7 +462,7 @@ pub enum Announcement {
     OfflineAnnouncement(OfflineAnnouncement),
 }
 
-impl GetEnvTrait for Announcement {
+impl GetInstanceTrait for Announcement {
     fn get_instance(&self) -> Instance {
         match self {
             Announcement::OnlineAnnouncement(a) => a.get_instance(),
@@ -842,7 +842,7 @@ impl MiraiMap<String, String> {
     }
 }
 
-impl<K, V> GetEnvTrait for MiraiMap<K, V> {
+impl<K, V> GetInstanceTrait for MiraiMap<K, V> {
     fn get_instance(&self) -> Instance {
         Jvm::attach_thread()
             .unwrap()
@@ -887,7 +887,7 @@ impl MiraiList<ActiveRankRecord> {
     }
 }
 
-impl<T> GetEnvTrait for MiraiList<T> {
+impl<T> GetInstanceTrait for MiraiList<T> {
     fn get_instance(&self) -> Instance {
         Jvm::attach_thread()
             .unwrap()

@@ -9,7 +9,7 @@ pub trait GetClassTypeTrait {
     fn cast_to_this_type(instance: Instance) -> Instance;
 }
 
-pub trait GetEnvTrait {
+pub trait GetInstanceTrait {
     fn get_instance(&self) -> Instance;
 }
 

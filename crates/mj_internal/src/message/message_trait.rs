@@ -3,12 +3,12 @@ use crate::{
     message::data::{message_chain::MessageChain, single_message::SingleMessage},
 };
 use j4rs::{InvocationArg, Jvm};
-use mj_base::env::GetEnvTrait;
+use mj_base::env::GetInstanceTrait;
 
 //TODO : message_chain_builder
 pub trait MessageTrait
 where
-    Self: GetEnvTrait,
+    Self: GetInstanceTrait,
 {
     fn to_content(&self) -> String {
         Jvm::attach_thread()
@@ -234,7 +234,7 @@ pub trait CustomMessageTrait: SingleMessageTrait {
 
 pub trait AudioTrait: SingleMessageTrait + ConstrainSingleTrait {}
 
-pub trait MessageHashCodeTrait: GetEnvTrait {
+pub trait MessageHashCodeTrait: GetInstanceTrait {
     fn hash_code(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(&self.get_instance())

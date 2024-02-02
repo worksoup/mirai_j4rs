@@ -5,7 +5,7 @@ pub mod other;
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::GetClassTypeTrait;
 use mj_base::{
-    env::{FromInstance, GetEnvTrait},
+    env::{FromInstance, GetInstanceTrait},
     utils::instance_is_null,
 };
 use mj_closures::{
@@ -29,7 +29,7 @@ pub struct JavaStream<T: FromInstance + GetClassTypeTrait> {
     pub(crate) _unused: PhantomData<T>,
 }
 
-impl<T: FromInstance + GetClassTypeTrait> GetEnvTrait for JavaStream<T> {
+impl<T: FromInstance + GetClassTypeTrait> GetInstanceTrait for JavaStream<T> {
     fn get_instance(&self) -> Instance {
         Jvm::attach_thread()
             .unwrap()
@@ -73,7 +73,7 @@ impl<T: FromInstance + GetClassTypeTrait> JavaStream<T> {
     where
         F: Fn(T) -> B,
         T: FromInstance,
-        B: GetEnvTrait + FromInstance,
+        B: GetInstanceTrait + FromInstance,
     {
         let jvm = Jvm::attach_thread().unwrap();
         let f = Function::new(f);

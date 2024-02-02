@@ -1,4 +1,4 @@
-use crate::env::{FromInstance, GetEnvTrait};
+use crate::env::{FromInstance, GetInstanceTrait};
 use j4rs::{Instance, InvocationArg, Jvm};
 use std::ops::Deref;
 
@@ -27,7 +27,7 @@ impl FromInstance for DataWrapper<String> {
     }
 }
 
-impl GetEnvTrait for DataWrapper<String> {
+impl GetInstanceTrait for DataWrapper<String> {
     fn get_instance(&self) -> Instance {
         Instance::try_from(InvocationArg::try_from(&self.data).unwrap()).unwrap()
     }
@@ -80,7 +80,7 @@ impl DataWrapper<Instance> {
     }
 }
 
-impl GetEnvTrait for DataWrapper<Instance> {
+impl GetInstanceTrait for DataWrapper<Instance> {
     fn get_instance(&self) -> Instance {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.clone_instance(&self.data).unwrap()
@@ -99,7 +99,7 @@ impl FromInstance for DataWrapper<()> {
     }
 }
 
-impl GetEnvTrait for DataWrapper<()> {
+impl GetInstanceTrait for DataWrapper<()> {
     fn get_instance(&self) -> Instance {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.invoke_static("javax.lang.model.util.Types", "getNullType", &[])
@@ -113,8 +113,8 @@ impl<T: FromInstance> FromInstance for DataWrapper<T> {
     }
 }
 
-impl<T: GetEnvTrait> GetEnvTrait for DataWrapper<T> {
+impl<T: GetInstanceTrait> GetInstanceTrait for DataWrapper<T> {
     fn get_instance(&self) -> Instance {
-        <T as GetEnvTrait>::get_instance(self)
+        <T as GetInstanceTrait>::get_instance(self)
     }
 }

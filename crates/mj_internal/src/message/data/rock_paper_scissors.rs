@@ -3,7 +3,7 @@ use crate::message::message_trait::{
     MessageHashCodeTrait, MessageTrait, SingleMessageTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::GetEnvTrait as _;
+use mj_base::env::GetInstanceTrait as _;
 use mj_base::utils::instance_is_null;
 use mj_macro::{FromInstanceDerive, GetInstanceDerive};
 

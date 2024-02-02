@@ -1,13 +1,13 @@
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::{
     data_wrapper::DataWrapper,
-    env::{FromInstance, GetEnvTrait},
+    env::{FromInstance, GetInstanceTrait},
     utils::instance_from_i8_16,
 };
 use mj_macro::GetInstanceDerive;
 use std::{marker::PhantomData, mem::transmute};
 
-pub struct KtFunc1<'a, T: FromInstance, R: GetEnvTrait + FromInstance> {
+pub struct KtFunc1<'a, T: FromInstance, R: GetInstanceTrait + FromInstance> {
     instance: Instance,
     internal_closure_raw: [i8; 16],
     _t: PhantomData<T>,
@@ -33,7 +33,7 @@ impl KtFunc1Raw {
 impl<'a, T, R> KtFunc1<'a, T, R>
 where
     T: FromInstance,
-    R: GetEnvTrait + FromInstance,
+    R: GetInstanceTrait + FromInstance,
 {
     #[inline]
     fn internal_closure_as_i8_16<F: Fn(T) -> R>(f: &'a F) -> [i8; 16] {

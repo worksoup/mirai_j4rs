@@ -1,5 +1,5 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::GetEnvTrait;
+use mj_base::env::GetInstanceTrait;
 
 pub enum BotAuthorization {
     Password(String),
@@ -7,7 +7,7 @@ pub enum BotAuthorization {
     QrCode,
 }
 
-impl GetEnvTrait for BotAuthorization {
+impl GetInstanceTrait for BotAuthorization {
     fn get_instance(&self) -> Instance {
         let jvm = Jvm::attach_thread().unwrap();
         match self {

@@ -19,7 +19,7 @@ use crate::{
 };
 use j4rs::{ClasspathEntry, Instance, InvocationArg, JavaOpt, Jvm, JvmBuilder};
 use mj_base::{
-    env::{FromInstance, GetEnvTrait},
+    env::{FromInstance, GetInstanceTrait},
     utils::{instance_is_null, java_iter_to_rust_vec},
 };
 use mj_closures::{kt_func_1::KtFunc1Raw, kt_func_2::KtFunc2Raw};
@@ -49,7 +49,7 @@ impl FromInstance for Bot {
     }
 }
 
-impl GetEnvTrait for Bot {
+impl GetInstanceTrait for Bot {
     fn get_instance(&self) -> Instance {
         Jvm::attach_thread()
             .unwrap()
@@ -455,7 +455,7 @@ pub struct BotConfiguration {
     _login_solver_holder: Option<(KtFunc2Raw, KtFunc2Raw, KtFunc1Raw, KtFunc2Raw)>,
 }
 
-impl GetEnvTrait for BotConfiguration {
+impl GetInstanceTrait for BotConfiguration {
     fn get_instance(&self) -> Instance {
         Jvm::attach_thread()
             .unwrap()

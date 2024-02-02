@@ -9,7 +9,7 @@ use crate::{
     },
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstance, GetEnvTrait};
+use mj_base::env::{FromInstance, GetInstanceTrait};
 use mj_macro::{FromInstanceDerive, GetInstanceDerive};
 
 #[derive(GetInstanceDerive)]

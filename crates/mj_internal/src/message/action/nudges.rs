@@ -8,10 +8,10 @@ use crate::{
     message::message_trait::MessageHashCodeTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstance, GetEnvTrait};
+use mj_base::env::{FromInstance, GetInstanceTrait};
 use mj_macro::{FromInstanceDerive, GetInstanceDerive};
 
-pub trait Nudge: GetEnvTrait + MessageHashCodeTrait + FromInstance {
+pub trait Nudge: GetInstanceTrait + MessageHashCodeTrait + FromInstance {
     type UserOrBot: UserOrBotTrait;
     fn get_target(&self) -> Self::UserOrBot {
         let jvm = Jvm::attach_thread().unwrap();

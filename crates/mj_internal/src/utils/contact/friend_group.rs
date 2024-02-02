@@ -1,7 +1,7 @@
 use crate::contact::Friend;
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::{
-    env::{FromInstance, GetEnvTrait},
+    env::{FromInstance, GetInstanceTrait},
     utils::java_iter_to_rust_vec,
 };
 use mj_macro::GetInstanceDerive;

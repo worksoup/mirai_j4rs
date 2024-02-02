@@ -2,7 +2,7 @@ use crate::contact::bot::Bot;
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::{
     data_wrapper::DataWrapper,
-    env::{FromInstance, GetEnvTrait},
+    env::{FromInstance, GetInstanceTrait},
 };
 use mj_closures::{
     kt_func_0::KtFunc0, kt_func_0::KtFunc0Raw, kt_func_1::KtFunc1, kt_func_1::KtFunc1Raw,
@@ -40,7 +40,7 @@ impl FromInstance for State {
     }
 }
 
-impl GetEnvTrait for State {
+impl GetInstanceTrait for State {
     fn get_instance(&self) -> Instance {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.static_class_field(
@@ -215,7 +215,7 @@ impl QrCodeLoginListener {
     }
 }
 
-impl GetEnvTrait for QrCodeLoginListener {
+impl GetInstanceTrait for QrCodeLoginListener {
     fn get_instance(&self) -> Instance {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.clone_instance(self.instance.as_ref().unwrap()).unwrap()
@@ -240,7 +240,7 @@ impl FromInstance for QrCodeLoginListener {
 
 pub trait QrCodeLoginListenerTrait
 where
-    Self: FromInstance + GetEnvTrait,
+    Self: FromInstance + GetInstanceTrait,
 {
     const QR_CODE_SIZE: i32 = 3;
     const QR_CODE_MARGIN: i32 = 4;

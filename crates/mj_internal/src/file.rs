@@ -2,12 +2,12 @@ use crate::{contact::group::Group, message::data::file_message::FileMessage, uti
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::utils::primitive_byte_array_to_string;
 use mj_base::{
-    env::{FromInstance, GetClassTypeTrait, GetEnvTrait},
+    env::{FromInstance, GetClassTypeTrait, GetInstanceTrait},
     utils::{external_resource_close, external_resource_from_file, is_instance_of},
 };
 use mj_macro::{java_type, FromInstanceDerive, GetInstanceDerive};
 
-pub trait AbsoluteFileFolderTrait: Sized + GetEnvTrait {
+pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait {
     fn delete(&self) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(&self.get_instance())
@@ -290,7 +290,7 @@ impl FromInstance for AbsoluteFileFolder {
     }
 }
 
-impl GetEnvTrait for AbsoluteFileFolder {
+impl GetInstanceTrait for AbsoluteFileFolder {
     fn get_instance(&self) -> Instance {
         match self {
             AbsoluteFileFolder::AbsoluteFile(a) => a.get_instance(),

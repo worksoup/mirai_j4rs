@@ -5,14 +5,14 @@ mod tests {
         kt_func_1::KtFunc1, kt_func_2::KtFunc2, predicate::Predicate,
     };
     use j4rs::{ClasspathEntry, Instance, InvocationArg, Jvm, JvmBuilder};
-    use mj_base::env::{FromInstance, GetEnvTrait};
+    use mj_base::env::{FromInstance, GetInstanceTrait};
     use std::cmp::Ordering;
 
     struct X {
         instance: Instance,
     }
 
-    impl GetEnvTrait for X {
+    impl GetInstanceTrait for X {
         fn get_instance(&self) -> Instance {
             let jvm = Jvm::attach_thread().unwrap();
             jvm.clone_instance(&self.instance).unwrap()

@@ -16,7 +16,7 @@ use crate::{
 };
 use j4rs::{InvocationArg, Jvm};
 use mj_base::{
-    env::{FromInstance, GetEnvTrait},
+    env::{FromInstance, GetInstanceTrait},
     utils::{external_resource_close, external_resource_from_file},
 };
 
@@ -28,12 +28,12 @@ pub trait AssertMemberPermissionTrait: MemberTrait {
 
 pub trait ContactOrBotTrait
 where
-    Self: Sized + GetEnvTrait + FromInstance,
+    Self: Sized + GetInstanceTrait + FromInstance,
 {
     fn get_bot(&self) -> crate::contact::bot::Bot {
         let instance = Jvm::attach_thread()
             .unwrap()
-            .invoke(&GetEnvTrait::get_instance(self), "getBot", &[])
+            .invoke(&GetInstanceTrait::get_instance(self), "getBot", &[])
             .unwrap();
         crate::contact::bot::Bot::from_instance(instance)
     }
@@ -263,7 +263,7 @@ pub trait AsStranger {
     fn as_stranger(&self) -> Friend;
 }
 
-pub trait AnnouncementTrait: GetEnvTrait {
+pub trait AnnouncementTrait: GetInstanceTrait {
     /// 内容。
     fn get_content(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();

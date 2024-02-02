@@ -3,7 +3,7 @@ use crate::message::message_trait::{
     MessageTrait, SingleMessageTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstance, GetEnvTrait};
+use mj_base::env::{FromInstance, GetInstanceTrait};
 use std::hint::unreachable_unchecked;
 
 pub enum PokeMessage {
@@ -25,6 +25,72 @@ pub enum PokeMessage {
     敲门,
 }
 
+impl GetInstanceTrait for PokeMessage {
+    fn get_instance(&self) -> Instance {
+        let jvm = Jvm::attach_thread().unwrap();
+        match self {
+            PokeMessage::戳一戳 => jvm
+                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "ChuoYiChuo")
+                .unwrap(),
+            PokeMessage::比心 => jvm
+                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "BiXin")
+                .unwrap(),
+            PokeMessage::点赞 => jvm
+                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "DianZan")
+                .unwrap(),
+            PokeMessage::心碎 => jvm
+                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "XinSui")
+                .unwrap(),
+            PokeMessage::六六六 => jvm
+                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "LiuLiuLiu")
+                .unwrap(),
+            PokeMessage::放大招 => jvm
+                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "FangDaZhao")
+                .unwrap(),
+            PokeMessage::宝贝球 => jvm
+                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "BaoBeiQiu")
+                .unwrap(),
+            PokeMessage::玫瑰花 => jvm
+                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "Rose")
+                .unwrap(),
+            PokeMessage::召唤术 => jvm
+                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "ZhaoHuanShu")
+                .unwrap(),
+            PokeMessage::让你皮 => jvm
+                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "RangNiPi")
+                .unwrap(),
+            PokeMessage::结印 => jvm
+                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "JieYin")
+                .unwrap(),
+            PokeMessage::手雷 => jvm
+                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "ShouLei")
+                .unwrap(),
+            PokeMessage::勾引 => jvm
+                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "GouYin")
+                .unwrap(),
+            PokeMessage::抓一下 => jvm
+                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "ZhuaYiXia")
+                .unwrap(),
+            PokeMessage::碎屏 => jvm
+                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "SuiPing")
+                .unwrap(),
+            PokeMessage::敲门 => jvm
+                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "QiaoMen")
+                .unwrap(),
+        }
+        // let (name, poke_type, id) = self.get_name_and_poke_type_and_id();
+        // let (name, poke_type, id) = (
+        //     InvocationArg::try_from(name).unwrap(),
+        //     InvocationArg::try_from(poke_type).unwrap(),
+        //     InvocationArg::try_from(id).unwrap(),
+        // );
+        // jvm.create_instance(
+        //     "net.mamoe.mirai.message.data.PokeMessage",
+        //     &[name, poke_type, id],
+        // )
+        // .unwrap()
+    }
+}
 impl FromInstance for PokeMessage {
     fn from_instance(instance: Instance) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
@@ -143,23 +209,6 @@ impl PokeMessage {
             PokeMessage::抓一下 => 2001,
             PokeMessage::敲门 => 2000,
         }
-    }
-}
-
-impl GetEnvTrait for PokeMessage {
-    fn get_instance(&self) -> Instance {
-        let jvm = Jvm::attach_thread().unwrap();
-        let (name, poke_type, id) = self.get_name_and_poke_type_and_id();
-        let (name, poke_type, id) = (
-            InvocationArg::try_from(name).unwrap(),
-            InvocationArg::try_from(poke_type).unwrap(),
-            InvocationArg::try_from(id).unwrap(),
-        );
-        jvm.create_instance(
-            "net.mamoe.mirai.message.data.PokeMessage",
-            &[name, poke_type, id],
-        )
-        .unwrap()
     }
 }
 

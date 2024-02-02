@@ -2,7 +2,7 @@ use crate::contact::group::MemberPermission;
 use crate::error::MiraiRsErrorEnum::LumiaException;
 use j4rs::errors::J4RsError;
 use j4rs::Instance;
-use mj_base::env::{FromInstance, GetEnvTrait};
+use mj_base::env::{FromInstance, GetInstanceTrait};
 use std::{
     error::Error,
     fmt::{Display, Formatter},
@@ -81,7 +81,7 @@ impl FromInstance for MiraiRsError {
     }
 }
 
-impl GetEnvTrait for MiraiRsError {
+impl GetInstanceTrait for MiraiRsError {
     fn get_instance(&self) -> Instance {
         todo!()
     }

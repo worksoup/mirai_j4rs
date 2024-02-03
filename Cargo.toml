@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 readme = "README.md"
 
+[lib]
+crate-type = ["cdylib", "lib"]
+
 [workspace]
 resolver = "2"
 edition = "2021"
@@ -11,5 +14,6 @@ members = [
     "crates/mj_*", "examples/*",
 ]
 default-members = ["crates/mj_*"]
+
 [dependencies]
 mj_internal = { path = "crates/mj_internal" }

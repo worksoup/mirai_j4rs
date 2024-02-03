@@ -19,7 +19,7 @@
 
 # 使用方法：
 
-可以参考 [demo.md](./demo.md).
+可以参考 [测试代码](./crates/mj_tests/tests)(我完全把测试当实例写了)。
 
 在 `Cargo.toml` 中添加：
 

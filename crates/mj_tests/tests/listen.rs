@@ -1,19 +1,16 @@
-```rust
-use mirai_j4rs::auth::bot_authorization::BotAuthorization;
-use mirai_j4rs::contact::group::Group;
-use mirai_j4rs::event::message::FriendMessageEvent;
-use mirai_j4rs::file::AbsoluteFileFolderTrait;
-use mirai_j4rs::message::data::rock_paper_scissors::RockPaperScissors;
-use mirai_j4rs::message::data::single_message::SingleMessage;
-use mirai_j4rs::message::message_trait::MarketFaceTrait;
 use mirai_j4rs::{
-    contact::bot::BotBuilder,
-    event::{event_trait::MessageEventTrait, message::GroupMessageEvent},
-    message::message_trait::MessageTrait,
-    utils::other::enums::MiraiProtocol,
+    contact::{file::AbsoluteFileFolderTrait, Group, SendMessageSupportedTrait},
+    event::{
+        event_trait::MessageEventTrait,
+        message::{FriendMessageEvent, GroupMessageEvent},
+    },
+    message::{
+        data::{Audio, MarketFaceAll, RockPaperScissors, SingleMessage},
+        MarketFaceTrait, MessageTrait,
+    },
 };
+use mj_tests::get_test_bot;
 use serde::{Deserialize, Serialize};
-use std::path::Path;
 
 #[derive(Deserialize, Serialize)]
 pub(crate) struct BotInfo {
@@ -30,10 +27,12 @@ fn match_single_message(msg: SingleMessage, contact: Option<Group>) {
         SingleMessage::AtAll(at_all) => {
             println!("AtAll {}", at_all.to_string())
         }
-        // 🎲 和剪子包袱锤似乎被下线了，不过还能被 Mirai 接受和发送。
-        SingleMessage::Dice(dice) => {
-            println!("🎲 {}", dice.get_value())
-        }
+        SingleMessage::Audio(audio) => match audio {
+            Audio::OfflineAudio(_) => panic!("预料之外的错误：收到的语音不应该为离线语音。"),
+            Audio::OnlineAudio(audio) => {
+                println!("语音：{}", audio.get_url_for_download())
+            }
+        },
         SingleMessage::Face(face) => {
             println!("表情 {}", face.get_id())
         }
@@ -59,8 +58,32 @@ fn match_single_message(msg: SingleMessage, contact: Option<Group>) {
         SingleMessage::LightApp(light_app) => {
             println!("小程序 {}", light_app.to_string())
         }
-        SingleMessage::MarketFace(market_face) => {
-            println!("其他市场表情 {}", market_face.get_name())
+        SingleMessage::MarketFaceAll(market_face_all) => {
+            // 🎲 和剪子包袱锤似乎被下线了，不过还能被 Mirai 接受和发送。
+            match market_face_all {
+                MarketFaceAll::Dice(dice) => {
+                    println!("市场表情：🎲 {}", dice.get_value())
+                }
+                MarketFaceAll::MarketFace(market_face) => {
+                    println!("市场表情：其他市场表情 {}", market_face.get_name());
+                }
+                MarketFaceAll::RockPaperScissors(rock_paper_scissors) => {
+                    let rps = RockPaperScissors::random();
+                    if let Some(contact) = contact {
+                        let _r = contact.send_message(rps);
+                    }
+                    print!("市场表情：剪子包袱锤:");
+                    if let Some(win) = rock_paper_scissors.eliminates(RockPaperScissors::random()) {
+                        if win {
+                            println!("赢麻了。");
+                        } else {
+                            println!("输惨了。");
+                        }
+                    } else {
+                        println!("平局了。");
+                    }
+                }
+            }
         }
         SingleMessage::MessageSource(message_source) => {
             println!("消息源 {}", message_source.to_string())
@@ -77,17 +100,6 @@ fn match_single_message(msg: SingleMessage, contact: Option<Group>) {
         SingleMessage::QuoteReply(quot_reply) => {
             println!("消息引用 {}", quot_reply.get_source().to_string())
         }
-        SingleMessage::RockPaperScissors(rock_paper_scissors) => {
-            if let Some(win) = rock_paper_scissors.eliminates(RockPaperScissors::random()) {
-                if win {
-                    println!("剪子包袱锤：赢麻了。");
-                } else {
-                    println!("剪子包袱锤：输惨了。");
-                }
-            } else {
-                println!("剪子包袱锤：平局了。");
-            }
-        }
         SingleMessage::UnsupportedMessage(_) => {
             println!("不支持的消息！")
         }
@@ -95,45 +107,14 @@ fn match_single_message(msg: SingleMessage, contact: Option<Group>) {
             println!("VIP表情 {}", vip_face.to_string())
         }
         SingleMessage::SuperFace(super_face) => {
-            println!("VIP表情 {}", super_face.to_string())
+            println!("超级表情 {}", super_face.to_string())
         }
     }
 }
 
-fn main() {
-    //  如下结构体可在本文件找到定义：
-    //  ``` rust
-    //  #[derive(Deserialize, Serialize)]
-    //  pub(crate) struct BotInfo {
-    //      pub(crate) bot_id: i64,
-    //      pub(crate) bot_passwd: String,
-    //  }
-    //  ```
-    //  所以 `bot_config.toml` 应当类似于：
-    //  ```
-    //  bot_id = 114514
-    //  bot_passwd = "1919810"
-    //  ```
-    let bot_info: BotInfo = toml::from_str(
-        std::fs::read_to_string("./bot_config.toml")
-            .unwrap()
-            .as_str(),
-    )
-        .unwrap();
-    //  这个路径是 `env_config.toml` 所在的目录。该配置文件如下：
-    //  ``` toml
-    //  jar_paths = [
-    //      "/path/to/jvm_side.jar",
-    //  ]
-    //  java_opts = []
-    //  ```
-    let config_dir = Path::new(".");
-    let bot = BotBuilder::new(config_dir)
-        .id(bot_info.bot_id)
-        .set_protocol(MiraiProtocol::W)
-        .authorization(BotAuthorization::Password(bot_info.bot_passwd.clone()))
-        .file_based_device_info(None)
-        .build();
+#[test]
+fn listen() {
+    let bot = get_test_bot(); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
     bot.login();
     let event_channel = bot.get_event_channel();
     let on_group_message_event: Box<dyn Fn(GroupMessageEvent)> = Box::new(|group_message_event| {
@@ -165,6 +146,5 @@ fn main() {
     // 取消监听。
     listener_for_group_message_event.complete();
     listener_for_friend_message_event.complete();
-    println!("Hello, world!");
+    bot.close();
 }
-```

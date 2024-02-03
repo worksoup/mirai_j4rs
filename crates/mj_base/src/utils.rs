@@ -3,8 +3,8 @@ use j4rs::{Instance, InvocationArg, Jvm};
 use std::collections::HashSet;
 use std::hash::Hash;
 
-pub fn primitive_byte_array_to_string(jvm: &Jvm, instance: &Instance) -> Instance {
-    let instance = jvm.clone_instance(instance).unwrap();
+pub fn primitive_byte_array_to_string(jvm: &Jvm, instance: Instance) -> Instance {
+    // let instance = jvm.clone_instance(instance).unwrap();
     jvm.invoke_static(
         "rt.lea.LumiaUtils",
         "primitiveByteArrayToString",

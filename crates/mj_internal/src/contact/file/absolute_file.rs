@@ -39,7 +39,7 @@ impl AbsoluteFile {
     pub fn get_md5(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         let bytes = jvm.invoke(&self.instance, "getMd5", &[]).unwrap();
-        let bytes = primitive_byte_array_to_string(&jvm, &bytes);
+        let bytes = primitive_byte_array_to_string(&jvm, bytes);
         jvm.to_rust(bytes).unwrap()
     }
     /// 文件内容 SHA-1.
@@ -59,7 +59,7 @@ impl AbsoluteFile {
     pub fn get_sha1(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         let bytes = jvm.invoke(&self.instance, "getSha1", &[]).unwrap();
-        let bytes = primitive_byte_array_to_string(&jvm, &bytes);
+        let bytes = primitive_byte_array_to_string(&jvm, bytes);
         jvm.to_rust(bytes).unwrap()
     }
     /// 文件大小 (占用空间), 单位 byte.

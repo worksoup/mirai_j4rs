@@ -12,3 +12,4 @@ crates/mj_tests/env_config.toml
 /crates/mj_tests/device.json
 /crates/mj_tests/cache/
 /crates/mj_tests/mirai.png
+/crates/mj_tests/test.mp3

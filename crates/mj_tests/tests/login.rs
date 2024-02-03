@@ -1,4 +1,4 @@
-use mj_internal::utils::other::enums::MiraiProtocol;
+use mirai_j4rs::utils::other::enums::MiraiProtocol;
 use mj_tests::get_test_bot;
 
 #[test]

@@ -133,7 +133,7 @@ impl Image {
     pub fn get_md5(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         let bytes = jvm.invoke(&self.instance, "getMd5", &[]).unwrap();
-        let bytes = primitive_byte_array_to_string(&jvm, &bytes);
+        let bytes = primitive_byte_array_to_string(&jvm, bytes);
         jvm.to_rust(bytes).unwrap()
     }
     pub fn get_size(&self) -> i64 {

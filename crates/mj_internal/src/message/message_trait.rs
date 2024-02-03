@@ -4,6 +4,7 @@ use crate::{
 };
 use j4rs::{InvocationArg, Jvm};
 use mj_base::env::GetInstanceTrait;
+use mj_base::utils::primitive_byte_array_to_string;
 
 //TODO : message_chain_builder
 pub trait MessageTrait
@@ -232,7 +233,38 @@ pub trait CustomMessageTrait: SingleMessageTrait {
     //TODO
 }
 
-pub trait AudioTrait: SingleMessageTrait + ConstrainSingleTrait {}
+pub trait AudioTrait: MessageContentTrait + ConstrainSingleTrait {
+    fn get_codec() {
+        todo!()
+    }
+    fn get_extra_data(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = self.get_instance();
+        let instance = jvm.invoke(&instance, "getExtraData", &[]).unwrap();
+        let instance = primitive_byte_array_to_string(&jvm, instance);
+        jvm.to_rust(instance).unwrap()
+    }
+    fn get_file_md5(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = self.get_instance();
+        let instance = jvm.invoke(&instance, "getFileMd5", &[]).unwrap();
+        let instance = primitive_byte_array_to_string(&jvm, instance);
+        jvm.to_rust(instance).unwrap()
+    }
+    fn get_file_size(&self) -> i64 {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = self.get_instance();
+        let instance = jvm.invoke(&instance, "getFileSize", &[]).unwrap();
+        jvm.to_rust(instance).unwrap()
+    }
+    fn get_file_name(&self) -> String {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = self.get_instance();
+        // 这里就是 Filename 而非 FileName.
+        let instance = jvm.invoke(&instance, "getFilename", &[]).unwrap();
+        jvm.to_rust(instance).unwrap()
+    }
+}
 
 pub trait MessageHashCodeTrait: GetInstanceTrait {
     fn hash_code(&self) -> i32 {

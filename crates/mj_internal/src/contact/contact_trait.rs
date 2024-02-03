@@ -1,3 +1,4 @@
+use crate::message::data::OfflineAudio;
 use crate::{
     contact::{
         file::{ExternalResource, RemoteFiles},
@@ -166,6 +167,14 @@ pub trait AudioSupportedTrait
 where
     Self: ContactTrait,
 {
+    fn upload_audio(&self, resource: &ExternalResource) -> OfflineAudio {
+        let jvm = Jvm::attach_thread().unwrap();
+        let resource = InvocationArg::try_from(resource.get_instance()).unwrap();
+        let instance = jvm
+            .invoke(&self.get_instance(), "uploadAudio", &[resource])
+            .unwrap();
+        OfflineAudio::from_instance(instance)
+    }
 }
 
 pub trait UserOrBotTrait

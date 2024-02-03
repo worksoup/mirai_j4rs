@@ -1,3 +1,5 @@
+use mirai_j4rs::contact::AudioSupportedTrait;
+use mirai_j4rs::message::AudioTrait;
 use mirai_j4rs::{
     contact::{
         file::{AbsoluteFileFolderTrait, ExternalResource},
@@ -46,6 +48,26 @@ fn at_all() {
     println!("{}", at_all.to_string());
     let r = group.send_message(at_all);
     r.recall();
+    bot.close();
+}
+
+#[test]
+fn audio() {
+    let bot = get_test_bot(); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+    bot.login();
+    // `Audio`
+    let group = Group::new(&bot, get_group_id()).unwrap();
+    // 支持 `*.amr` 或 `*.silk` 格式。如果使用了 `mirai-silk-converter` 的话也可以支持 `*.mp3` 格式。
+    let resource = ExternalResource::create_from_file("./test.mp3");
+    let audio = group.upload_audio(&resource);
+    println!("{}", audio.get_extra_data());
+    println!("{}", audio.get_file_md5());
+    println!("{}", audio.get_file_name());
+    println!("{}", audio.get_file_size());
+    println!("{}", audio.to_content());
+    println!("{}", audio.to_string());
+    let _r = group.send_message(audio);
+    resource.close();
     bot.close();
 }
 

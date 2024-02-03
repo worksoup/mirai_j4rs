@@ -1,3 +1,4 @@
+use crate::contact::AudioSupportedTrait;
 use crate::message::data::Image;
 use crate::{
     contact::{

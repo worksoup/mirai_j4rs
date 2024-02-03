@@ -1,3 +1,4 @@
+use crate::contact::{AudioSupportedTrait, Group};
 use crate::{
     contact::{
         contact_trait::{
@@ -209,6 +210,8 @@ impl NudgeSupportedTrait for Friend {
 impl ContactTrait for Friend {}
 
 impl UserTrait for Friend {}
+
+impl AudioSupportedTrait for Group {}
 
 #[derive(GetInstanceDerive)]
 pub struct Stranger {

@@ -1,4 +1,4 @@
-use mirai_j4rs::utils::just_for_examples::get_test_bot;
+use mirai_j4rs::utils::just_for_examples::bot_group_member;
 use mirai_j4rs::{
     contact::{file::AbsoluteFileFolderTrait, Group, SendMessageSupportedTrait},
     event::{
@@ -106,7 +106,7 @@ fn match_single_message(msg: SingleMessage, contact: Option<Group>) {
 }
 
 fn main() {
-    let bot = get_test_bot(); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+    let (bot, _, _) = bot_group_member("./working_dir"); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
     bot.login();
     let event_channel = bot.get_event_channel();
     let on_group_message_event: Box<dyn Fn(GroupMessageEvent)> = Box::new(|group_message_event| {

@@ -1,12 +1,10 @@
-use crate::contact::{Env, EnvConfig};
 use crate::{
     auth::bot_authorization::BotAuthorization,
-    contact::{Bot, BotBuilder},
+    contact::{Bot, BotBuilder, EnvConfig},
     utils::other::enums::MiraiProtocol,
 };
-use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 #[derive(Deserialize, Serialize)]
 pub(crate) struct Config {
@@ -16,7 +14,7 @@ pub(crate) struct Config {
     pub member_id: i64,
 }
 
-pub fn get_test_bot(working_dir: &str) -> (Bot, i64, i64) {
+pub fn bot_group_member(working_dir: &str) -> (Bot, i64, i64) {
     let config: Config = toml::from_str(
         std::fs::read_to_string(Path::new(working_dir).join("config.toml"))
             .unwrap()

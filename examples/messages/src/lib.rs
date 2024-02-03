@@ -2,7 +2,7 @@
 mod tests {
     use mirai_j4rs::contact::AudioSupportedTrait;
     use mirai_j4rs::message::AudioTrait;
-    use mirai_j4rs::utils::just_for_examples::get_test_bot;
+    use mirai_j4rs::utils::just_for_examples::bot_group_member;
     use mirai_j4rs::{
         contact::{
             file::{AbsoluteFileFolderTrait, ExternalResource},
@@ -24,7 +24,7 @@ mod tests {
     static FILE_PATH: &str = AUDIO_PATH;
     #[test]
     fn at() {
-        let (bot, group_id, member_id) = get_test_bot(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, group_id, member_id) = bot_group_member(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
         bot.login();
         // `At`
         let at = At::new(member_id);
@@ -41,7 +41,7 @@ mod tests {
 
     #[test]
     fn at_all() {
-        let (bot, group_id, _) = get_test_bot(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, group_id, _) = bot_group_member(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
         bot.login();
         // `AtAll`
         let at_all = AtAll::new();
@@ -58,7 +58,7 @@ mod tests {
 
     #[test]
     fn audio() {
-        let (bot, group_id, _) = get_test_bot(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, group_id, _) = bot_group_member(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
         bot.login();
         // `Audio`
         let group = Group::new(&bot, group_id).unwrap();
@@ -78,7 +78,7 @@ mod tests {
 
     #[test]
     fn face() {
-        let (bot, group_id, _) = get_test_bot(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, group_id, _) = bot_group_member(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
         bot.login();
         // `Face`
         let face = Face::from(123);
@@ -94,7 +94,7 @@ mod tests {
     }
     #[test]
     fn file_message() {
-        let (bot, group_id, _) = get_test_bot(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, group_id, _) = bot_group_member(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
         bot.login();
         // `FileMessage`
         let group = Group::new(&bot, group_id).unwrap();
@@ -137,7 +137,7 @@ mod tests {
 
     #[test]
     fn forward_message() {
-        let (bot, group_id, _) = get_test_bot(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, group_id, _) = bot_group_member(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
         bot.login();
         // `ForwardMessage`
         let group = Group::new(&bot, group_id).unwrap();
@@ -154,7 +154,7 @@ mod tests {
     }
     #[test]
     fn image() {
-        let (bot, group_id, _) = get_test_bot(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, group_id, _) = bot_group_member(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
         bot.login();
         // `Image`
         let group = Group::new(&bot, group_id).unwrap();
@@ -176,7 +176,7 @@ mod tests {
 
     #[test]
     fn market_face() {
-        let (bot, group_id, _) = get_test_bot(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, group_id, _) = bot_group_member(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
         bot.login();
         let group = Group::new(&bot, group_id).unwrap();
         // `Dice`
@@ -200,7 +200,7 @@ mod tests {
 
     #[test]
     fn nudge() {
-        let (bot, _, _member_id) = get_test_bot(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, _, _member_id) = bot_group_member(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
         bot.login();
         // 只有安卓手机协议和苹果平板协议支持。其余协议会报错。
         // 用法如下：
@@ -214,7 +214,7 @@ mod tests {
 
     #[test]
     fn poke_message() {
-        let (bot, group_id, member_id) = get_test_bot(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, group_id, member_id) = bot_group_member(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
         bot.login();
         let group = Group::new(&bot, group_id).unwrap();
         let friend = bot.get_friend(member_id).expect("Bot 没有该好友。");
@@ -233,7 +233,7 @@ mod tests {
 
     #[test]
     fn plain_text() {
-        let (bot, group_id, _) = get_test_bot(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, group_id, _) = bot_group_member(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
         bot.login();
         let group = Group::new(&bot, group_id).unwrap();
         // `PlainText`
@@ -245,7 +245,7 @@ mod tests {
 
     #[test]
     fn quote_reply() {
-        let (bot, group_id, _) = get_test_bot(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, group_id, _) = bot_group_member(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
         bot.login();
         let group = Group::new(&bot, group_id).unwrap();
         // `PlainText`

@@ -1,8 +1,8 @@
-use mirai_j4rs::utils::just_for_examples::get_test_bot;
+use mirai_j4rs::utils::just_for_examples::bot_group_member;
 use mirai_j4rs::utils::other::enums::MiraiProtocol;
 
 fn main() {
-    let (bot, _, _) = get_test_bot("./working_dir"); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+    let (bot, _, _) = bot_group_member("./working_dir"); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
     println!(
         "安卓手表协议是否支持戳一戳{}",
         MiraiProtocol::W.is_nudge_supported()

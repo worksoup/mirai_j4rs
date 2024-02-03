@@ -6,9 +6,4 @@ contact_derive/Cargo.lock
 .idea/
 .settings/
 .project
-/working_dir/cache/
-/working_dir/device.json
-/working_dir/env_config.toml
-/working_dir/config.toml
-/working_dir/test.mp3
-/working_dir/mirai.png
+/working_dir/

@@ -1,3 +1,4 @@
+use crate::contact::{Env, EnvConfig};
 use crate::{
     auth::bot_authorization::BotAuthorization,
     contact::{Bot, BotBuilder},
@@ -15,36 +16,35 @@ pub(crate) struct Config {
     pub member_id: i64,
 }
 
-lazy_static! {
-    static ref CONFIG: Config = toml::from_str(
-        std::fs::read_to_string("./working_dir/config.toml")
+pub fn get_test_bot(working_dir: &str) -> (Bot, i64, i64) {
+    let config: Config = toml::from_str(
+        std::fs::read_to_string(Path::new(working_dir).join("config.toml"))
             .unwrap()
-            .as_str()
+            .as_str(),
     )
     .unwrap();
-}
-pub fn get_test_bot() -> Bot {
-    let config_dir = Path::new("./working_dir");
-    let bot_authorization = if !CONFIG.passwd.is_empty() {
-        BotAuthorization::Password(CONFIG.passwd.clone())
+    let env_config: EnvConfig = toml::from_str(
+        &std::fs::read_to_string(Path::new(working_dir).join("env_config.toml")).unwrap(),
+    )
+    .unwrap();
+    let group_id = config.group_id;
+    let member_id = config.member_id;
+    let bot_authorization = if !config.passwd.is_empty() {
+        BotAuthorization::Password(config.passwd.clone())
     } else {
         BotAuthorization::QrCode
     };
-    BotBuilder::new(config_dir)
-        .id(CONFIG.id)
-        .authorization(bot_authorization)
-        .file_based_device_info(None)
-        .set_protocol(MiraiProtocol::W)
-        .set_working_dir(&PathBuf::from("./working_dir"))
-        .build()
-}
-
-pub fn get_group_id() -> i64 {
-    CONFIG.group_id
-}
-
-pub fn get_member_id() -> i64 {
-    CONFIG.member_id
+    (
+        BotBuilder::new(&env_config)
+            .id(config.id)
+            .authorization(bot_authorization)
+            .file_based_device_info(None)
+            .set_protocol(MiraiProtocol::W)
+            .set_working_dir(working_dir)
+            .build(),
+        group_id,
+        member_id,
+    )
 }
 
 #[cfg(test)]

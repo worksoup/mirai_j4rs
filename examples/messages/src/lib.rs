@@ -2,7 +2,7 @@
 mod tests {
     use mirai_j4rs::contact::AudioSupportedTrait;
     use mirai_j4rs::message::AudioTrait;
-    use mirai_j4rs::utils::just_for_examples::{get_group_id, get_member_id, get_test_bot};
+    use mirai_j4rs::utils::just_for_examples::get_test_bot;
     use mirai_j4rs::{
         contact::{
             file::{AbsoluteFileFolderTrait, ExternalResource},
@@ -18,14 +18,17 @@ mod tests {
             CodableMessageTrait, MessageHashCodeTrait, MessageTrait,
         },
     };
-
+    static WORKING_DIR: &str = "../../working_dir";
+    static IMAGE_PATH: &str = "../../working_dir/mirai.png";
+    static AUDIO_PATH: &str = "../../working_dir/test.mp3";
+    static FILE_PATH: &str = AUDIO_PATH;
     #[test]
     fn at() {
-        let bot = get_test_bot(); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, group_id, member_id) = get_test_bot(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
         bot.login();
         // `At`
-        let at = At::new(get_member_id());
-        let group = Group::new(&bot, get_group_id()).unwrap();
+        let at = At::new(member_id);
+        let group = Group::new(&bot, group_id).unwrap();
         println!("{}", at.to_display_string(&group));
         println!("{}", at.to_code());
         println!("{}", at.to_content());
@@ -38,11 +41,11 @@ mod tests {
 
     #[test]
     fn at_all() {
-        let bot = get_test_bot(); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, group_id, _) = get_test_bot(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
         bot.login();
         // `AtAll`
         let at_all = AtAll::new();
-        let group = Group::new(&bot, get_group_id()).unwrap();
+        let group = Group::new(&bot, group_id).unwrap();
         println!("{}", AtAll::get_display());
         println!("{}", at_all.to_code());
         println!("{}", at_all.to_content());
@@ -55,12 +58,12 @@ mod tests {
 
     #[test]
     fn audio() {
-        let bot = get_test_bot(); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, group_id, _) = get_test_bot(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
         bot.login();
         // `Audio`
-        let group = Group::new(&bot, get_group_id()).unwrap();
+        let group = Group::new(&bot, group_id).unwrap();
         // 支持 `*.amr` 或 `*.silk` 格式。如果使用了 `mirai-silk-converter` 的话也可以支持 `*.mp3` 格式。
-        let resource = ExternalResource::create_from_file("./test.mp3");
+        let resource = ExternalResource::create_from_file(AUDIO_PATH);
         let audio = group.upload_audio(&resource);
         println!("{}", audio.get_extra_data());
         println!("{}", audio.get_file_md5());
@@ -75,11 +78,11 @@ mod tests {
 
     #[test]
     fn face() {
-        let bot = get_test_bot(); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, group_id, _) = get_test_bot(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
         bot.login();
         // `Face`
         let face = Face::from(123);
-        let group = Group::new(&bot, get_group_id()).unwrap();
+        let group = Group::new(&bot, group_id).unwrap();
         println!("{}", face.get_name());
         println!("{}", face.to_code());
         println!("{}", face.to_content());
@@ -91,13 +94,13 @@ mod tests {
     }
     #[test]
     fn file_message() {
-        let bot = get_test_bot(); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, group_id, _) = get_test_bot(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
         bot.login();
         // `FileMessage`
-        let group = Group::new(&bot, get_group_id()).unwrap();
+        let group = Group::new(&bot, group_id).unwrap();
         let remote_files = group.get_files();
         let group = remote_files.get_contact();
-        assert_eq!(group.get_id(), get_group_id());
+        assert_eq!(group.get_id(), group_id);
         let root = remote_files.get_root();
         println!("根目录名：{}", root.get_name());
         let root_children = root.children().to_vec();
@@ -114,7 +117,7 @@ mod tests {
             if file.is_file() {
                 let file = file.to_file();
                 let name = file.get_name();
-                if name == "1.docx" {
+                if name == "mirai_j4rs_test.mp3" {
                     if file.delete() {
                         println!("已删除。");
                     }
@@ -126,18 +129,18 @@ mod tests {
                 }
             }
         }
-        let res = ExternalResource::create_from_file("./base_config.toml");
-        let _ = root.upload_new_file("aaa.toml", &res);
+        let res = ExternalResource::create_from_file(FILE_PATH);
+        let _ = root.upload_new_file("mirai_j4rs_test.mp3", &res);
         res.close();
         bot.close();
     }
 
     #[test]
     fn forward_message() {
-        let bot = get_test_bot(); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, group_id, _) = get_test_bot(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
         bot.login();
         // `ForwardMessage`
-        let group = Group::new(&bot, get_group_id()).unwrap();
+        let group = Group::new(&bot, group_id).unwrap();
         let message = ForwardMessageBuilder::new(&group)
             .add(
                 &bot,
@@ -151,11 +154,11 @@ mod tests {
     }
     #[test]
     fn image() {
-        let bot = get_test_bot(); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, group_id, _) = get_test_bot(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
         bot.login();
         // `Image`
-        let group = Group::new(&bot, get_group_id()).unwrap();
-        let image = group.upload_image_from_file("./mirai.png");
+        let group = Group::new(&bot, group_id).unwrap();
+        let image = group.upload_image_from_file(IMAGE_PATH);
         println!("{}", image.get_image_id());
         println!("{}", image.get_md5());
         println!("{}", image.get_size());
@@ -173,9 +176,9 @@ mod tests {
 
     #[test]
     fn market_face() {
-        let bot = get_test_bot(); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, group_id, _) = get_test_bot(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
         bot.login();
-        let group = Group::new(&bot, get_group_id()).unwrap();
+        let group = Group::new(&bot, group_id).unwrap();
         // `Dice`
         // 目前新版客户端可以接受该类型消息，但是不会显示点数。
         // 可以直接指定。
@@ -197,13 +200,13 @@ mod tests {
 
     #[test]
     fn nudge() {
-        let bot = get_test_bot(); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, _, _member_id) = get_test_bot(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
         bot.login();
         // 只有安卓手机协议和苹果平板协议支持。其余协议会报错。
         // 用法如下：
         // `BotNudge`
         // let bot_nudge = bot.nudge();
-        // let friend = get_member_id();
+        // let friend = member_id;
         // let friend = bot.get_friend(friend).expect("Bot 没有该好友。");
         // bot_nudge.send_to(friend);
         bot.close();
@@ -211,10 +214,10 @@ mod tests {
 
     #[test]
     fn poke_message() {
-        let bot = get_test_bot(); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, group_id, member_id) = get_test_bot(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
         bot.login();
-        let group = Group::new(&bot, get_group_id()).unwrap();
-        let friend = bot.get_friend(get_member_id()).expect("Bot 没有该好友。");
+        let group = Group::new(&bot, group_id).unwrap();
+        let friend = bot.get_friend(member_id).expect("Bot 没有该好友。");
         // `PokeMessage`
         // 在群里可以发 SVIP 的戳一戳。
         // 官方客户端似乎不能在群里发该类型消息。
@@ -230,9 +233,9 @@ mod tests {
 
     #[test]
     fn plain_text() {
-        let bot = get_test_bot(); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, group_id, _) = get_test_bot(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
         bot.login();
-        let group = Group::new(&bot, get_group_id()).unwrap();
+        let group = Group::new(&bot, group_id).unwrap();
         // `PlainText`
         let plain_text = PlainText::from("你好！");
         let _r = group.send_message(plain_text);
@@ -242,9 +245,9 @@ mod tests {
 
     #[test]
     fn quote_reply() {
-        let bot = get_test_bot(); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, group_id, _) = get_test_bot(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
         bot.login();
-        let group = Group::new(&bot, get_group_id()).unwrap();
+        let group = Group::new(&bot, group_id).unwrap();
         // `PlainText`
         let plain_text = PlainText::from("你好！");
         let _r = group.send_message(plain_text);

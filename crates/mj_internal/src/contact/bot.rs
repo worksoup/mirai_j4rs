@@ -333,7 +333,11 @@ pub struct Env {
 }
 
 impl Env {
-    pub fn new(jar_paths: &Vec<String>, java_opts: &Vec<String>) -> Self {
+    pub fn new(env_config: &EnvConfig) -> Self {
+        let EnvConfig {
+            jar_paths,
+            java_opts,
+        } = env_config;
         let entries = {
             let mut entries = Vec::new();
             for path in jar_paths {
@@ -350,11 +354,15 @@ impl Env {
             }
             opts
         };
-        let jvm = JvmBuilder::new()
+        let jvm = if let Ok(jvm) = JvmBuilder::new()
             .classpath_entries(entries)
             .java_opts(opts)
             .build()
-            .unwrap();
+        {
+            jvm
+        } else {
+            Jvm::attach_thread().expect("Jvm 创建失败！")
+        };
         let instance = jvm
             .field(
                 &jvm.static_class("net.mamoe.mirai.BotFactory").unwrap(),
@@ -951,8 +959,7 @@ impl BotConfiguration {
             )
             .unwrap();
     }
-    pub fn set_working_dir(&self, path: &PathBuf) {
-        let path = path.to_str().unwrap();
+    pub fn set_working_dir(&self, path: &str) {
         let file = Jvm::attach_thread()
             .unwrap()
             .create_instance("java.io.File", &[InvocationArg::try_from(path).unwrap()])
@@ -1200,47 +1207,12 @@ pub struct BotBuilder {
 }
 
 #[derive(Deserialize, Serialize)]
-struct BaseConfig {
-    config_file: String,
-}
-
-#[derive(Deserialize, Serialize)]
-struct EnvConfig {
-    jar_paths: Vec<String>,
-    java_opts: Vec<String>,
+pub struct EnvConfig {
+    pub jar_paths: Vec<String>,
+    pub java_opts: Vec<String>,
 }
 
 impl BotBuilder {
-    fn internal_new_env(config_dir: &Path) -> Env {
-        let default_base_config = BaseConfig {
-            config_file: "env_config.toml".to_string(),
-        };
-        if let Err(_) = std::fs::metadata(config_dir) {
-            let _ = std::fs::create_dir_all(config_dir);
-        }
-        let mut dir_tmp = config_dir.to_path_buf();
-        dir_tmp.push("base_config.toml");
-        // 如果 `base_config.toml` 不存在则创建一个默认的。
-        if let Ok(base_config_file) = std::fs::metadata(&dir_tmp) {
-            if !base_config_file.is_file() {
-                // std::fs::remove_dir(&dir_tmp).unwrap();
-                // let _ = std::fs::File::create(&dir_tmp).unwrap();
-                // let contents = toml::to_string(&default_base_config).unwrap();
-                // let _ = std::fs::write(&dir_tmp, contents).unwrap();
-                panic!("`base_config.toml` 不是文件！")
-            }
-        } else {
-            let _ = std::fs::File::create(&dir_tmp).unwrap();
-            let contents = toml::to_string(&default_base_config).unwrap();
-            let _ = std::fs::write(&dir_tmp, contents).unwrap();
-        };
-        let base_config: BaseConfig =
-            toml::from_str(&std::fs::read_to_string(dir_tmp).unwrap()).unwrap();
-        let env_config: EnvConfig =
-            toml::from_str(&std::fs::read_to_string(base_config.config_file).unwrap()).unwrap();
-        let env = Env::new(&env_config.jar_paths, &env_config.java_opts);
-        env
-    }
     // pub fn new() -> Self {
     //     let config_dir = Path::new(".");
     //     let env = Self::internal_new_env(config_dir);
@@ -1253,8 +1225,8 @@ impl BotBuilder {
     //         password_md5: None,
     //     }
     // }
-    pub fn new(config_dir: &Path) -> Self {
-        let env = Self::internal_new_env(config_dir);
+    pub fn new(env_config: &EnvConfig) -> Self {
+        let env = Env::new(env_config);
         Self {
             env,
             config: None,
@@ -1446,7 +1418,7 @@ impl BotBuilder {
         self
     }
     /// 设置工作目录。
-    pub fn set_working_dir(mut self, path: &PathBuf) -> Self {
+    pub fn set_working_dir(mut self, path: &str) -> Self {
         if let Some(config) = &self.config {
             config.set_working_dir(path);
         } else {

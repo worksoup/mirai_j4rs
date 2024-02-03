@@ -1,7 +1,7 @@
+use crate::utils::bot_builder::BotBuilder;
+use crate::utils::EnvConfig;
 use crate::{
-    auth::bot_authorization::BotAuthorization,
-    contact::{Bot, BotBuilder, EnvConfig},
-    utils::other::enums::MiraiProtocol,
+    auth::bot_authorization::BotAuthorization, contact::Bot, utils::other::enums::MiraiProtocol,
 };
 use serde::{Deserialize, Serialize};
 use std::path::Path;
@@ -37,8 +37,8 @@ pub fn bot_group_member(working_dir: &str) -> (Bot, i64, i64) {
             .id(config.id)
             .authorization(bot_authorization)
             .file_based_device_info(None)
-            .set_protocol(MiraiProtocol::W)
-            .set_working_dir(working_dir)
+            .protocol(MiraiProtocol::W)
+            .working_dir(working_dir)
             .build(),
         group_id,
         member_id,

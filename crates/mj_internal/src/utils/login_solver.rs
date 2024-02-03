@@ -8,8 +8,14 @@ use mj_closures::{
     kt_func_0::KtFunc0, kt_func_0::KtFunc0Raw, kt_func_1::KtFunc1, kt_func_1::KtFunc1Raw,
     kt_func_2::KtFunc2, kt_func_2::KtFunc2Raw,
 };
-use mj_macro::GetInstanceDerive;
+use mj_macro::{FromInstanceDerive, GetInstanceDerive};
 use std::ops::Deref;
+
+/// 该结构体未实现 [`LoginSolverTrait`], 如需使用相关功能请调用本实例的 `get_instance` 方法，获得 `Instance` 后直接操作。
+#[derive(GetInstanceDerive, FromInstanceDerive)]
+pub struct LoginSolver {
+    instance: Instance,
+}
 
 pub enum State {
     /// 等待扫描中，请在此阶段请扫描二维码.

@@ -1,16 +1,14 @@
 use crate::message::message_trait::{
-    AudioTrait, CodableMessageTrait, ConstrainSingleTrait, MessageContentTrait, MessageTrait,
-    SingleMessageTrait,
+    AudioTrait, ConstrainSingleTrait, MessageContentTrait, MessageTrait, SingleMessageTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::{FromInstance, GetClassTypeTrait, GetInstanceTrait};
 use mj_macro::{java_type, FromInstanceDerive, GetInstanceDerive};
-use std::hint::unreachable_unchecked;
 
 #[java_type("net.mamoe.mirai.message.data.Audio")]
 pub enum Audio {
-    OfflineAudio(OfflineAudio),
     OnlineAudio(OnlineAudio),
+    OfflineAudio(OfflineAudio),
 }
 impl GetInstanceTrait for Audio {
     fn get_instance(&self) -> Instance {
@@ -92,7 +90,7 @@ impl OnlineAudio {
         let instance = jvm.invoke(&instance, "getLength", &[]).unwrap();
         jvm.to_rust(instance).unwrap()
     }
-    pub fn get_url_for_download(&self) -> i64 {
+    pub fn get_url_for_download(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = self.get_instance();
         let instance = jvm.invoke(&instance, "getUrlForDownload", &[]).unwrap();

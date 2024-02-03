@@ -2,20 +2,16 @@
 
 **ɒiM_J is Mirai_J4rs.**
 
-**近期听闻签名服务受到重创，由于本项目还未较好地适配安卓手表协议，所以请谨慎使用。**
-目前简单适配了 Mirai 的二维码登录。
-可以使用 `j4rs` 库直接操作 Jvm 对象使用该协议。
-
 使用 [`j4rs`](https://crates.io/crates/j4rs) 库简易(陋)地封装了一下 [`Mirai`](https://docs.mirai.mamoe.net/), api
 基本与 `Mirai` 保持一致。
 
-~~同时集成了 [`fix-protocol-version`](https://github.com/cssxsh/fix-protocol-version) 以解决登陆问题。~~ 移除了。
-
-一直都是自己的其他项目在用，所以完全没有什么设计可言，也没有完全覆盖 `Mirai` 的功能。
-
-当然也欢迎使用本库，既然打算开源出来自然也打算维护它……~~如果我能力够的话。~~
-
 本仓库仅含 rust 代码，本项目的 jvm_side 请见于[此](https://github.com/worksoup/mirai_j4rs_jvm_side)。
+
+## 登录相关
+
+**由于之前签名服务受到重创，所以请谨慎使用。**
+
+目前简单适配了 `Mirai` 的二维码登录。似乎可以正常登录。
 
 ## 协议支持
 
@@ -52,7 +48,7 @@ fn main(){
 }
 ```
 
-第二种方法，和 Mirai 类似，可配置项与 Mirai 相同，<s>应该</s>和 Mirai 行为一致。
+第二种方法，和 Mirai 类似，配置项与 Mirai 相同，<s>应该</s>和 Mirai 行为一致。
 
 ``` rust
 use mirai_j4rs::prelude::*;

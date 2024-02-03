@@ -1,5 +1,5 @@
 [package]
-name = "mj_tests"
+name = "messages"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,7 +7,3 @@ edition = "2021"
 
 [dependencies]
 mirai_j4rs = { path = "../../." }
-lazy_static = "1.4"
-serde = { version = "1.0", features = ["derive"] }
-toml = "0.8"
-ctrlc = "3.4"

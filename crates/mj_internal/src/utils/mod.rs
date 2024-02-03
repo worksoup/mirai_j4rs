@@ -1,4 +1,5 @@
 pub mod contact;
+pub mod just_for_examples;
 pub mod login_solver;
 pub mod other;
 

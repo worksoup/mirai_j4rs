@@ -13,3 +13,10 @@ crates/mj_tests/env_config.toml
 /crates/mj_tests/cache/
 /crates/mj_tests/mirai.png
 /crates/mj_tests/test.mp3
+/work_dir/
+/working_dir/cache/
+/working_dir/device.json
+/working_dir/env_config.toml
+/working_dir/config.toml
+/working_dir/test.mp3
+/working_dir/mirai.png

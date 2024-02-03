@@ -1,8 +1,7 @@
+use mirai_j4rs::utils::just_for_examples::get_test_bot;
 use mirai_j4rs::utils::other::enums::MiraiProtocol;
-use mj_tests::get_test_bot;
 
-#[test]
-fn login() {
+fn main() {
     let bot = get_test_bot(); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
     println!(
         "安卓手表协议是否支持戳一戳{}",

@@ -1435,12 +1435,23 @@ impl BotBuilder {
         self
     }
     /// 使用协议类型。
-    pub fn set_protocol(mut self, protocol: MiraiProtocol) -> BotBuilder {
+    pub fn set_protocol(mut self, protocol: MiraiProtocol) -> Self {
         if let Some(config) = &self.config {
             config.set_protocol(protocol);
         } else {
             let config = self.env.new_bot_configuration();
             config.set_protocol(protocol);
+            self.config = Some(config);
+        }
+        self
+    }
+    /// 设置工作目录。
+    pub fn set_working_dir(mut self, path: &PathBuf) -> Self {
+        if let Some(config) = &self.config {
+            config.set_working_dir(path);
+        } else {
+            let config = self.env.new_bot_configuration();
+            config.set_working_dir(path);
             self.config = Some(config);
         }
         self

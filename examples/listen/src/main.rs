@@ -1,3 +1,4 @@
+use mirai_j4rs::utils::just_for_examples::get_test_bot;
 use mirai_j4rs::{
     contact::{file::AbsoluteFileFolderTrait, Group, SendMessageSupportedTrait},
     event::{
@@ -9,14 +10,6 @@ use mirai_j4rs::{
         MarketFaceTrait, MessageTrait,
     },
 };
-use mj_tests::get_test_bot;
-use serde::{Deserialize, Serialize};
-
-#[derive(Deserialize, Serialize)]
-pub(crate) struct BotInfo {
-    pub(crate) bot_id: i64,
-    pub(crate) bot_passwd: String,
-}
 
 /// 该函数接受一个 SingleMessage, 然后做出对应的反应。
 fn match_single_message(msg: SingleMessage, contact: Option<Group>) {
@@ -112,8 +105,7 @@ fn match_single_message(msg: SingleMessage, contact: Option<Group>) {
     }
 }
 
-#[test]
-fn listen() {
+fn main() {
     let bot = get_test_bot(); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
     bot.login();
     let event_channel = bot.get_event_channel();

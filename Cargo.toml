@@ -8,11 +8,8 @@ readme = "README.md"
 resolver = "2"
 edition = "2021"
 members = [
-    "crates/mj_internal",
-    "crates/mj_base",
-    "crates/mj_closures",
-    "crates/mj_macro",
-    "crates/mj_tests"
+    "crates/mj_*", "examples/*",
 ]
+default-members = ["crates/mj_*"]
 [dependencies]
 mj_internal = { path = "crates/mj_internal" }

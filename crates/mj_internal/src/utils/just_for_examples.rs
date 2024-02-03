@@ -1,11 +1,11 @@
-use lazy_static::lazy_static;
-use mirai_j4rs::{
+use crate::{
     auth::bot_authorization::BotAuthorization,
     contact::{Bot, BotBuilder},
     utils::other::enums::MiraiProtocol,
 };
+use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[derive(Deserialize, Serialize)]
 pub(crate) struct Config {
@@ -16,11 +16,15 @@ pub(crate) struct Config {
 }
 
 lazy_static! {
-    static ref CONFIG: Config =
-        toml::from_str(std::fs::read_to_string("./config.toml").unwrap().as_str()).unwrap();
+    static ref CONFIG: Config = toml::from_str(
+        std::fs::read_to_string("./working_dir/config.toml")
+            .unwrap()
+            .as_str()
+    )
+    .unwrap();
 }
 pub fn get_test_bot() -> Bot {
-    let config_dir = Path::new(".");
+    let config_dir = Path::new("./working_dir");
     let bot_authorization = if !CONFIG.passwd.is_empty() {
         BotAuthorization::Password(CONFIG.passwd.clone())
     } else {
@@ -31,6 +35,7 @@ pub fn get_test_bot() -> Bot {
         .authorization(bot_authorization)
         .file_based_device_info(None)
         .set_protocol(MiraiProtocol::W)
+        .set_working_dir(&PathBuf::from("./working_dir"))
         .build()
 }
 

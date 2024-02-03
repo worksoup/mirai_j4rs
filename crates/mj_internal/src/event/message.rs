@@ -1,5 +1,5 @@
 use crate::{
-    contact::{group::Group, AnonymousMember, Friend, Member, NormalMember},
+    contact::{AnonymousMember, Friend, Group, Member, NormalMember},
     event::event_trait::{MessageEventTrait, MiraiEventTrait},
 };
 use j4rs::{Instance, Jvm};

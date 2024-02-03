@@ -1,4 +1,4 @@
-use crate::contact::bot::Bot;
+use crate::contact::Bot;
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::{
     data_wrapper::DataWrapper,

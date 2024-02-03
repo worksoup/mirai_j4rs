@@ -1,4 +1,4 @@
-use crate::contact::group::MemberPermission;
+use crate::contact::MemberPermission;
 use crate::error::MiraiRsErrorEnum::LumiaException;
 use j4rs::errors::J4RsError;
 use j4rs::Instance;

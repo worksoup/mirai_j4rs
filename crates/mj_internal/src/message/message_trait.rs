@@ -1,6 +1,6 @@
 use crate::{
-    contact::contact_trait::ContactTrait,
-    message::data::{message_chain::MessageChain, single_message::SingleMessage},
+    contact::ContactTrait,
+    message::data::{MessageChain, SingleMessage},
 };
 use j4rs::{InvocationArg, Jvm};
 use mj_base::env::GetInstanceTrait;

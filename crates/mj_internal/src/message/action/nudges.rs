@@ -1,10 +1,5 @@
-use crate::contact::Stranger;
 use crate::{
-    contact::{
-        bot::Bot,
-        contact_trait::{ContactTrait, UserOrBotTrait},
-        Friend, NormalMember,
-    },
+    contact::{Bot, ContactTrait, Friend, NormalMember, Stranger, UserOrBotTrait},
     message::message_trait::MessageHashCodeTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};

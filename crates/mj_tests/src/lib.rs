@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
-use mj_internal::{
+use mirai_j4rs::{
     auth::bot_authorization::BotAuthorization,
-    contact::bot::{Bot, BotBuilder},
+    contact::{Bot, BotBuilder},
     utils::other::enums::MiraiProtocol,
 };
 use serde::{Deserialize, Serialize};

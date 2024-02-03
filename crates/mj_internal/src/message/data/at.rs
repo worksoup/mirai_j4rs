@@ -1,5 +1,5 @@
 use crate::{
-    contact::group::Group,
+    contact::Group,
     message::message_trait::{
         CodableMessageTrait, MessageContentTrait, MessageHashCodeTrait, MessageTrait,
         SingleMessageTrait,

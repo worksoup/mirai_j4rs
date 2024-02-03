@@ -1,5 +1,5 @@
 use crate::{
-    contact::contact_trait::{ContactTrait, UserOrBotTrait},
+    contact::{ContactTrait, UserOrBotTrait},
     message::{
         data::message_chain::MessageChain,
         message_trait::{

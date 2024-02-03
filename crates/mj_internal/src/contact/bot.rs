@@ -7,7 +7,7 @@ use crate::{
     },
     error::MiraiRsError,
     event::EventChannel,
-    message::action::nudges::BotNudge,
+    message::action::BotNudge,
     utils::{
         contact::friend_group::FriendGroups,
         login_solver::{

@@ -28,9 +28,9 @@ pub mod settings {
 pub mod member {
     use crate::{
         contact::NormalMember,
-        contact::{bot::Bot, group::Group},
+        contact::{Bot, Group},
         event::event_trait::{BotEventTrait, MiraiEventTrait},
-        message::message_trait::MessageHashCodeTrait,
+        message::MessageHashCodeTrait,
     };
     use j4rs::{Instance, InvocationArg, Jvm};
     use mj_base::env::FromInstance;

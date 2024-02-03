@@ -1,4 +1,4 @@
-use crate::message::data::image::Image;
+use crate::message::data::Image;
 use crate::{
     contact::{
         bot::Bot,
@@ -11,8 +11,8 @@ use crate::{
     },
     error::MiraiRsError,
     message::{
-        data::{message_chain::MessageChain, message_source::MessageSource},
-        message_trait::MessageHashCodeTrait,
+        data::{MessageChain, MessageSource},
+        MessageHashCodeTrait,
     },
     utils::{
         other::enums::{AvatarSpec, GroupHonorType, MemberMedalType},

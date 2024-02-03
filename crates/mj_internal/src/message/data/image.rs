@@ -1,5 +1,5 @@
 use crate::{
-    contact::bot::Bot,
+    contact::Bot,
     message::message_trait::{
         CodableMessageTrait, MessageContentTrait, MessageTrait, SingleMessageTrait,
     },

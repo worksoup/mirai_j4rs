@@ -8,8 +8,8 @@ use crate::{
         group::MemberPermission,
     },
     message::{
-        action::nudges::{FriendNudge, NormalMemberNudge, StrangerNudge},
-        message_trait::{MessageHashCodeTrait, MessageTrait},
+        action::{FriendNudge, NormalMemberNudge, StrangerNudge},
+        MessageHashCodeTrait, MessageTrait,
     },
     utils::{contact::friend_group::FriendGroup, other::enums::AvatarSpec},
 };

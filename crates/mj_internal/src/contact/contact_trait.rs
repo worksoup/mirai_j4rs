@@ -8,10 +8,7 @@ use crate::{
         Friend,
     },
     error::MiraiRsError,
-    message::{
-        action::nudges::Nudge, data::image::Image, message_receipt::MessageReceipt,
-        message_trait::MessageTrait,
-    },
+    message::{action::Nudge, data::Image, MessageReceipt, MessageTrait},
     utils::other::enums::AvatarSpec,
 };
 use j4rs::{InvocationArg, Jvm};

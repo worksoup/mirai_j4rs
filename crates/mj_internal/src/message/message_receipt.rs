@@ -1,7 +1,7 @@
 use crate::{
-    contact::contact_trait::ContactTrait,
+    contact::ContactTrait,
     error::MiraiRsError,
-    message::{data::quote_reply::QuoteReply, message_trait::MessageTrait},
+    message::{data::QuoteReply, message_trait::MessageTrait},
 };
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::FromInstance as _;

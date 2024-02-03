@@ -1,5 +1,5 @@
 use crate::contact::file::{AbsoluteFileFolderTrait, AbsoluteFolder};
-use crate::message::data::file_message::FileMessage;
+use crate::message::data::FileMessage;
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::{FromInstance, GetInstanceTrait};
 use mj_base::utils::primitive_byte_array_to_string;

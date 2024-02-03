@@ -1,4 +1,7 @@
 pub mod action;
 pub mod data;
-pub mod message_receipt;
-pub mod message_trait;
+mod message_receipt;
+mod message_trait;
+
+pub use message_receipt::*;
+pub use message_trait::*;

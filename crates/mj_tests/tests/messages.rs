@@ -1,18 +1,16 @@
-use mj_internal::{
+use mirai_j4rs::{
     contact::{
-        contact_trait::NudgeSupportedTrait,
-        contact_trait::{ContactOrBotTrait, FileSupportedTrait, SendMessageSupportedTrait},
         file::{AbsoluteFileFolderTrait, ExternalResource},
-        group::Group,
+        ContactOrBotTrait, FileSupportedTrait, Group, NudgeSupportedTrait,
+        SendMessageSupportedTrait,
     },
     message::{
-        action::nudges::{BotNudge, Nudge},
+        action::{BotNudge, Nudge},
         data::{
-            at::At, at_all::AtAll, dice::Dice, face::Face, forward_message::ForwardMessageBuilder,
-            image::Image, market_face::MarketFace, plain_text::PlainText,
-            poke_message::PokeMessage, rock_paper_scissors::RockPaperScissors,
+            At, AtAll, Dice, Face, ForwardMessageBuilder, Image, MarketFace, PlainText,
+            PokeMessage, RockPaperScissors,
         },
-        message_trait::{CodableMessageTrait, MessageHashCodeTrait, MessageTrait},
+        CodableMessageTrait, MessageHashCodeTrait, MessageTrait,
     },
 };
 use mj_tests::{get_group_id, get_member_id, get_test_bot};

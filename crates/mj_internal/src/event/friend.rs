@@ -1,7 +1,7 @@
 use crate::{
-    contact::group::Group,
+    contact::Group,
     event::event_trait::{BotEventTrait, FriendInfoChangedEvent, MiraiEventTrait},
-    message::message_trait::MessageHashCodeTrait,
+    message::MessageHashCodeTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::{

@@ -2,8 +2,8 @@ use crate::message::message_trait::{
     AudioTrait, ConstrainSingleTrait, MessageContentTrait, MessageTrait, SingleMessageTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstance, GetClassTypeTrait, GetInstanceTrait};
-use mj_macro::{java_type, FromInstanceDerive, GetInstanceDerive};
+use mj_base::env::{AsInstanceTrait, FromInstance, GetClassTypeTrait, GetInstanceTrait};
+use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
 #[java_type("net.mamoe.mirai.message.data.Audio")]
 pub enum Audio {
@@ -15,6 +15,15 @@ impl GetInstanceTrait for Audio {
         match self {
             Audio::OfflineAudio(a) => a.get_instance(),
             Audio::OnlineAudio(a) => a.get_instance(),
+        }
+    }
+}
+
+impl AsInstanceTrait for Audio {
+    fn as_instance(&self) -> &Instance {
+        match self {
+            Audio::OfflineAudio(a) => a.as_instance(),
+            Audio::OnlineAudio(a) => a.as_instance(),
         }
     }
 }
@@ -39,7 +48,7 @@ impl MessageContentTrait for Audio {}
 impl ConstrainSingleTrait for Audio {}
 impl MessageTrait for Audio {}
 
-#[derive(GetInstanceDerive, FromInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
 #[java_type("net.mamoe.mirai.message.data.OfflineAudio")]
 pub struct OfflineAudio {
     instance: Instance,
@@ -78,7 +87,7 @@ impl MessageContentTrait for OfflineAudio {}
 
 impl AudioTrait for OfflineAudio {}
 
-#[derive(GetInstanceDerive, FromInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
 #[java_type("net.mamoe.mirai.message.data.OnlineAudio")]
 pub struct OnlineAudio {
     instance: Instance,

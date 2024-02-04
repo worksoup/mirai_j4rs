@@ -41,10 +41,7 @@ where
     fn get_bot(&self) -> Bot {
         let jvm = Jvm::attach_thread().unwrap();
         let bot = jvm.invoke(&self.get_instance(), "getBot", &[]).unwrap();
-        let id = jvm
-            .to_rust(jvm.invoke(&bot, "getId", &[]).unwrap())
-            .unwrap();
-        Bot { instance: bot, id }
+        Bot::from_instance(bot)
     }
 }
 
@@ -57,10 +54,7 @@ where
     fn get_bot(&self) -> Bot {
         let jvm = Jvm::attach_thread().unwrap();
         let bot = jvm.invoke(&self.get_instance(), "getBot", &[]).unwrap();
-        let id = jvm
-            .to_rust(jvm.invoke(&bot, "getId", &[]).unwrap())
-            .unwrap();
-        Bot { instance: bot, id }
+        Bot::from_instance(bot)
     }
     fn get_message(&self) -> MessageChain {
         let jvm = Jvm::attach_thread().unwrap();

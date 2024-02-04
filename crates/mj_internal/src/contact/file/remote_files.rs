@@ -1,12 +1,13 @@
 use crate::contact::{
     file::{AbsoluteFile, AbsoluteFolder, ExternalResource},
     group::Group,
+    Bot,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstance, GetInstanceTrait};
-use mj_macro::{FromInstanceDerive, GetInstanceDerive};
+use mj_base::env::{AsInstanceTrait, FromInstance, GetInstanceTrait};
+use mj_macro::{AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
-#[derive(GetInstanceDerive, FromInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
 pub struct RemoteFiles {
     instance: Instance,
 }
@@ -19,11 +20,7 @@ impl RemoteFiles {
         let instance = jvm
             .cast(&instance, "net.mamoe.mirai.contact.Group")
             .unwrap();
-        let bot = jvm.invoke(&instance, "getBot", &[]).unwrap();
-        let id = jvm
-            .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
-            .unwrap();
-        Group { bot, instance, id }
+        Group::from_instance(instance)
     }
     pub fn get_root(&self) -> AbsoluteFolder {
         let jvm = Jvm::attach_thread().unwrap();
@@ -40,7 +37,7 @@ impl RemoteFiles {
                 "uploadNewFile",
                 &[
                     InvocationArg::try_from(file_name).unwrap(),
-                    InvocationArg::try_from(jvm.clone_instance(&resource.get_instance()).unwrap())
+                    InvocationArg::try_from(jvm.clone_instance(resource.as_instance()).unwrap())
                         .unwrap(),
                 ],
             )

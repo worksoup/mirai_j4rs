@@ -3,9 +3,9 @@ use crate::message::data::FileMessage;
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::{FromInstance, GetInstanceTrait};
 use mj_base::utils::primitive_byte_array_to_string;
-use mj_macro::{java_type, FromInstanceDerive, GetInstanceDerive};
+use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
-#[derive(GetInstanceDerive, FromInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
 #[java_type("net.mamoe.mirai.contact.file.AbsoluteFile")]
 pub struct AbsoluteFile {
     instance: Instance,

@@ -1,5 +1,4 @@
 use crate::utils::bot_builder::BotBuilder;
-use crate::utils::EnvConfig;
 use crate::{
     auth::bot_authorization::BotAuthorization, contact::Bot, utils::other::enums::MiraiProtocol,
 };
@@ -13,7 +12,6 @@ pub(crate) struct Config {
     pub group_id: i64,
     pub member_id: i64,
 }
-
 pub fn bot_group_member(working_dir: &str) -> (Bot, i64, i64) {
     let config: Config = toml::from_str(
         std::fs::read_to_string(Path::new(working_dir).join("config.toml"))
@@ -21,19 +19,16 @@ pub fn bot_group_member(working_dir: &str) -> (Bot, i64, i64) {
             .as_str(),
     )
     .unwrap();
-    let env_config: EnvConfig = toml::from_str(
-        &std::fs::read_to_string(Path::new(working_dir).join("env_config.toml")).unwrap(),
-    )
-    .unwrap();
     let group_id = config.group_id;
     let member_id = config.member_id;
+    let bot_builder = BotBuilder::new(working_dir);
     let bot_authorization = if !config.passwd.is_empty() {
         BotAuthorization::Password(config.passwd.clone())
     } else {
         BotAuthorization::QrCode
     };
     (
-        BotBuilder::new(&env_config)
+        bot_builder
             .id(config.id)
             .authorization(bot_authorization)
             .file_based_device_info(None)

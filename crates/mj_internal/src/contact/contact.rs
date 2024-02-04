@@ -1,4 +1,4 @@
-use crate::contact::{AudioSupportedTrait, Group};
+use crate::contact::{AudioSupportedTrait, Bot, Group};
 use crate::{
     contact::{
         contact_trait::{
@@ -10,16 +10,17 @@ use crate::{
     },
     message::{
         action::{FriendNudge, NormalMemberNudge, StrangerNudge},
-        MessageHashCodeTrait, MessageTrait,
+        MessageHashCodeTrait,
     },
     utils::{contact::friend_group::FriendGroup, other::enums::AvatarSpec},
 };
 use j4rs::{Instance, InvocationArg, Jvm};
+use mj_base::env::AsInstanceTrait;
 use mj_base::{
     env::{FromInstance, GetInstanceTrait},
     utils::instance_is_null,
 };
-use mj_macro::GetInstanceDerive;
+use mj_macro::{AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 use std::marker::PhantomData;
 
 pub struct ContactList<T>
@@ -141,16 +142,39 @@ where
 impl<T: ContactTrait + FromInstance> MessageHashCodeTrait for ContactList<T> {}
 // TODO: impl MiraiRsCollectionTrait fot ContactList<_>{}
 
-#[derive(GetInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive)]
 pub struct Friend {
-    pub(crate) bot: Instance,
-    pub(crate) instance: Instance,
-    pub(crate) id: i64,
+    bot: Bot,
+    instance: Instance,
+    id: i64,
 }
 
+impl FromInstance for Friend {
+    fn from_instance(instance: Instance) -> Self {
+        let jvm = Jvm::attach_thread().unwrap();
+        let bot = jvm.invoke(&instance, "getBot", &[]).unwrap();
+        let bot = Bot::from_instance(bot);
+        let id = jvm
+            .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
+            .unwrap();
+        Friend { bot, instance, id }
+    }
+}
 impl SendMessageSupportedTrait for Friend {}
 
 impl Friend {
+    pub fn from_bot(bot: &Bot) -> Self {
+        let id = bot.get_id();
+        let instance = Jvm::attach_thread()
+            .unwrap()
+            .invoke(bot.as_instance(), "getAsFriend", &[])
+            .unwrap();
+        Friend {
+            bot: bot.clone(),
+            instance,
+            id,
+        }
+    }
     pub fn delete(&self) {
         let jvm = Jvm::attach_thread().unwrap();
         let _ = jvm.invoke(&self.instance, "delete", &[]).unwrap();
@@ -172,18 +196,10 @@ impl Friend {
     }
 }
 
-impl FromInstance for Friend {
-    fn from_instance(instance: Instance) -> Self {
-        let jvm = Jvm::attach_thread().unwrap();
-        let bot = jvm.invoke(&instance, "getBot", &[]).unwrap();
-        let id = jvm
-            .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
-            .unwrap();
-        Friend { bot, instance, id }
-    }
-}
-
 impl ContactOrBotTrait for Friend {
+    fn get_bot(&self) -> Bot {
+        self.bot.clone()
+    }
     fn get_id(&self) -> i64 {
         self.id
     }
@@ -213,15 +229,9 @@ impl UserTrait for Friend {}
 
 impl AudioSupportedTrait for Group {}
 
-#[derive(GetInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
 pub struct Stranger {
-    pub(crate) instance: Instance,
-}
-
-impl FromInstance for Stranger {
-    fn from_instance(instance: Instance) -> Self {
-        Stranger { instance }
-    }
+    instance: Instance,
 }
 
 impl ContactOrBotTrait for Stranger {
@@ -251,7 +261,7 @@ impl SendMessageSupportedTrait for Stranger {}
 
 impl UserTrait for Stranger {}
 
-#[derive(GetInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive)]
 pub struct OtherClient {
     instance: Instance,
 }
@@ -268,11 +278,11 @@ impl ContactTrait for OtherClient {}
 
 impl SendMessageSupportedTrait for OtherClient {}
 
-#[derive(GetInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive)]
 pub struct NormalMember {
-    pub(crate) bot: Instance,
-    pub(crate) instance: Instance,
-    pub(crate) id: i64,
+    bot: Bot,
+    instance: Instance,
+    id: i64,
 }
 
 impl AssertMemberPermissionTrait for NormalMember {
@@ -293,6 +303,7 @@ impl FromInstance for NormalMember {
     fn from_instance(instance: Instance) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let bot = jvm.invoke(&instance, "getBot", &[]).unwrap();
+        let bot = Bot::from_instance(bot);
         let id = jvm
             .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
             .unwrap();
@@ -302,6 +313,57 @@ impl FromInstance for NormalMember {
 
 /// 没有实现 `asFriend` 所以如果需要此功能，暂时可以在获取 id 之后在 [Bot] 上调用 `get_friends`, 然后取 [Friend].
 impl NormalMember {
+    pub fn owner_of(group: &Group) -> Self {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm.invoke(group.as_instance(), "getOwner", &[]).unwrap();
+        let id = jvm
+            .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
+            .unwrap();
+        NormalMember {
+            bot: group.get_bot(),
+            instance,
+            id,
+        }
+    }
+    pub fn bot_in(group: &Group) -> Self {
+        let bot = group.get_bot();
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm
+            .invoke(group.as_instance(), "getBotAsMember", &[])
+            .unwrap();
+        let id = Jvm::attach_thread()
+            .unwrap()
+            .to_rust(
+                Jvm::attach_thread()
+                    .unwrap()
+                    .invoke(bot.as_instance(), "getId", &[])
+                    .unwrap(),
+            )
+            .unwrap();
+        NormalMember { bot, instance, id }
+    }
+    pub fn in_group(group: &Group, id: i64) -> Option<Self> {
+        let instance = Jvm::attach_thread()
+            .unwrap()
+            .invoke(
+                group.as_instance(),
+                "get",
+                &[InvocationArg::try_from(id)
+                    .unwrap()
+                    .into_primitive()
+                    .unwrap()],
+            )
+            .unwrap();
+        if !instance_is_null(&instance) {
+            Some(NormalMember {
+                bot: group.get_bot(),
+                instance,
+                id,
+            })
+        } else {
+            None
+        }
+    }
     pub fn get_mute_time_remaining(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
         let time = jvm
@@ -350,6 +412,9 @@ impl NormalMember {
 }
 
 impl ContactOrBotTrait for NormalMember {
+    fn get_bot(&self) -> Bot {
+        self.bot.clone()
+    }
     fn get_id(&self) -> i64 {
         self.id
     }
@@ -381,7 +446,7 @@ impl UserTrait for NormalMember {}
 
 impl MemberTrait for NormalMember {}
 
-#[derive(GetInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive)]
 pub struct AnonymousMember {
     pub(crate) instance: Instance,
 }
@@ -421,6 +486,14 @@ pub enum Member {
     AnonymousMember(AnonymousMember),
 }
 
+impl AsInstanceTrait for Member {
+    fn as_instance(&self) -> &Instance {
+        match self {
+            Member::NormalMember(member) => member.as_instance(),
+            Member::AnonymousMember(member) => member.as_instance(),
+        }
+    }
+}
 impl GetInstanceTrait for Member {
     fn get_instance(&self) -> Instance {
         match self {

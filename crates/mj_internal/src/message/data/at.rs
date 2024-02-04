@@ -6,10 +6,10 @@ use crate::{
     },
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstance, GetClassTypeTrait, GetInstanceTrait};
-use mj_macro::{java_type, GetInstanceDerive};
+use mj_base::env::{AsInstanceTrait, FromInstance, GetClassTypeTrait, GetInstanceTrait};
+use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
 
-#[derive(GetInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive)]
 #[java_type("net.mamoe.mirai.message.data.At")]
 pub struct At {
     id: i64,
@@ -37,7 +37,7 @@ impl At {
                 Jvm::attach_thread()
                     .unwrap()
                     .invoke(
-                        &self.get_instance(),
+                        &self.as_instance(),
                         "getDisplay",
                         &[InvocationArg::try_from(group.get_instance()).unwrap()],
                     )

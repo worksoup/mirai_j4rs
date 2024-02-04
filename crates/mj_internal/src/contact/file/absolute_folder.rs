@@ -3,14 +3,14 @@ use crate::{
     utils::JavaStream,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstance, GetInstanceTrait};
-use mj_macro::{java_type, FromInstanceDerive, GetInstanceDerive};
+use mj_base::env::{AsInstanceTrait, FromInstance, GetInstanceTrait};
+use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
 /// # 绝对目录标识。
 /// 精确表示一个远程目录。不会受同名文件或目录的影响。
 /// Mirai 中有些方法会返回 Flow 或 Stream, 后者的方法名称有 Stream 后缀，
 /// 这里包装的全部都是 Stream 版本，哪怕没有后缀。这些方法会返回一个迭代器，以此模拟其操作。
-#[derive(GetInstanceDerive, FromInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
 #[java_type("net.mamoe.mirai.contact.file.AbsoluteFolder")]
 pub struct AbsoluteFolder {
     instance: Instance,
@@ -118,7 +118,7 @@ impl AbsoluteFolder {
                 "uploadNewFile",
                 &[
                     InvocationArg::try_from(file_name).unwrap(),
-                    InvocationArg::try_from(jvm.clone_instance(&resource.get_instance()).unwrap())
+                    InvocationArg::try_from(jvm.clone_instance(resource.as_instance()).unwrap())
                         .unwrap(),
                 ],
             )

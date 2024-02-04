@@ -1,6 +1,6 @@
 use crate::contact::file::{AbsoluteFile, AbsoluteFileFolderTrait, AbsoluteFolder};
 use j4rs::Instance;
-use mj_base::env::{FromInstance, GetInstanceTrait};
+use mj_base::env::{AsInstanceTrait, FromInstance, GetInstanceTrait};
 use mj_base::utils::is_instance_of;
 use mj_macro::java_type;
 
@@ -25,6 +25,15 @@ impl GetInstanceTrait for AbsoluteFileFolder {
         match self {
             AbsoluteFileFolder::AbsoluteFile(a) => a.get_instance(),
             AbsoluteFileFolder::AbsoluteFolder(a) => a.get_instance(),
+        }
+    }
+}
+
+impl AsInstanceTrait for AbsoluteFileFolder {
+    fn as_instance(&self) -> &Instance {
+        match self {
+            AbsoluteFileFolder::AbsoluteFile(a) => a.as_instance(),
+            AbsoluteFileFolder::AbsoluteFolder(a) => a.as_instance(),
         }
     }
 }

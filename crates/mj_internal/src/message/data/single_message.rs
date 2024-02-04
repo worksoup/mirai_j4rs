@@ -9,7 +9,7 @@ use crate::message::{
     message_trait::{MessageTrait, SingleMessageTrait},
 };
 use j4rs::Instance;
-use mj_base::env::{FromInstance, GetClassTypeTrait, GetInstanceTrait};
+use mj_base::env::{AsInstanceTrait, FromInstance, GetClassTypeTrait, GetInstanceTrait};
 use mj_macro::java_type;
 
 // TODO: 需要知道 Java 或者 MessageChain 会不会返回除了以下消息之外的 SingleMessage
@@ -38,7 +38,7 @@ pub enum SingleMessage {
 
 impl GetInstanceTrait for SingleMessage {
     fn get_instance(&self) -> Instance {
-        macro_rules! branch {
+        macro_rules! get_branch {
             ($($e:ident),*) => {
                 match self {
                     $(
@@ -49,7 +49,41 @@ impl GetInstanceTrait for SingleMessage {
             };
         }
         // 注意没有 `UnsupportedMessage`.
-        branch!(
+        get_branch!(
+            At,
+            AtAll,
+            Audio,
+            Face,
+            FileMessage,
+            ForwardMessage,
+            Image,
+            LightApp,
+            MarketFaceAll,
+            MessageSource,
+            MusicShare,
+            PlainText,
+            PokeMessage,
+            QuoteReply,
+            SuperFace,
+            VipFace
+        )
+    }
+}
+
+impl AsInstanceTrait for SingleMessage {
+    fn as_instance(&self) -> &Instance {
+        macro_rules! as_branch {
+            ($($e:ident),*) => {
+                match self {
+                    $(
+                    SingleMessage::$e(a) => a.as_instance(),
+                    )*
+                    SingleMessage::UnsupportedMessage(a) => a.as_instance()
+                }
+            };
+        }
+        // 注意没有 `UnsupportedMessage`.
+        as_branch!(
             At,
             AtAll,
             Audio,
@@ -72,7 +106,7 @@ impl GetInstanceTrait for SingleMessage {
 
 impl FromInstance for SingleMessage {
     fn from_instance(instance: Instance) -> Self {
-        macro_rules! branch {
+        macro_rules! from_branch {
             ($($e:ident),*) => {
                 $(if $e::is_this_type(&instance){
                     SingleMessage::$e($e::from_instance($e::cast_to_this_type(instance)))
@@ -82,7 +116,7 @@ impl FromInstance for SingleMessage {
             };
         }
         // 注意没有 `UnsupportedMessage`.
-        branch!(
+        from_branch!(
             At,
             AtAll,
             Audio,

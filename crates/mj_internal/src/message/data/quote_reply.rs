@@ -7,9 +7,9 @@ use crate::message::{
 };
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::{FromInstance, GetInstanceTrait};
-use mj_macro::{java_type, FromInstanceDerive, GetInstanceDerive};
+use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
-#[derive(GetInstanceDerive, FromInstanceDerive)]
+#[derive(AsInstanceDerive, GetInstanceDerive, FromInstanceDerive)]
 #[java_type("net.mamoe.mirai.message.data.QuoteReply")]
 pub struct QuoteReply {
     instance: Instance,

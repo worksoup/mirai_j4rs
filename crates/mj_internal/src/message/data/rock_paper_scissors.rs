@@ -7,9 +7,9 @@ use mj_base::{
     env::{GetClassTypeTrait as _, GetInstanceTrait as _},
     utils::instance_is_null,
 };
-use mj_macro::{java_type, FromInstanceDerive, GetInstanceDerive};
+use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
-#[derive(GetInstanceDerive, FromInstanceDerive)]
+#[derive(AsInstanceDerive, GetInstanceDerive, FromInstanceDerive)]
 #[java_type("net.mamoe.mirai.message.data.RockPaperScissors")]
 pub struct RockPaperScissors {
     instance: Instance,

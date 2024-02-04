@@ -22,6 +22,7 @@ pub mod enums {
         N,
     }
 
+    #[derive(Debug)]
     pub enum MiraiProtocol {
         /// `MiraiProtocol.ANDROID_PHONE`
         #[doc(alias = "ANDROID_PHONE")]

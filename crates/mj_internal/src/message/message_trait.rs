@@ -3,13 +3,13 @@ use crate::{
     message::data::{MessageChain, SingleMessage},
 };
 use j4rs::{InvocationArg, Jvm};
-use mj_base::env::GetInstanceTrait;
+use mj_base::env::{AsInstanceTrait, GetInstanceTrait};
 use mj_base::utils::primitive_byte_array_to_string;
 
 //TODO : message_chain_builder
 pub trait MessageTrait
 where
-    Self: GetInstanceTrait,
+    Self: GetInstanceTrait + AsInstanceTrait,
 {
     fn to_content(&self) -> String {
         Jvm::attach_thread()

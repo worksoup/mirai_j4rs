@@ -1,16 +1,21 @@
-use crate::contact::Bot;
-use crate::utils::login_solver::{LoginSolver, LoginSolverTrait};
-use crate::utils::other::enums::{HeartbeatStrategy, MiraiProtocol};
-use crate::utils::{DeviceInfo, MiraiLogger};
+use crate::{
+    contact::Bot,
+    utils::{
+        login_solver::{LoginSolver, LoginSolverTrait},
+        other::enums::{HeartbeatStrategy, MiraiProtocol},
+        DeviceInfo, MiraiLogger,
+    },
+};
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstance, GetInstanceTrait};
-use mj_base::utils::instance_is_null;
-use mj_closures::kt_func_1::KtFunc1Raw;
-use mj_closures::kt_func_2::KtFunc2Raw;
-use mj_macro::{FromInstanceDerive, GetInstanceDerive};
+use mj_base::{
+    env::{FromInstance, GetInstanceTrait},
+    utils::instance_is_null,
+};
+use mj_closures::{kt_func_1::KtFunc1Raw, kt_func_2::KtFunc2Raw};
+use mj_macro::{AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 use std::path::PathBuf;
 
-#[derive(GetInstanceDerive, FromInstanceDerive)]
+#[derive(AsInstanceDerive, GetInstanceDerive, FromInstanceDerive)]
 pub struct ContactListCache {
     instance: Instance,
 }
@@ -89,18 +94,10 @@ impl ContactListCache {
             .unwrap();
     }
 }
+#[derive(AsInstanceDerive, GetInstanceDerive)]
 pub struct BotConfiguration {
     instance: Instance,
     _login_solver_holder: Option<(KtFunc2Raw, KtFunc2Raw, KtFunc1Raw, KtFunc2Raw)>,
-}
-
-impl GetInstanceTrait for BotConfiguration {
-    fn get_instance(&self) -> Instance {
-        Jvm::attach_thread()
-            .unwrap()
-            .clone_instance(&self.instance)
-            .unwrap()
-    }
 }
 impl FromInstance for BotConfiguration {
     fn from_instance(instance: Instance) -> Self {
@@ -122,7 +119,9 @@ impl BotConfiguration {
             _login_solver_holder: None,
         }
     }
-    pub fn get_default() -> Self {
+}
+impl Default for BotConfiguration {
+    fn default() -> Self {
         let instance = Jvm::attach_thread()
             .unwrap()
             .invoke_static("net.mamoe.mirai.utils.BotConfiguration", "getDefault", &[])
@@ -133,7 +132,6 @@ impl BotConfiguration {
         }
     }
 }
-
 // getters
 impl BotConfiguration {
     pub fn get_auto_reconnect_on_force_offline(&self) -> bool {
@@ -158,13 +156,7 @@ impl BotConfiguration {
                     .invoke(
                         &tmp,
                         "invoke",
-                        &[InvocationArg::try_from(
-                            Jvm::attach_thread()
-                                .unwrap()
-                                .clone_instance(&bot.instance)
-                                .unwrap(),
-                        )
-                        .unwrap()],
+                        &[InvocationArg::try_from(bot.get_instance()).unwrap()],
                     )
                     .unwrap(),
             )
@@ -204,13 +196,7 @@ impl BotConfiguration {
                     .invoke(
                         &tmp,
                         "invoke",
-                        &[InvocationArg::try_from(
-                            Jvm::attach_thread()
-                                .unwrap()
-                                .clone_instance(&bot.instance)
-                                .unwrap(),
-                        )
-                        .unwrap()],
+                        &[InvocationArg::try_from(bot.get_instance()).unwrap()],
                     )
                     .unwrap(),
             )

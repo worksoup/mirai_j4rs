@@ -3,20 +3,20 @@ use crate::{
     message::message_trait::MessageHashCodeTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstance, GetInstanceTrait};
-use mj_macro::{FromInstanceDerive, GetInstanceDerive};
+use mj_base::env::{AsInstanceTrait, FromInstance, GetInstanceTrait};
+use mj_macro::{AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
-pub trait Nudge: GetInstanceTrait + MessageHashCodeTrait + FromInstance {
+pub trait Nudge: GetInstanceTrait + MessageHashCodeTrait + FromInstance + AsInstanceTrait {
     type UserOrBot: UserOrBotTrait;
     fn get_target(&self) -> Self::UserOrBot {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.get_instance(), "getTarget", &[]).unwrap();
+        let instance = jvm.invoke(self.as_instance(), "getTarget", &[]).unwrap();
         Self::UserOrBot::from_instance(instance)
     }
     // TODO: 该函数不符合 Mirai 定义的位置。到时候用 rust 标准库里的特征看看能不能实现一下。
     fn to_string(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.get_instance(), "toString", &[]).unwrap();
+        let instance = jvm.invoke(self.as_instance(), "toString", &[]).unwrap();
         jvm.to_rust(instance).unwrap()
     }
     // TODO: 该函数不符合 Mirai 定义的位置。
@@ -27,7 +27,7 @@ pub trait Nudge: GetInstanceTrait + MessageHashCodeTrait + FromInstance {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke(
-                &self.get_instance(),
+                self.as_instance(),
                 "sendTo",
                 &[InvocationArg::try_from(receiver.get_instance()).unwrap()],
             )
@@ -36,7 +36,7 @@ pub trait Nudge: GetInstanceTrait + MessageHashCodeTrait + FromInstance {
     }
 }
 
-#[derive(GetInstanceDerive, FromInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
 pub struct BotNudge {
     instance: Instance,
 }
@@ -47,7 +47,7 @@ impl Nudge for BotNudge {
 
 impl MessageHashCodeTrait for BotNudge {}
 
-#[derive(GetInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive)]
 pub struct FriendNudge {
     pub(crate) instance: Instance,
 }
@@ -77,7 +77,7 @@ impl Nudge for FriendNudge {
 
 impl MessageHashCodeTrait for FriendNudge {}
 
-#[derive(GetInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive)]
 pub struct NormalMemberNudge {
     pub(crate) instance: Instance,
 }
@@ -94,7 +94,7 @@ impl Nudge for NormalMemberNudge {
 
 impl MessageHashCodeTrait for NormalMemberNudge {}
 
-#[derive(GetInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive)]
 pub struct StrangerNudge {
     pub(crate) instance: Instance,
 }

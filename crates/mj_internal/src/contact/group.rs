@@ -21,11 +21,12 @@ use crate::{
     },
 };
 use j4rs::{Instance, InvocationArg, Jvm};
+use mj_base::env::AsInstanceTrait;
 use mj_base::{
     env::{FromInstance, GetInstanceTrait},
     utils::{instance_is_null, is_instance_of, java_iter_to_rust_hash_set, java_iter_to_rust_vec},
 };
-use mj_macro::{java_type, FromInstanceDerive, GetInstanceDerive};
+use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 use std::{
     cmp::Ordering,
     collections::{HashMap, HashSet},
@@ -121,11 +122,11 @@ impl GroupSettings {
     }
 }
 
-#[derive(GetInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive)]
 pub struct Group {
-    pub(crate) bot: Instance,
-    pub(crate) instance: Instance,
-    pub(crate) id: i64,
+    bot: Bot,
+    instance: Instance,
+    id: i64,
 }
 
 impl PublishAnnouncementSupportedTrait for Group {
@@ -290,7 +291,7 @@ impl FromInstance for AnnouncementParameters {
     }
 }
 
-#[derive(GetInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive)]
 pub struct OfflineAnnouncement {
     instance: Instance,
 }
@@ -335,7 +336,7 @@ impl AnnouncementTrait for OfflineAnnouncement {}
 /// 依靠 [`fid`][OnlineAnnouncement::get_fid] 唯一识别。可[删除][OnlineAnnouncement::delete]。
 ///
 /// 另见 [`Announcement`] 与 [`AnnouncementTrait`]
-#[derive(GetInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive)]
 #[java_type("net.mamoe.mirai.contact.announcement.OnlineAnnouncement")]
 pub struct OnlineAnnouncement {
     instance: Instance,
@@ -486,7 +487,7 @@ impl FromInstance for Announcement {
 
 impl AnnouncementTrait for Announcement {}
 
-#[derive(GetInstanceDerive, FromInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
 pub struct AnnouncementImage {
     instance: Instance,
 }
@@ -581,7 +582,7 @@ impl Announcements {
                 &self.instance,
                 "uploadImage",
                 &[
-                    InvocationArg::try_from(jvm.clone_instance(&resource.get_instance()).unwrap())
+                    InvocationArg::try_from(jvm.clone_instance(resource.as_instance()).unwrap())
                         .unwrap(),
                 ],
             )
@@ -1161,6 +1162,7 @@ impl FromInstance for Group {
     fn from_instance(instance: Instance) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let bot = jvm.invoke(&instance, "getBot", &[]).unwrap();
+        let bot = Bot::from_instance(bot);
         let id = jvm
             .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
             .unwrap();
@@ -1169,6 +1171,9 @@ impl FromInstance for Group {
 }
 
 impl ContactOrBotTrait for Group {
+    fn get_bot(&self) -> Bot {
+        self.bot.clone()
+    }
     fn get_id(&self) -> i64 {
         self.id
     }
@@ -1196,7 +1201,7 @@ impl Group {
         let instance = Jvm::attach_thread()
             .unwrap()
             .invoke(
-                &bot.get_instance(),
+                bot.as_instance(),
                 "getGroup",
                 &[InvocationArg::try_from(id)
                     .unwrap()
@@ -1206,7 +1211,7 @@ impl Group {
             .unwrap();
         if !instance_is_null(&instance) {
             Some(Group {
-                bot: bot.get_instance(),
+                bot: bot.clone(),
                 instance,
                 id,
             })
@@ -1243,27 +1248,8 @@ impl Group {
             .to_rust()
             .unwrap()
     }
-    pub fn get(self, id: i64) -> Option<NormalMember> {
-        let instance = Jvm::attach_thread()
-            .unwrap()
-            .invoke(
-                &self.instance,
-                "get",
-                &[InvocationArg::try_from(id)
-                    .unwrap()
-                    .into_primitive()
-                    .unwrap()],
-            )
-            .unwrap();
-        if !instance_is_null(&instance) {
-            Some(NormalMember {
-                bot: self.bot,
-                instance,
-                id,
-            })
-        } else {
-            None
-        }
+    pub fn get(&self, id: i64) -> Option<NormalMember> {
+        NormalMember::in_group(self, id)
     }
     pub fn get_active(&self) -> GroupActive {
         let active_instance = Jvm::attach_thread()
@@ -1282,23 +1268,8 @@ impl Group {
                 .unwrap(),
         }
     }
-    pub fn get_bot_as_member(self) -> NormalMember {
-        let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getBotAsMember", &[]).unwrap();
-        let id = Jvm::attach_thread()
-            .unwrap()
-            .to_rust(
-                Jvm::attach_thread()
-                    .unwrap()
-                    .invoke(&self.bot, "getId", &[])
-                    .unwrap(),
-            )
-            .unwrap();
-        NormalMember {
-            bot: self.bot,
-            instance,
-            id,
-        }
+    pub fn get_bot_as_member(&self) -> NormalMember {
+        NormalMember::bot_in(self)
     }
     pub fn get_bot_mute_remaining(&self) -> i32 {
         Jvm::attach_thread()
@@ -1339,17 +1310,8 @@ impl Group {
             )
             .unwrap()
     }
-    pub fn get_owner(self) -> NormalMember {
-        let instance = Jvm::attach_thread()
-            .unwrap()
-            .invoke(&self.instance, "getSize", &[])
-            .unwrap();
-        let id = ContactOrBotTrait::get_id(&self);
-        NormalMember {
-            bot: self.bot,
-            instance,
-            id,
-        }
+    pub fn get_owner(&self) -> NormalMember {
+        NormalMember::owner_of(self)
     }
     pub fn get_settings(&self) -> GroupSettings {
         GroupSettings {
@@ -1381,7 +1343,7 @@ impl Group {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.to_rust(
             jvm.invoke(
-                &group.get_instance(),
+                group.as_instance(),
                 "setEssenceMessage",
                 &[
                     InvocationArg::try_from(group.get_instance()).unwrap(),

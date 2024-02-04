@@ -5,9 +5,9 @@ use crate::message::message_trait::{
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::FromInstance;
 use mj_base::env::GetClassTypeTrait;
-use mj_macro::{java_type, GetInstanceDerive};
+use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
 
-#[derive(GetInstanceDerive)]
+#[derive(AsInstanceDerive, GetInstanceDerive)]
 #[java_type("net.mamoe.mirai.message.data.PlainText")]
 pub struct PlainText {
     content: String,

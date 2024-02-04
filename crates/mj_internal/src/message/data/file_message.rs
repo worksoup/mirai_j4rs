@@ -1,6 +1,6 @@
 use crate::{
-    contact::FileSupportedTrait,
     contact::file::AbsoluteFile,
+    contact::FileSupportedTrait,
     message::message_trait::{
         CodableMessageTrait, ConstrainSingleTrait, MessageContentTrait, MessageTrait,
         SingleMessageTrait,
@@ -9,7 +9,7 @@ use crate::{
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::FromInstance;
 use mj_base::utils::instance_is_null;
-use mj_macro::{FromInstanceDerive, GetInstanceDerive, java_type};
+use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
 ///  # 文件消息。
 ///  
@@ -20,7 +20,7 @@ use mj_macro::{FromInstanceDerive, GetInstanceDerive, java_type};
 ///  
 ///  要获取到 [`FileMessage`]，可以通过 [`MessageEvent`] 获取，或通过 [`AbsoluteFile::to_message`] 得到。
 // TODO: 实现 SendSupportedTrait, 限制某些消息的发送。
-#[derive(GetInstanceDerive, FromInstanceDerive)]
+#[derive(AsInstanceDerive, GetInstanceDerive, FromInstanceDerive)]
 #[java_type("net.mamoe.mirai.message.data.FileMessage")]
 pub struct FileMessage {
     instance: Instance,

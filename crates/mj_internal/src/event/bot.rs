@@ -1,9 +1,9 @@
 use crate::event::event_trait::{BotEventTrait, BotOfflineEventTrait, MiraiEventTrait};
 use j4rs::{Instance, Jvm};
 use mj_base::env::FromInstance;
-use mj_macro::{java_type, GetInstanceDerive};
+use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
 
-#[derive(GetInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive)]
 #[java_type("net.mamoe.mirai.event.events.BotOnlineEvent")]
 pub struct BotOnlineEvent {
     instance: Instance,

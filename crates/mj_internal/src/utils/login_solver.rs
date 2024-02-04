@@ -8,11 +8,11 @@ use mj_closures::{
     kt_func_0::KtFunc0, kt_func_0::KtFunc0Raw, kt_func_1::KtFunc1, kt_func_1::KtFunc1Raw,
     kt_func_2::KtFunc2, kt_func_2::KtFunc2Raw,
 };
-use mj_macro::{FromInstanceDerive, GetInstanceDerive};
+use mj_macro::{AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 use std::ops::Deref;
 
 /// 该结构体未实现 [`LoginSolverTrait`], 如需使用相关功能请调用本实例的 `get_instance` 方法，获得 `Instance` 后直接操作。
-#[derive(GetInstanceDerive, FromInstanceDerive)]
+#[derive(AsInstanceDerive, GetInstanceDerive, FromInstanceDerive)]
 pub struct LoginSolver {
     instance: Instance,
 }
@@ -258,7 +258,7 @@ where
     fn on_completed();
 }
 
-#[derive(GetInstanceDerive)]
+#[derive(AsInstanceDerive, GetInstanceDerive)]
 pub struct SmsRequests {
     instance: Instance,
 }
@@ -334,7 +334,7 @@ impl FromInstance for DeviceVerificationRequests {
     }
 }
 
-#[derive(GetInstanceDerive)]
+#[derive(AsInstanceDerive, GetInstanceDerive)]
 pub struct DeviceVerificationResult {
     instance: Instance,
 }

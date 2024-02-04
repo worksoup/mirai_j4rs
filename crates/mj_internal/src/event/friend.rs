@@ -8,7 +8,7 @@ use mj_base::{
     env::{FromInstance, GetClassTypeTrait},
     utils::instance_is_null,
 };
-use mj_macro::{java_type, GetInstanceDerive};
+use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
 
 pub struct FriendRemarkChangeEvent {}
 
@@ -16,7 +16,7 @@ pub struct FriendAddEvent {}
 
 pub struct FriendDeleteEvent {}
 
-#[derive(GetInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive)]
 #[java_type("net.mamoe.mirai.event.events.NewFriendRequestEvent")]
 pub struct NewFriendRequestEvent {
     instance: Instance,

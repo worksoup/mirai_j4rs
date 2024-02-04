@@ -13,7 +13,7 @@ use crate::{
     utils::other::enums::AvatarSpec,
 };
 use j4rs::{InvocationArg, Jvm};
-use mj_base::env::{FromInstance, GetInstanceTrait};
+use mj_base::env::{AsInstanceTrait, FromInstance, GetInstanceTrait};
 
 pub trait AssertMemberPermissionTrait: MemberTrait {
     fn is_owner(&self) -> bool;
@@ -23,7 +23,7 @@ pub trait AssertMemberPermissionTrait: MemberTrait {
 
 pub trait ContactOrBotTrait
 where
-    Self: Sized + GetInstanceTrait + FromInstance,
+    Self: Sized + GetInstanceTrait + FromInstance + AsInstanceTrait,
 {
     fn get_bot(&self) -> crate::contact::bot::Bot {
         let instance = Jvm::attach_thread()

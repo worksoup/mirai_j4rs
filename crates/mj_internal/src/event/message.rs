@@ -1,12 +1,13 @@
+use crate::contact::Bot;
 use crate::{
     contact::{AnonymousMember, Friend, Group, Member, NormalMember},
     event::event_trait::{MessageEventTrait, MiraiEventTrait},
 };
 use j4rs::{Instance, Jvm};
 use mj_base::env::FromInstance;
-use mj_macro::{java_type, GetInstanceDerive};
+use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
 
-#[derive(GetInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive)]
 #[java_type("net.mamoe.mirai.event.events.GroupMessageEvent")]
 pub struct GroupMessageEvent {
     instance: Instance,
@@ -59,15 +60,11 @@ impl MessageEventTrait for GroupMessageEvent {
     fn get_subject(&self) -> Self::ContactItem {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm.invoke(&self.instance, "getSubject", &[]).unwrap();
-        let bot = jvm.invoke(&instance, "getBot", &[]).unwrap();
-        let id = jvm
-            .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
-            .unwrap();
-        Group { bot, instance, id }
+        Group::from_instance(instance)
     }
 }
 
-#[derive(GetInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive)]
 #[java_type("net.mamoe.mirai.event.events.FriendMessageEvent")]
 pub struct FriendMessageEvent {
     instance: Instance,
@@ -88,22 +85,14 @@ impl MessageEventTrait for FriendMessageEvent {
     fn get_sender(&self) -> Self::UserItem {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm.invoke(&self.instance, "getSender", &[]).unwrap();
-        let bot = jvm.invoke(&instance, "getBot", &[]).unwrap();
-        let id = jvm
-            .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
-            .unwrap();
-        Friend { bot, instance, id }
+        Friend::from_instance(instance)
     }
     type ContactItem = Friend;
 
     fn get_subject(&self) -> Friend {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm.invoke(&self.instance, "getSubject", &[]).unwrap();
-        let bot = jvm.invoke(&instance, "getBot", &[]).unwrap();
-        let id = jvm
-            .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
-            .unwrap();
-        Friend { bot, instance, id }
+        Friend::from_instance(instance)
     }
 }
 

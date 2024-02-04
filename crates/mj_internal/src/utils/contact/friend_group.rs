@@ -4,9 +4,9 @@ use mj_base::{
     env::{FromInstance, GetInstanceTrait},
     utils::java_iter_to_rust_vec,
 };
-use mj_macro::GetInstanceDerive;
+use mj_macro::{AsInstanceDerive, GetInstanceDerive};
 
-#[derive(GetInstanceDerive)]
+#[derive(AsInstanceDerive, GetInstanceDerive)]
 pub struct FriendGroup {
     pub(crate) instance: Instance,
 }
@@ -58,7 +58,7 @@ impl FriendGroup {
     }
 }
 
-#[derive(GetInstanceDerive)]
+#[derive(AsInstanceDerive, GetInstanceDerive)]
 pub struct FriendGroups {
     pub(crate) instance: Instance,
 }

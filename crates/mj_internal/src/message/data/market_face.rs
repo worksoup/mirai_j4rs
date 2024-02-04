@@ -4,11 +4,11 @@ use crate::message::message_trait::{
     ConstrainSingleTrait, MarketFaceTrait, MessageContentTrait, MessageTrait, SingleMessageTrait,
 };
 use j4rs::Instance;
-use mj_base::env::GetClassTypeTrait;
+use mj_base::env::{AsInstanceTrait, GetClassTypeTrait};
 use mj_base::env::{FromInstance, GetInstanceTrait};
-use mj_macro::{java_type, FromInstanceDerive, GetInstanceDerive};
+use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
-#[derive(GetInstanceDerive, FromInstanceDerive)]
+#[derive(AsInstanceDerive, GetInstanceDerive, FromInstanceDerive)]
 #[java_type("net.mamoe.mirai.message.data.MarketFace")]
 pub struct MarketFace {
     instance: Instance,
@@ -37,6 +37,16 @@ impl GetInstanceTrait for MarketFaceAll {
             MarketFaceAll::Dice(a) => a.get_instance(),
             MarketFaceAll::MarketFace(a) => a.get_instance(),
             MarketFaceAll::RockPaperScissors(a) => a.get_instance(),
+        }
+    }
+}
+
+impl AsInstanceTrait for MarketFaceAll {
+    fn as_instance(&self) -> &Instance {
+        match self {
+            MarketFaceAll::Dice(a) => a.as_instance(),
+            MarketFaceAll::MarketFace(a) => a.as_instance(),
+            MarketFaceAll::RockPaperScissors(a) => a.as_instance(),
         }
     }
 }

@@ -1,6 +1,6 @@
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::GetClassTypeTrait;
-use mj_macro::{java_type, FromInstanceDerive, GetInstanceDerive};
+use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
 #[inline]
 fn i8_array_to_java_byte_array(vec: &[i8]) -> Instance {
@@ -22,7 +22,7 @@ fn i8_array_to_java_byte_array(vec: &[i8]) -> Instance {
 ///
 /// 请注意要在使用完后手动 [close](ExternalResource::close).
 /// 具体说明请参考 Mirai 文档。
-#[derive(GetInstanceDerive, FromInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
 #[java_type("net.mamoe.mirai.utils.ExternalResource")]
 pub struct ExternalResource {
     instance: Instance,

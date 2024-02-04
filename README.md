@@ -17,10 +17,7 @@
 
 请查看该 [issue](https://github.com/worksoup/mirai_j4rs/issues/2#issue-2114138266).
 
-# 使用方法：
-
-可以参考 [示例](./examples)。
-
+# 使用方法
 在 `Cargo.toml` 中添加：
 
  ``` toml
@@ -28,61 +25,7 @@
 mirai_j4rs={ git = "https://github.com/worksoup/mirai_j4rs.git" }
  ```
 
-## 机器人
-
-第一种方法，适用于单个 `Bot`（因为内部没有措施防止 `Env` 重复定义）。
-
-``` rust
-use mirai_j4rs::prelude::*; // prelude 还没写。请自行导入所需的模块。
-fn main(){
-    let bot = BotBuilder::new()
-        .id(i64/*这里是你机器人的 id.*/)
-        // 通过 `BotAuthorization` 枚举选择登录方式，可选：`Password`, `Md5`, `QrCode`
-        .authorization(/*这里选择登录方式，为 `BotAuthorization` 枚举。*/)
-        // 这些配置函数几乎一一对应于 Mirai 中
-        // BotConfiguration 类，只是 mirai_j4rs 均使用蛇形命名法。
-        // 对于一些在 Mirai 中有可选参数的函数，以 Option 值代替。
-        .file_based_device_info(None)
-        .build();
-    bot.login();
-}
-```
-
-第二种方法，和 Mirai 类似，配置项与 Mirai 相同，<s>应该</s>和 Mirai 行为一致。
-
-``` rust
-use mirai_j4rs::prelude::*;
-fn main(){
-    // 以下语句中的两参数均为 `Vec<String>` 类型。
-    let env = mirai_j4rs::contact::bot::Env::new(jar_paths, java_opts);
-    // env 和 config 中各有一部分配置项。
-    // env 中一般是一些集成进去的插件（暂时没有额外集成的插件）的功能。
-    // 而 config 则是由 BotConfiguration 类提供的配置项。
-    let config = env.new_bot_configuration();
-    config.file_based_device_info(None);
-    config.setProtocol(MiraiProtocol::W);
-    let bot = env.new_bot_with_configuration(id, bot_authorization, config);
-    bot.login();
-}
-```
-
-## 事件
-
-``` rust
-let event_channel = bot.get_event_channel();
-// 回调函数：
-let on_group_message_event: Box<dyn Fn(GroupMessageEvent)> =
-    Box::new(
-        |event: GroupMessageEvent|{
-            /*做你想做的事情。*/
-        }
-    );
-// 监听并获取 Listener:
-let listener_for_group_message_event = event_channel.subscribe_always(&on_group_message_event);
-
-// NOTICE:
-// 这里的 api 极有发生可能改动。
-```
+可以参考 [示例](./examples)。
 
 # 关于开源协议
 

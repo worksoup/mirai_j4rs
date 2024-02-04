@@ -115,6 +115,6 @@ impl<T: FromInstance> FromInstance for DataWrapper<T> {
 
 impl<T: GetInstanceTrait> GetInstanceTrait for DataWrapper<T> {
     fn get_instance(&self) -> Instance {
-        <T as GetInstanceTrait>::get_instance(self)
+        <T as GetInstanceTrait>::get_instance(&self.data)
     }
 }

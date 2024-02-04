@@ -1,10 +1,10 @@
 use crate::message::message_trait::{ConstrainSingleTrait, MessageTrait, SingleMessageTrait};
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::{FromInstance, GetInstanceTrait};
-use mj_macro::{GetInstanceDerive, java_type};
+use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
 
 // TODO
-#[derive(GetInstanceDerive)]
+#[derive(AsInstanceDerive, GetInstanceDerive)]
 #[java_type("net.mamoe.mirai.message.data.MessageSource")]
 pub struct MessageSource {
     instance: Instance,

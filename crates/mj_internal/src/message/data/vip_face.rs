@@ -3,10 +3,10 @@ use crate::message::message_trait::{
     SingleMessageTrait,
 };
 use j4rs::Instance;
-use mj_macro::{java_type, FromInstanceDerive, GetInstanceDerive};
+use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
 // TODO: 低优先级
-#[derive(GetInstanceDerive, FromInstanceDerive)]
+#[derive(AsInstanceDerive, GetInstanceDerive, FromInstanceDerive)]
 #[java_type("net.mamoe.mirai.message.data.VipFace")]
 pub struct VipFace {
     instance: Instance,

@@ -3,9 +3,9 @@ use crate::message::message_trait::{
     SingleMessageTrait,
 };
 use j4rs::{Instance, Jvm};
-use mj_macro::{java_type, FromInstanceDerive, GetInstanceDerive};
+use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
-#[derive(GetInstanceDerive, FromInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
 #[java_type("net.mamoe.mirai.message.data.AtAll")]
 pub struct AtAll {
     instance: Instance,

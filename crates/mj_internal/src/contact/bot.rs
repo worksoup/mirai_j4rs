@@ -1,3 +1,4 @@
+use crate::contact::NormalMember;
 use crate::utils::{BotConfiguration, MiraiLogger};
 use crate::{
     contact::{
@@ -11,18 +12,31 @@ use crate::{
     utils::{contact::friend_group::FriendGroups, other::enums::AvatarSpec},
 };
 use j4rs::{Instance, InvocationArg, Jvm};
+use mj_base::utils::java_iter_to_rust_vec;
 use mj_base::{
     env::{FromInstance, GetInstanceTrait},
     utils::instance_is_null,
 };
+use mj_macro::{AsInstanceDerive, GetInstanceDerive};
 
+#[derive(GetInstanceDerive, AsInstanceDerive)]
 pub struct Bot {
-    pub(crate) instance: Instance,
-    pub(crate) id: i64,
+    _jvm: Jvm,
+    instance: Instance,
+    id: i64,
 }
-
+impl Clone for Bot {
+    fn clone(&self) -> Self {
+        Bot {
+            _jvm: Jvm::attach_thread().unwrap(),
+            instance: self.get_instance(),
+            ..*self
+        }
+    }
+}
 impl FromInstance for Bot {
     fn from_instance(instance: Instance) -> Self {
+        let jvm = Jvm::attach_thread().unwrap();
         let id = Jvm::attach_thread()
             .unwrap()
             .chain(&instance)
@@ -31,20 +45,46 @@ impl FromInstance for Bot {
             .unwrap()
             .to_rust()
             .unwrap();
-        Bot { instance, id }
-    }
-}
-
-impl GetInstanceTrait for Bot {
-    fn get_instance(&self) -> Instance {
-        Jvm::attach_thread()
-            .unwrap()
-            .clone_instance(&self.instance)
-            .unwrap()
+        Bot {
+            _jvm: jvm,
+            instance,
+            id,
+        }
     }
 }
 
 impl Bot {
+    pub fn get_bots() -> Vec<Bot> {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm
+            .invoke_static("net.mamoe.mirai.Bot$Companion", "getInstances", &[])
+            .unwrap();
+        let iter = jvm.invoke(&instance, "iterator", &[]).unwrap();
+        java_iter_to_rust_vec(&jvm, iter)
+    }
+
+    pub fn find_bot(id: i64) -> Option<Bot> {
+        let jvm = Jvm::attach_thread().unwrap();
+        let bot = jvm
+            .invoke_static(
+                "net.mamoe.mirai.Bot$Companion",
+                "findInstance",
+                &[InvocationArg::try_from(id)
+                    .unwrap()
+                    .into_primitive()
+                    .unwrap()],
+            )
+            .unwrap();
+        if !instance_is_null(&bot) {
+            Some(Bot {
+                _jvm: jvm,
+                instance: bot,
+                id,
+            })
+        } else {
+            None
+        }
+    }
     pub fn close(self) {
         Jvm::attach_thread()
             .unwrap()
@@ -59,16 +99,7 @@ impl Bot {
             .unwrap();
     }
     pub fn get_as_friend(&self) -> Friend {
-        let id = self.id;
-        let instance = Jvm::attach_thread()
-            .unwrap()
-            .invoke(&self.instance, "getAsFriend", &[])
-            .unwrap();
-        Friend {
-            bot: self.get_instance(),
-            instance,
-            id,
-        }
+        Friend::from_bot(self)
     }
     pub fn get_as_stranger(&self) -> Stranger {
         let instance = Jvm::attach_thread()
@@ -105,11 +136,7 @@ impl Bot {
             )
             .unwrap();
         if !instance_is_null(&instance) {
-            Some(Friend {
-                bot: self.get_instance(),
-                instance,
-                id,
-            })
+            Some(Friend::from_instance(instance))
         } else {
             None
         }

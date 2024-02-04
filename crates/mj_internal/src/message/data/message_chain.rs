@@ -17,9 +17,9 @@ use mj_base::{
     env::{FromInstance, GetInstanceTrait},
     utils::is_instance_of,
 };
-use mj_macro::GetInstanceDerive;
+use mj_macro::{AsInstanceDerive, GetInstanceDerive};
 
-#[derive(GetInstanceDerive)]
+#[derive(AsInstanceDerive, GetInstanceDerive)]
 pub struct MessageChain {
     pub(crate) instance: Instance,
 }
@@ -73,7 +73,7 @@ impl IntoIterator for MessageChain {
     }
 }
 
-#[derive(GetInstanceDerive)]
+#[derive(AsInstanceDerive, GetInstanceDerive)]
 pub struct MessageChainIterator {
     instance: Instance,
 }

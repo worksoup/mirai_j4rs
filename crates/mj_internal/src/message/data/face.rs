@@ -7,9 +7,9 @@ use crate::message::{
 };
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::FromInstance;
-use mj_macro::{GetInstanceDerive, java_type};
+use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
 include!("face_res.rs");
-#[derive(GetInstanceDerive)]
+#[derive(AsInstanceDerive, GetInstanceDerive)]
 #[java_type("net.mamoe.mirai.message.data.Face")]
 pub struct Face {
     name: String,

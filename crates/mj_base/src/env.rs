@@ -17,6 +17,10 @@ pub trait GetInstanceTrait {
     fn get_instance(&self) -> Instance;
 }
 
+pub trait AsInstanceTrait {
+    fn as_instance(&self) -> &Instance;
+}
+
 /// 通过 `j4rs::Instance` 获得当前结构体。
 pub trait FromInstance {
     fn from_instance(instance: Instance) -> Self;

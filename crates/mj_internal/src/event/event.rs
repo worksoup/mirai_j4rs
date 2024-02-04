@@ -10,6 +10,15 @@ pub struct EventChannel {
 }
 
 impl EventChannel {
+    //默认是global的。
+    pub fn global_event_channel() -> EventChannel {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = Jvm::attach_thread()
+            .unwrap()
+            .static_class("net.mamoe.mirai.event.GlobalEventChannel$INSTANCE")
+            .unwrap();
+        EventChannel { jvm, instance }
+    }
     fn subscribe_internal<E: MiraiEventTrait>(
         &self,
         call_from_java_raw_list: &[i8; 16],

@@ -1,16 +1,14 @@
+pub mod bot_builder;
 mod bot_configuration;
 pub mod contact;
 mod device_info;
-mod env;
 pub mod just_for_examples;
 pub mod login_solver;
 mod mirai_logger;
 pub mod other;
-pub mod bot_builder;
 
 pub use bot_configuration::*;
 pub use device_info::*;
-pub use env::*;
 pub use mirai_logger::*;
 
 use j4rs::{Instance, InvocationArg, Jvm};

@@ -17,6 +17,19 @@ pub fn get_instance_derive(input: TokenStream) -> TokenStream {
     };
     gen.into()
 }
+#[proc_macro_derive(AsInstanceDerive)]
+pub fn as_instance_derive(input: TokenStream) -> TokenStream {
+    let ast: &syn::DeriveInput = &syn::parse(input).unwrap();
+    let name = &ast.ident;
+    let gen = quote! {
+        impl mj_base::env::AsInstanceTrait for #name {
+            fn as_instance(&self) -> &j4rs::Instance{
+                &self.instance
+            }
+        }
+    };
+    gen.into()
+}
 #[proc_macro_derive(FromInstanceDerive)]
 pub fn from_instance_derive(input: TokenStream) -> TokenStream {
     let ast: &syn::DeriveInput = &syn::parse(input).unwrap();

@@ -34,7 +34,7 @@ pub mod member {
     };
     use j4rs::{Instance, InvocationArg, Jvm};
     use mj_base::env::FromInstance;
-    use mj_macro::{java_type, GetInstanceDerive};
+    use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
 
     pub enum MemberJoinEvent {
         Invite,
@@ -47,7 +47,7 @@ pub mod member {
     }
 
     // TODO: BaseGroupMemberInfoChangeEvent
-    #[derive(GetInstanceDerive)]
+    #[derive(GetInstanceDerive, AsInstanceDerive)]
     #[java_type("net.mamoe.mirai.event.events.MemberJoinRequestEvent")]
     pub struct MemberJoinRequestEvent {
         instance: Instance,

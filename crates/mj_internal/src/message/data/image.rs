@@ -111,7 +111,7 @@ impl Image {
     }
     /// 模板：`\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\..{3,5}`
     /// 示例：`{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.ext`
-    /// 可以直接使用 [IMAGE_ID_REGEX] 静态对象。
+    /// 可以直接使用 [static@IMAGE_ID_REGEX] 静态对象。
     pub fn get_image_id_regex() -> Regex {
         return IMAGE_ID_REGEX.clone();
     }

@@ -11,7 +11,7 @@ pub struct EventChannel {
 
 impl EventChannel {
     //默认是global的。
-    pub fn global_event_channel() -> EventChannel {
+    pub fn global() -> EventChannel {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = Jvm::attach_thread()
             .unwrap()

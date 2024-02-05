@@ -1,7 +1,7 @@
+use crate::error::MiraiRsErrorEnum;
 use crate::message::data::OfflineAudio;
 use crate::{
     contact::{
-        file::{ExternalResource, RemoteFiles},
         group::{
             AnnouncementParameters, Group, MemberActive, MemberPermission, OfflineAnnouncement,
             OnlineAnnouncement,
@@ -10,7 +10,10 @@ use crate::{
     },
     error::MiraiRsError,
     message::{action::Nudge, data::Image, MessageReceipt, MessageTrait},
-    utils::other::enums::AvatarSpec,
+    utils::{
+        contact::file::{ExternalResource, RemoteFiles},
+        other::enums::AvatarSpec,
+    },
 };
 use j4rs::{InvocationArg, Jvm};
 use mj_base::env::{AsInstanceTrait, FromInstance, GetInstanceTrait};

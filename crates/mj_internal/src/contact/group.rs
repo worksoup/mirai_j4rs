@@ -1,14 +1,9 @@
 use crate::contact::AudioSupportedTrait;
-use crate::message::data::Image;
+use crate::error::MiraiRsErrorEnum;
 use crate::{
     contact::{
-        bot::Bot,
-        contact_trait::{
-            AnnouncementTrait, ContactOrBotTrait, ContactTrait, FileSupportedTrait,
-            PublishAnnouncementSupportedTrait, SendMessageSupportedTrait,
-        },
-        file::ExternalResource,
-        ContactList, NormalMember,
+        AnnouncementTrait, Bot, ContactOrBotTrait, ContactTrait, FileSupportedTrait, NormalMember,
+        PublishAnnouncementSupportedTrait, SendMessageSupportedTrait,
     },
     error::MiraiRsError,
     message::{
@@ -16,6 +11,7 @@ use crate::{
         MessageHashCodeTrait,
     },
     utils::{
+        contact::{file::ExternalResource, ContactList},
         other::enums::{AvatarSpec, GroupHonorType, MemberMedalType},
         JavaStream,
     },
@@ -1366,3 +1362,5 @@ impl Group {
     }
     // TODO: 获取精华消息。
 }
+
+impl AudioSupportedTrait for Group {}

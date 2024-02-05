@@ -1,10 +1,9 @@
-use crate::contact::NormalMember;
+use crate::utils::contact::ContactList;
 use crate::utils::{BotConfiguration, MiraiLogger};
 use crate::{
     contact::{
         contact_trait::{ContactOrBotTrait, NudgeSupportedTrait, UserOrBotTrait},
-        group::Group,
-        ContactList, Friend, OtherClient, Stranger,
+        Friend, Group, OtherClient, Stranger,
     },
     error::MiraiRsError,
     event::EventChannel,

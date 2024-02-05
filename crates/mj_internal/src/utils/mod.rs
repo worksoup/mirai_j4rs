@@ -31,7 +31,7 @@ pub trait MiraiRsCollectionTrait {
 
 pub trait MiraiRsIterableTrait: Iterator {}
 
-/// 对应 Stream<AbsoluteFileFolder>
+/// 对应 `Stream<AbsoluteFileFolder>`
 pub struct JavaStream<T: FromInstance + GetClassTypeTrait> {
     pub(crate) instance: Instance,
     pub(crate) _unused: PhantomData<T>,

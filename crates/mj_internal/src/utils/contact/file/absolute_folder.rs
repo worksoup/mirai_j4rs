@@ -1,6 +1,6 @@
-use crate::{
+use crate::utils::{
     contact::file::{AbsoluteFile, AbsoluteFileFolder, AbsoluteFileFolderTrait, ExternalResource},
-    utils::JavaStream,
+    JavaStream,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::{AsInstanceTrait, FromInstance, GetInstanceTrait};

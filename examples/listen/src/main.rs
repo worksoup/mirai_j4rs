@@ -1,6 +1,5 @@
-use mirai_j4rs::utils::just_for_examples::bot_group_member;
 use mirai_j4rs::{
-    contact::{file::AbsoluteFileFolderTrait, Group, SendMessageSupportedTrait},
+    contact::{Group, SendMessageSupportedTrait},
     event::{
         event_trait::MessageEventTrait,
         message::{FriendMessageEvent, GroupMessageEvent},
@@ -9,6 +8,7 @@ use mirai_j4rs::{
         data::{Audio, MarketFaceAll, RockPaperScissors, SingleMessage},
         MarketFaceTrait, MessageTrait,
     },
+    utils::{contact::file::AbsoluteFileFolderTrait, just_for_examples::bot_group_member},
 };
 
 /// 该函数接受一个 SingleMessage, 然后做出对应的反应。

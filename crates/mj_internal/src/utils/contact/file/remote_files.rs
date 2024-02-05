@@ -1,8 +1,5 @@
-use crate::contact::{
-    file::{AbsoluteFile, AbsoluteFolder, ExternalResource},
-    group::Group,
-    Bot,
-};
+use crate::contact::{Bot, Group};
+use crate::utils::contact::file::{AbsoluteFile, AbsoluteFolder, ExternalResource};
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::{AsInstanceTrait, FromInstance, GetInstanceTrait};
 use mj_macro::{AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};

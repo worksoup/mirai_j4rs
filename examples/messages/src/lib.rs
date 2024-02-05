@@ -1,22 +1,21 @@
 #[cfg(test)]
 mod tests {
-    use mirai_j4rs::contact::AudioSupportedTrait;
-    use mirai_j4rs::message::data::PokeMessageEnum;
-    use mirai_j4rs::message::AudioTrait;
-    use mirai_j4rs::utils::just_for_examples::bot_group_member;
     use mirai_j4rs::{
         contact::{
-            file::{AbsoluteFileFolderTrait, ExternalResource},
-            ContactOrBotTrait, FileSupportedTrait, Group, NudgeSupportedTrait,
+            AudioSupportedTrait, ContactOrBotTrait, FileSupportedTrait, Group, NudgeSupportedTrait,
             SendMessageSupportedTrait,
         },
         message::{
             action::{BotNudge, Nudge},
             data::{
                 At, AtAll, Dice, Face, ForwardMessageBuilder, Image, MarketFace, PlainText,
-                PokeMessage, RockPaperScissors,
+                PokeMessage, PokeMessageEnum, RockPaperScissors,
             },
-            CodableMessageTrait, MessageHashCodeTrait, MessageTrait,
+            AudioTrait, CodableMessageTrait, MessageHashCodeTrait, MessageTrait,
+        },
+        utils::{
+            contact::file::{AbsoluteFileFolderTrait, ExternalResource},
+            just_for_examples::bot_group_member,
         },
     };
 

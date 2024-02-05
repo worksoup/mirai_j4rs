@@ -20,7 +20,11 @@ pub struct BotBuilder {
     id: Option<i64>,
     bot_authorization: Option<BotAuthorization>,
 }
-
+impl Default for BotBuilder {
+    fn default() -> Self {
+        Self::new(".")
+    }
+}
 impl BotBuilder {
     pub fn new<P: AsRef<Path>>(working_dir: P) -> Self {
         let working_dir = std::fs::canonicalize(working_dir).expect("目录无法解析。");

@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests {
     use mirai_j4rs::contact::AudioSupportedTrait;
+    use mirai_j4rs::message::data::PokeMessageEnum;
     use mirai_j4rs::message::AudioTrait;
     use mirai_j4rs::utils::just_for_examples::bot_group_member;
     use mirai_j4rs::{
@@ -18,6 +19,7 @@ mod tests {
             CodableMessageTrait, MessageHashCodeTrait, MessageTrait,
         },
     };
+
     static WORKING_DIR: &str = "../../working_dir";
     static IMAGE_PATH: &str = "../../working_dir/mirai.png";
     static AUDIO_PATH: &str = "../../working_dir/test.mp3";
@@ -221,11 +223,11 @@ mod tests {
         // `PokeMessage`
         // 在群里可以发 SVIP 的戳一戳。
         // 官方客户端似乎不能在群里发该类型消息。
-        let poke_message = PokeMessage::召唤术;
+        let poke_message: PokeMessage = PokeMessageEnum::召唤术.into();
         let r = group.send_message(poke_message);
         r.recall();
         // 但是只能给好友发普通戳一戳。
-        let poke_message = PokeMessage::六六六;
+        let poke_message: PokeMessage = PokeMessageEnum::六六六.into();
         let r = friend.send_message(poke_message);
         r.recall();
         bot.close();

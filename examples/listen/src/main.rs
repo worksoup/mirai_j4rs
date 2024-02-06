@@ -1,9 +1,6 @@
 use mirai_j4rs::{
     contact::{Group, SendMessageSupportedTrait},
-    event::{
-        event_trait::MessageEventTrait,
-        message::{FriendMessageEvent, GroupMessageEvent},
-    },
+    event::{FriendMessageEvent, GroupMessageEvent, MessageEventTrait},
     message::{
         data::{Audio, MarketFaceAll, RockPaperScissors, SingleMessage},
         MarketFaceTrait, MessageTrait,

@@ -2,7 +2,6 @@ use crate::contact::{
     Bot, ContactOrBotTrait, ContactTrait, NudgeSupportedTrait, SendMessageSupportedTrait,
     UserOrBotTrait, UserTrait,
 };
-use crate::message::action::FriendNudge;
 use crate::utils::contact::friend_group::FriendGroup;
 use crate::utils::other::enums::AvatarSpec;
 use j4rs::{Instance, InvocationArg, Jvm};
@@ -86,9 +85,7 @@ impl ContactOrBotTrait for Friend {
 
 impl UserOrBotTrait for Friend {}
 
-impl NudgeSupportedTrait for Friend {
-    type NudgeType = FriendNudge;
-}
+impl NudgeSupportedTrait for Friend {}
 
 impl ContactTrait for Friend {}
 

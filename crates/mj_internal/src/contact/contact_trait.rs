@@ -1,4 +1,5 @@
 use crate::error::MiraiRsErrorEnum;
+use crate::message::action::Nudge;
 use crate::message::data::OfflineAudio;
 use crate::{
     contact::{
@@ -9,7 +10,7 @@ use crate::{
         Friend,
     },
     error::MiraiRsError,
-    message::{action::Nudge, data::Image, MessageReceipt, MessageTrait},
+    message::{action::NudgeTrait, data::Image, MessageReceipt, MessageTrait},
     utils::{
         contact::file::{ExternalResource, RemoteFiles},
         other::enums::AvatarSpec,
@@ -187,11 +188,10 @@ where
 }
 
 pub trait NudgeSupportedTrait: UserOrBotTrait {
-    type NudgeType: Nudge;
-    fn nudge(&self) -> Self::NudgeType {
+    fn nudge(&self) -> Nudge<Self> {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm.invoke(&self.get_instance(), "nudge", &[]).unwrap();
-        Self::NudgeType::from_instance(instance)
+        Nudge::from_instance(instance)
     }
 }
 

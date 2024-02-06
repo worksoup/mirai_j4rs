@@ -1,6 +1,5 @@
-use crate::event::event_trait::{BotEventTrait, BotOfflineEventTrait, MiraiEventTrait};
+use crate::event::{BotActiveEventTrait, BotEventTrait, MiraiEventTrait};
 use j4rs::{Instance, Jvm};
-use mj_base::env::FromInstance;
 use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
 #[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
@@ -10,6 +9,10 @@ pub struct BotOnlineEvent {
 }
 
 impl BotOnlineEvent {}
+
+impl BotEventTrait for BotOnlineEvent {}
+
+impl BotActiveEventTrait for BotOnlineEvent {}
 
 impl MiraiEventTrait for BotOnlineEvent {
     fn cancel(&self) {
@@ -52,30 +55,3 @@ impl MiraiEventTrait for BotOnlineEvent {
     //     TODO: EventKt
     // }
 }
-
-impl BotEventTrait for BotOnlineEvent {}
-
-pub struct Active {}
-
-pub struct Force {}
-
-pub struct Dropped {}
-
-pub struct RequireReconnect {}
-
-pub enum BotOfflineEvent {
-    Active(Active),
-    Force(Force),
-    Dropped(Dropped),
-    RequireReconnect(RequireReconnect),
-}
-
-impl BotOfflineEventTrait for BotOfflineEvent {}
-
-pub struct BotReloginEvent {}
-
-pub struct BotAvatarChangedEvent {}
-
-pub struct BotNickChangedEvent {}
-
-pub struct NudgeEvent {}

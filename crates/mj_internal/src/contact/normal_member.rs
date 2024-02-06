@@ -3,7 +3,6 @@ use crate::contact::{
     MemberPermission, MemberTrait, NudgeSupportedTrait, SendMessageSupportedTrait, UserOrBotTrait,
     UserTrait,
 };
-use crate::message::action::NormalMemberNudge;
 use crate::utils::other::enums::AvatarSpec;
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::{AsInstanceTrait, FromInstance};
@@ -170,9 +169,7 @@ impl SendMessageSupportedTrait for NormalMember {}
 
 impl UserOrBotTrait for NormalMember {}
 
-impl NudgeSupportedTrait for NormalMember {
-    type NudgeType = NormalMemberNudge;
-}
+impl NudgeSupportedTrait for NormalMember {}
 
 impl UserTrait for NormalMember {}
 

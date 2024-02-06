@@ -1,4 +1,4 @@
-use crate::event::bot::BotOfflineEvent;
+use crate::event::bot_offline::BotOfflineEvent;
 use crate::{
     auth::bot_authorization::BotAuthorization,
     contact::Bot,

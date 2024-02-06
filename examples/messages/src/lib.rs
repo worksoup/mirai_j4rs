@@ -6,7 +6,7 @@ mod tests {
             SendMessageSupportedTrait,
         },
         message::{
-            action::{BotNudge, Nudge},
+            action::{BotNudge, NudgeTrait},
             data::{
                 At, AtAll, Dice, Face, ForwardMessageBuilder, Image, MarketFace, PlainText,
                 PokeMessage, PokeMessageEnum, RockPaperScissors,

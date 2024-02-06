@@ -1,20 +1,10 @@
-use crate::{
-    contact::Group,
-    event::event_trait::{BotEventTrait, FriendInfoChangedEvent, MiraiEventTrait},
-    message::MessageHashCodeTrait,
-};
+use crate::contact::Group;
+use crate::event::{BotEventTrait, FriendInfoChangeEventTrait, MiraiEventTrait};
+use crate::message::MessageHashCodeTrait;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::{
-    env::{FromInstance, GetClassTypeTrait},
-    utils::instance_is_null,
-};
+use mj_base::env::FromInstance;
+use mj_base::utils::instance_is_null;
 use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
-
-pub struct FriendRemarkChangeEvent {}
-
-pub struct FriendAddEvent {}
-
-pub struct FriendDeleteEvent {}
 
 #[derive(GetInstanceDerive, AsInstanceDerive)]
 #[java_type("net.mamoe.mirai.event.events.NewFriendRequestEvent")]
@@ -94,10 +84,4 @@ impl MiraiEventTrait for NewFriendRequestEvent {}
 
 impl BotEventTrait for NewFriendRequestEvent {}
 
-impl FriendInfoChangedEvent for NewFriendRequestEvent {}
-
-pub struct FriendAvatarChangedEvent {}
-
-pub struct FriendNickChangedEvent {}
-
-pub struct FriendInputStatusChangedEvent {}
+impl FriendInfoChangeEventTrait for NewFriendRequestEvent {}

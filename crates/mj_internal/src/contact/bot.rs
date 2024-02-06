@@ -7,7 +7,6 @@ use crate::{
     },
     error::MiraiRsError,
     event::EventChannel,
-    message::action::BotNudge,
     utils::{contact::friend_group::FriendGroups, other::enums::AvatarSpec},
 };
 use j4rs::{Instance, InvocationArg, Jvm};
@@ -243,6 +242,4 @@ impl ContactOrBotTrait for Bot {
 
 impl UserOrBotTrait for Bot {}
 
-impl NudgeSupportedTrait for Bot {
-    type NudgeType = BotNudge;
-}
+impl NudgeSupportedTrait for Bot {}

@@ -1,5 +1,6 @@
 use crate::contact::ContactTrait;
 use crate::message::MessageHashCodeTrait;
+use crate::utils::MiraiRsCollectionTrait;
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::{FromInstance, GetInstanceTrait};
 use mj_base::utils::instance_is_null;
@@ -122,4 +123,32 @@ where
 }
 
 impl<T: ContactTrait + FromInstance> MessageHashCodeTrait for ContactList<T> {}
-// TODO: impl MiraiRsCollectionTrait fot ContactList<_>{}
+impl<T: ContactTrait + FromInstance> MiraiRsCollectionTrait for ContactList<T> {
+    type Element = T;
+
+    fn get_size(&self) -> i32 {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "getSize", &[]).unwrap())
+            .unwrap()
+    }
+
+    fn is_empty(&self) -> bool {
+        let jvm = Jvm::attach_thread().unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "isEmpty", &[]).unwrap())
+            .unwrap()
+    }
+
+    fn contains(&self, element: &Self::Element) -> bool {
+        let jvm = Jvm::attach_thread().unwrap();
+        let element = InvocationArg::try_from(element.get_instance()).unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "contains", &[element]).unwrap())
+            .unwrap()
+    }
+
+    fn contains_all(&self, elements: Self) -> bool {
+        let jvm = Jvm::attach_thread().unwrap();
+        let elements = InvocationArg::try_from(elements.get_instance()).unwrap();
+        jvm.to_rust(jvm.invoke(&self.instance, "contains", &[elements]).unwrap())
+            .unwrap()
+    }
+}

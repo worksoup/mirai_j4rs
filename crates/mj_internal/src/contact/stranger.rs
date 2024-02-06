@@ -2,7 +2,6 @@ use crate::contact::{
     ContactOrBotTrait, ContactTrait, NudgeSupportedTrait, SendMessageSupportedTrait,
     UserOrBotTrait, UserTrait,
 };
-use crate::message::action::StrangerNudge;
 use crate::utils::other::enums::AvatarSpec;
 use j4rs::Instance;
 use mj_macro::{AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
@@ -29,9 +28,7 @@ impl ContactOrBotTrait for Stranger {
 
 impl UserOrBotTrait for Stranger {}
 
-impl NudgeSupportedTrait for Stranger {
-    type NudgeType = StrangerNudge;
-}
+impl NudgeSupportedTrait for Stranger {}
 
 impl ContactTrait for Stranger {}
 

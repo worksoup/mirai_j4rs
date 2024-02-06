@@ -1,8 +1,9 @@
-pub use event::*;
+mod event_channel;
+mod events;
+mod listener;
+mod traits;
 
-pub mod bot;
-pub mod event;
-pub mod event_trait;
-pub mod friend;
-pub mod group;
-pub mod message;
+pub use event_channel::*;
+pub use events::*;
+pub use listener::*;
+pub use traits::*;

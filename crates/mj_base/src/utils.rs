@@ -1,7 +1,8 @@
-use crate::env::FromInstanceTrait;
+use std::{collections::HashSet, hash::Hash};
+
 use j4rs::{Instance, InvocationArg, Jvm};
-use std::collections::HashSet;
-use std::hash::Hash;
+
+use crate::env::FromInstanceTrait;
 
 pub fn primitive_byte_array_to_string(jvm: &Jvm, instance: Instance) -> Instance {
     // let instance = jvm.clone_instance(instance).unwrap();

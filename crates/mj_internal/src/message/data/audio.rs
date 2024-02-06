@@ -1,11 +1,13 @@
+use j4rs::{Instance, InvocationArg, Jvm};
+
+use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
+use mj_macro::mj_all;
+
 use crate::message::message_trait::{
     AudioTrait, ConstrainSingleTrait, MessageContentTrait, MessageTrait, SingleMessageTrait,
 };
-use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
-use mj_macro::{java_type, mj_all, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
-#[mj_all("net.mamoe.mirai.message.data.Audio")]
+#[mj_all("message.data.Audio")]
 pub enum Audio {
     OnlineAudio(OnlineAudio),
     OfflineAudio(OfflineAudio),
@@ -16,7 +18,7 @@ impl MessageContentTrait for Audio {}
 impl ConstrainSingleTrait for Audio {}
 impl MessageTrait for Audio {}
 
-#[mj_all("net.mamoe.mirai.message.data.OfflineAudio")]
+#[mj_all("message.data.OfflineAudio")]
 pub struct OfflineAudio {
     instance: Instance,
 }
@@ -35,7 +37,8 @@ impl TryFrom<OnlineAudio> for OfflineAudio {
         let online_audio = InvocationArg::try_from(online_audio.get_instance()).unwrap();
         let instance = jvm
             .invoke_static(
-                "net.mamoe.mirai.message.data.OfflineAudio$Factory$INSTANCE",
+                (<Self as GetClassTypeTrait>::get_type_name().to_string() + "$Factory$INSTANCE")
+                    .as_str(),
                 "",
                 &[online_audio],
             )
@@ -54,7 +57,7 @@ impl MessageContentTrait for OfflineAudio {}
 
 impl AudioTrait for OfflineAudio {}
 
-#[mj_all("net.mamoe.mirai.message.data.OnlineAudio")]
+#[mj_all("message.data.OnlineAudio")]
 pub struct OnlineAudio {
     instance: Instance,
 }

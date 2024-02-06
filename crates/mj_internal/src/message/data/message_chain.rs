@@ -1,25 +1,18 @@
+use j4rs::{Instance, InvocationArg, Jvm};
+
+use mj_base::env::{FromInstanceTrait, GetInstanceTrait};
+use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
+
 use crate::{
     message::{
-        data::{
-            at::At, at_all::AtAll, dice::Dice, face::Face, file_message::FileMessage,
-            forward_message::ForwardMessage, image::Image, light_app::LightApp,
-            market_face::MarketFace, message_source::MessageSource, music_share::MusicShare,
-            plain_text::PlainText, poke_message::PokeMessage, quote_reply::QuoteReply,
-            rock_paper_scissors::RockPaperScissors, single_message::SingleMessage,
-            super_face::SuperFace, unsupported_message::UnsupportedMessage, vip_face::VipFace,
-        },
+        data::single_message::SingleMessage,
         message_trait::{CodableMessageTrait, MessageChainTrait, MessageTrait},
     },
     utils::MiraiRsCollectionTrait,
 };
-use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::{
-    env::{FromInstanceTrait, GetInstanceTrait},
-    utils::is_instance_of,
-};
-use mj_macro::{AsInstanceDerive, GetInstanceDerive};
 
 #[derive(AsInstanceDerive, GetInstanceDerive)]
+#[java_type("message.data.MessageChain")]
 pub struct MessageChain {
     pub(crate) instance: Instance,
 }

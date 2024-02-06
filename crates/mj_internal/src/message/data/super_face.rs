@@ -1,3 +1,11 @@
+use j4rs::{Instance, InvocationArg, Jvm};
+
+use mj_base::{
+    env::{FromInstanceTrait, GetClassTypeTrait as _, GetInstanceTrait as _},
+    utils::instance_is_null,
+};
+use mj_macro::mj_all;
+
 use crate::message::{
     data::face::Face,
     message_trait::{
@@ -5,15 +13,8 @@ use crate::message::{
         MessageTrait, SingleMessageTrait,
     },
 };
-use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::{
-    env::{FromInstanceTrait, GetClassTypeTrait as _, GetInstanceTrait as _},
-    utils::instance_is_null,
-};
-use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
-#[derive(AsInstanceDerive, GetInstanceDerive, FromInstanceDerive)]
-#[java_type("net.mamoe.mirai.message.data.SuperFace")]
+#[mj_all("message.data.SuperFace")]
 pub struct SuperFace {
     instance: Instance,
 }

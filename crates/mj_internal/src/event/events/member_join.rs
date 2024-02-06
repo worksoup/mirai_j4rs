@@ -1,15 +1,17 @@
+use j4rs::Instance;
+
+use mj_macro::mj_event;
+
 use crate::event::{
     BaseGroupMemberInfoChangeEventTrait, BotEventTrait, BotPassiveEventTrait, GroupEventTrait,
     GroupMemberEventTrait, GroupMemberInfoChangeEventTrait, UserEventTrait,
 };
-use j4rs::Instance;
-use mj_macro::mj_event;
 
 pub trait MemberJoinEventTrait:
     GroupMemberEventTrait + BotPassiveEventTrait + GroupMemberInfoChangeEventTrait
 {
 }
-#[mj_event("net.mamoe.mirai.event.events.MemberJoinEvent$Active")]
+#[mj_event("event.events.MemberJoinEvent$Active")]
 pub struct Active {
     instance: Instance,
 }
@@ -29,7 +31,7 @@ impl GroupMemberInfoChangeEventTrait for Active {}
 impl BaseGroupMemberInfoChangeEventTrait for Active {}
 
 impl MemberJoinEventTrait for Active {}
-#[mj_event("net.mamoe.mirai.event.events.MemberJoinEvent$Invite")]
+#[mj_event("event.events.MemberJoinEvent$Invite")]
 pub struct Invite {
     instance: Instance,
 }
@@ -49,7 +51,7 @@ impl GroupMemberInfoChangeEventTrait for Invite {}
 impl BaseGroupMemberInfoChangeEventTrait for Invite {}
 
 impl MemberJoinEventTrait for Invite {}
-#[mj_event("net.mamoe.mirai.event.events.MemberJoinEvent$Retrieve")]
+#[mj_event("event.events.MemberJoinEvent$Retrieve")]
 pub struct Retrieve {
     instance: Instance,
 }

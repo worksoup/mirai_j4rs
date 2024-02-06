@@ -1,8 +1,10 @@
+use std::{marker::PhantomData, mem::transmute};
+
 use j4rs::{errors::J4RsError, prelude::*, Instance, InvocationArg, Jvm};
 use j4rs_derive::*;
+
 use mj_base::{data_wrapper::DataWrapper, env::FromInstanceTrait, utils::instance_from_i8_16};
 use mj_macro::GetInstanceDerive;
-use std::{marker::PhantomData, mem::transmute};
 
 #[call_from_java("rt.lea.LumiaPredicate.nativeTest")]
 fn lumia_predicate_test(

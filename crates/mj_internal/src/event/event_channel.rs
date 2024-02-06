@@ -1,7 +1,11 @@
-use crate::event::{Listener, MiraiEventTrait, OnEvent};
-use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::data_wrapper::DataWrapper;
 use std::intrinsics::transmute;
+
+use j4rs::{Instance, InvocationArg, Jvm};
+
+use mj_base::data_wrapper::DataWrapper;
+use mj_base::MIRAI_PREFIX;
+
+use crate::event::{Listener, MiraiEventTrait, OnEvent};
 
 //需要由Env构造。
 pub struct EventChannel {
@@ -15,7 +19,7 @@ impl EventChannel {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = Jvm::attach_thread()
             .unwrap()
-            .static_class("net.mamoe.mirai.event.GlobalEventChannel$INSTANCE")
+            .static_class((MIRAI_PREFIX.to_string() + "event.GlobalEventChannel$INSTANCE").as_str())
             .unwrap();
         EventChannel { jvm, instance }
     }

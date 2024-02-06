@@ -1,10 +1,13 @@
+use std::marker::PhantomData;
+
+use j4rs::{Instance, InvocationArg, Jvm};
+
+use mj_base::env::{FromInstanceTrait, GetInstanceTrait};
+use mj_base::utils::instance_is_null;
+
 use crate::contact::ContactTrait;
 use crate::message::MessageHashCodeTrait;
 use crate::utils::MiraiRsCollectionTrait;
-use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstanceTrait, GetInstanceTrait};
-use mj_base::utils::instance_is_null;
-use std::marker::PhantomData;
 
 pub struct ContactList<T>
 where

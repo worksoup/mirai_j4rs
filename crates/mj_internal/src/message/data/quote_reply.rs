@@ -1,3 +1,8 @@
+use j4rs::{Instance, InvocationArg, Jvm};
+
+use mj_base::env::{FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
+use mj_macro::mj_all;
+
 use crate::message::{
     data::{message_chain::MessageChain, message_source::MessageSource},
     message_trait::{
@@ -5,12 +10,8 @@ use crate::message::{
         SingleMessageTrait,
     },
 };
-use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstanceTrait, GetInstanceTrait};
-use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
-#[derive(AsInstanceDerive, GetInstanceDerive, FromInstanceDerive)]
-#[java_type("net.mamoe.mirai.message.data.QuoteReply")]
+#[mj_all("message.data.QuoteReply")]
 pub struct QuoteReply {
     instance: Instance,
 }
@@ -37,7 +38,7 @@ impl From<MessageChain> for QuoteReply {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .create_instance(
-                "net.mamoe.mirai.message.data.QuoteReply",
+                <Self as GetClassTypeTrait>::get_type_name(),
                 &[InvocationArg::try_from(source_message.get_instance()).unwrap()],
             )
             .unwrap();

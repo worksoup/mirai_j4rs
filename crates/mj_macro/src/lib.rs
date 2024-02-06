@@ -1,10 +1,14 @@
 extern crate proc_macro;
 
 use proc_macro::TokenStream;
+
 use proc_macro2::Span;
 use quote::quote;
 use syn;
 use syn::{Data, DeriveInput, Field, Fields, LitStr, Type};
+
+use mj_base::MIRAI_PREFIX;
+
 fn impl_get_as(
     ast_data: &Data,
     name: &proc_macro2::Ident,
@@ -31,6 +35,14 @@ fn impl_get_as(
             panic!("不支持使用 `union`!")
         }
     }
+}
+fn add_prefix(input: TokenStream) -> LitStr {
+    let type_name: &syn::LitStr = &syn::parse(input).expect("类型名称请用字符串表示！");
+    let type_name = type_name.value();
+    LitStr::new(
+        format!("{}{}", MIRAI_PREFIX, type_name).as_str(),
+        Span::mixed_site(),
+    )
 }
 #[proc_macro_derive(GetInstanceDerive)]
 pub fn get_instance_derive(input: TokenStream) -> TokenStream {
@@ -179,7 +191,7 @@ pub fn from_instance_derive(input: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn java_type(type_name: TokenStream, input: TokenStream) -> TokenStream {
     let ast: &DeriveInput = &syn::parse(input).unwrap();
-    let type_name: &syn::LitStr = &syn::parse(type_name).expect("类型名称请用字符串表示！");
+    let type_name = add_prefix(type_name);
     let name = &ast.ident;
     let generics = &ast.generics;
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
@@ -217,7 +229,7 @@ pub fn java_type(type_name: TokenStream, input: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn mj_all(type_name: TokenStream, input: TokenStream) -> TokenStream {
     let ast: &DeriveInput = &syn::parse(input).unwrap();
-    let type_name: LitStr = syn::parse(type_name).expect("类型名称请用字符串表示！");
+    let type_name: &syn::LitStr = &syn::parse(type_name).expect("类型名称请用字符串表示！");
     let gen = quote! {
         #[derive(mj_macro::AsInstanceDerive, mj_macro::FromInstanceDerive, mj_macro::GetInstanceDerive)]
         #[mj_macro::java_type(#type_name)]
@@ -243,10 +255,7 @@ pub fn mj_event(mj_type: TokenStream, input: TokenStream) -> TokenStream {
     let ast: &DeriveInput = &syn::parse(input).unwrap();
     let type_name = if mj_type.is_empty() {
         let name = &ast.ident;
-        LitStr::new(
-            format!("net.mamoe.mirai.event.events.{name}").as_str(),
-            Span::mixed_site(),
-        )
+        LitStr::new(format!("event.events.{name}").as_str(), Span::mixed_site())
     } else {
         syn::parse(mj_type).expect("类型名称请用字符串表示！")
     };
@@ -262,10 +271,7 @@ pub fn mj_event_without_default_traits(mj_type: TokenStream, input: TokenStream)
     let ast: &DeriveInput = &syn::parse(input).unwrap();
     let type_name = if mj_type.is_empty() {
         let name = &ast.ident;
-        LitStr::new(
-            format!("net.mamoe.mirai.event.events.{name}").as_str(),
-            Span::mixed_site(),
-        )
+        LitStr::new(format!("event.events.{name}").as_str(), Span::mixed_site())
     } else {
         syn::parse(mj_type).expect("类型名称请用字符串表示！")
     };

@@ -1,3 +1,19 @@
+use std::{
+    cmp::Ordering,
+    collections::{HashMap, HashSet},
+    marker::PhantomData,
+};
+
+use j4rs::{Instance, InvocationArg, Jvm};
+
+use mj_base::env::{AsInstanceTrait, GetClassTypeTrait};
+use mj_base::{
+    env::{FromInstanceTrait, GetInstanceTrait},
+    utils::{instance_is_null, java_iter_to_rust_hash_set, java_iter_to_rust_vec},
+    MIRAI_PREFIX,
+};
+use mj_macro::{java_type, mj_all, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
+
 use crate::contact::AudioSupportedTrait;
 use crate::error::MiraiRsErrorEnum;
 use crate::{
@@ -15,18 +31,6 @@ use crate::{
         other::enums::{AvatarSpec, GroupHonorType, MemberMedalType},
         JavaStream,
     },
-};
-use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{AsInstanceTrait, GetClassTypeTrait};
-use mj_base::{
-    env::{FromInstanceTrait, GetInstanceTrait},
-    utils::{instance_is_null, is_instance_of, java_iter_to_rust_hash_set, java_iter_to_rust_vec},
-};
-use mj_macro::{java_type, mj_all, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
-use std::{
-    cmp::Ordering,
-    collections::{HashMap, HashSet},
-    marker::PhantomData,
 };
 
 pub struct GroupSettings {
@@ -119,6 +123,7 @@ impl GroupSettings {
 }
 
 #[derive(GetInstanceDerive, AsInstanceDerive)]
+#[java_type("contact.Group")]
 pub struct Group {
     bot: Bot,
     instance: Instance,
@@ -135,7 +140,7 @@ impl PublishAnnouncementSupportedTrait for Group {
         let group = InvocationArg::try_from(group).unwrap();
         let content = InvocationArg::try_from(content).unwrap();
         let online = jvm.invoke_static(
-            "net.mamoe.mirai.contact.announcement.Announcement",
+            <Announcement as GetClassTypeTrait>::get_type_name(),
             "publishAnnouncement",
             &[group, content],
         )?;
@@ -158,7 +163,7 @@ impl PublishAnnouncementSupportedTrait for Group {
         let parameters = parameters.get_instance();
         let parameters = InvocationArg::try_from(parameters).unwrap();
         let online = jvm.invoke_static(
-            "net.mamoe.mirai.contact.announcement.Announcement",
+            <Announcement as GetClassTypeTrait>::get_type_name(),
             "publishAnnouncement",
             &[group, content, parameters],
         )?;
@@ -213,7 +218,8 @@ impl GetInstanceTrait for AnnouncementParameters {
         let jvm = Jvm::attach_thread().unwrap();
         let mut builder = jvm
             .create_instance(
-                "net.mamoe.mirai.contact.announcement.AnnouncementParametersBuilder",
+                (MIRAI_PREFIX.to_string() + "contact.announcement.AnnouncementParametersBuilder")
+                    .as_str(),
                 &[],
             )
             .unwrap();
@@ -287,7 +293,7 @@ impl FromInstanceTrait for AnnouncementParameters {
     }
 }
 
-#[mj_all("net.mamoe.mirai.contact.announcement.OfflineAnnouncement")]
+#[mj_all("contact.announcement.OfflineAnnouncement")]
 pub struct OfflineAnnouncement {
     instance: Instance,
 }
@@ -325,7 +331,7 @@ impl AnnouncementTrait for OfflineAnnouncement {}
 /// 依靠 [`fid`][OnlineAnnouncement::get_fid] 唯一识别。可[删除][OnlineAnnouncement::delete]。
 ///
 /// 另见 [`Announcement`] 与 [`AnnouncementTrait`]
-#[mj_all("net.mamoe.mirai.contact.announcement.OnlineAnnouncement")]
+#[mj_all("contact.announcement.OnlineAnnouncement")]
 pub struct OnlineAnnouncement {
     instance: Instance,
 }
@@ -440,7 +446,7 @@ impl AnnouncementTrait for OnlineAnnouncement {}
 ///
 /// 通过一个群的 [`Announcements`] 获取到 [`OnlineAnnouncement`], 然后调用 [`OnlineAnnouncement::publish_to`] 即可。
 /// 由于 `Mirai` 目前不支持获取公告图片，所以转发的公告也不会带有原公告的图片。
-#[mj_all("net.mamoe.mirai.contact.announcement.Announcement")]
+#[mj_all("contact.announcement.Announcement")]
 pub enum Announcement {
     OnlineAnnouncement(OnlineAnnouncement),
     OfflineAnnouncement(OfflineAnnouncement),
@@ -597,6 +603,7 @@ impl Ord for MemberPermission {
     }
 }
 
+#[java_type("contact.active.ActiveRankRecord")]
 pub struct ActiveRankRecord {
     instance: Instance,
     member_name: Option<String>,
@@ -616,7 +623,7 @@ impl ActiveRankRecord {
         let instance = Jvm::attach_thread()
             .unwrap()
             .create_instance(
-                "net.mamoe.mirai.contact.active.ActiveRankRecord",
+                <Self as GetClassTypeTrait>::get_type_name(),
                 &[
                     InvocationArg::try_from(member_name.clone()).unwrap(),
                     InvocationArg::try_from(member_id)

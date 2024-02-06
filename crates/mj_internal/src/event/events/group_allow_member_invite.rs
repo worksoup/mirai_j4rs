@@ -1,10 +1,12 @@
+use j4rs::Instance;
+
+use mj_macro::mj_event;
+
 use crate::event::{
     BaseGroupMemberInfoChangeEventTrait, BotEventTrait, BotPassiveEventTrait,
     BroadcastControllableTrait, GroupEventTrait, GroupMemberInfoChangeEventTrait,
     GroupOperableEventTrait, GroupSettingsChangeEventTrait,
 };
-use j4rs::Instance;
-use mj_macro::mj_event;
 
 #[mj_event]
 pub struct GroupAllowMemberInviteEvent {

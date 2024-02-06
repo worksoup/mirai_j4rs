@@ -1,9 +1,11 @@
-use crate::event::{BotEventTrait, GroupEventTrait, GroupOperableEventTrait};
 use j4rs::Instance;
+
 use mj_macro::mj_event;
 
+use crate::event::{BotEventTrait, GroupEventTrait, GroupOperableEventTrait};
+
 pub trait MessageRecallTrait: BotEventTrait {}
-#[mj_event("net.mamoe.mirai.event.events.MessageRecallEvent$FriendRecall")]
+#[mj_event("event.events.MessageRecallEvent$FriendRecall")]
 pub struct FriendRecall {
     instance: Instance,
 }
@@ -12,7 +14,7 @@ impl BotEventTrait for FriendRecall {}
 
 impl MessageRecallTrait for FriendRecall {}
 
-#[mj_event("net.mamoe.mirai.event.events.MessageRecallEvent$GroupRecall")]
+#[mj_event("event.events.MessageRecallEvent$GroupRecall")]
 pub struct GroupRecall {
     instance: Instance,
 }

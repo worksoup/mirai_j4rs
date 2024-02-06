@@ -1,6 +1,8 @@
-use crate::env::{FromInstanceTrait, GetInstanceTrait};
-use j4rs::{Instance, InvocationArg, Jvm};
 use std::ops::Deref;
+
+use j4rs::{Instance, InvocationArg, Jvm};
+
+use crate::env::{FromInstanceTrait, GetInstanceTrait};
 
 pub struct DataWrapper<T> {
     data: T,

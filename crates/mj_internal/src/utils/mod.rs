@@ -1,17 +1,10 @@
-pub mod bot_builder;
-mod bot_configuration;
-pub mod contact;
-mod device_info;
-pub mod just_for_examples;
-pub mod login_solver;
-mod mirai_logger;
-pub mod other;
+use std::{cmp::Ordering, marker::PhantomData};
+
+use j4rs::{Instance, InvocationArg, Jvm};
 
 pub use bot_configuration::*;
 pub use device_info::*;
 pub use mirai_logger::*;
-
-use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::GetClassTypeTrait;
 use mj_base::{
     env::{FromInstanceTrait, GetInstanceTrait},
@@ -21,7 +14,15 @@ use mj_closures::{
     comparator::Comparator, consumer::Consumer, function::Function, predicate::Predicate,
 };
 use mj_macro::{AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
-use std::{cmp::Ordering, marker::PhantomData};
+
+pub mod bot_builder;
+mod bot_configuration;
+pub mod contact;
+mod device_info;
+pub mod just_for_examples;
+pub mod login_solver;
+mod mirai_logger;
+pub mod other;
 
 pub trait MiraiRsCollectionTrait {
     type Element;

@@ -1,12 +1,14 @@
+use j4rs::Instance;
+
+use mj_macro::mj_event;
+
 use crate::event::{
     BaseGroupMemberInfoChangeEventTrait, BotEventTrait, GroupEventTrait, GroupMemberEventTrait,
     GroupMemberInfoChangeEventTrait, GroupOperableEventTrait, UserEventTrait,
 };
-use j4rs::Instance;
-use mj_macro::{mj_all, mj_event};
 
 pub trait MemberLeaveEventTrait: GroupMemberEventTrait + GroupMemberInfoChangeEventTrait {}
-#[mj_event("net.mamoe.mirai.event.events.MemberLeaveEvent$Kick")]
+#[mj_event("event.events.MemberLeaveEvent$Kick")]
 pub struct Kick {
     instance: Instance,
 }
@@ -27,7 +29,7 @@ impl BotEventTrait for Kick {}
 
 impl GroupOperableEventTrait for Kick {}
 
-#[mj_event("net.mamoe.mirai.event.events.MemberLeaveEvent$Quit")]
+#[mj_event("event.events.MemberLeaveEvent$Quit")]
 pub struct Quit {
     instance: Instance,
 }

@@ -1,10 +1,13 @@
-use crate::contact::Friend;
 use j4rs::{Instance, InvocationArg, Jvm};
+
+use mj_base::env::GetClassTypeTrait;
 use mj_base::{
     env::{FromInstanceTrait, GetInstanceTrait},
     utils::java_iter_to_rust_vec,
 };
-use mj_macro::{AsInstanceDerive, GetInstanceDerive};
+use mj_macro::{mj_all, AsInstanceDerive, GetInstanceDerive};
+
+use crate::contact::Friend;
 
 #[derive(AsInstanceDerive, GetInstanceDerive)]
 pub struct FriendGroup {
@@ -58,9 +61,9 @@ impl FriendGroup {
     }
 }
 
-#[derive(AsInstanceDerive, GetInstanceDerive)]
+#[mj_all("contact.friendgroup.FriendGroups")]
 pub struct FriendGroups {
-    pub(crate) instance: Instance,
+    instance: Instance,
 }
 
 impl FriendGroups {
@@ -75,7 +78,7 @@ impl FriendGroups {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke_static(
-                "net.mamoe.mirai.contact.friendgroup.FriendGroups",
+                <Self as GetClassTypeTrait>::get_type_name(),
                 "create",
                 &[name.try_into().unwrap()],
             )

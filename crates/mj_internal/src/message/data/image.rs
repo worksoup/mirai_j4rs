@@ -1,14 +1,17 @@
+use j4rs::{Instance, InvocationArg, Jvm};
+use lazy_static::lazy_static;
+use regex::Regex;
+
+use mj_base::env::GetClassTypeTrait;
+use mj_base::{env::GetInstanceTrait, utils::primitive_byte_array_to_string};
+use mj_macro::mj_all;
+
 use crate::{
     contact::Bot,
     message::message_trait::{
         CodableMessageTrait, MessageContentTrait, MessageTrait, SingleMessageTrait,
     },
 };
-use j4rs::{Instance, InvocationArg, Jvm};
-use lazy_static::lazy_static;
-use mj_base::{env::GetInstanceTrait, utils::primitive_byte_array_to_string};
-use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
-use regex::Regex;
 
 lazy_static! {
     pub static ref IMAGE_ID_REGEX: Regex =
@@ -51,8 +54,7 @@ impl ImageType {
     }
 }
 
-#[derive(AsInstanceDerive, GetInstanceDerive, FromInstanceDerive)]
-#[java_type("net.mamoe.mirai.message.data.Image")]
+#[mj_all("message.data.Image")]
 pub struct Image {
     instance: Instance,
 }
@@ -62,7 +64,7 @@ impl Image {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke_static(
-                "net.mamoe.mirai.message.data.Image",
+                <Self as GetClassTypeTrait>::get_type_name(),
                 "fromId",
                 &[InvocationArg::try_from(image_id).unwrap()],
             )
@@ -209,7 +211,7 @@ impl Image {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke_static(
-                "net.mamoe.mirai.message.data.Image",
+                <Self as GetClassTypeTrait>::get_type_name(),
                 "queryUrl",
                 &[InvocationArg::try_from(self.get_instance()).unwrap()],
             )

@@ -1,7 +1,9 @@
+use j4rs::{InvocationArg, Jvm};
+
+use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
+
 use crate::contact::Group;
 use crate::utils::contact::file::{AbsoluteFile, AbsoluteFolder};
-use j4rs::{InvocationArg, Jvm};
-use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
 
 pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
     fn delete(&self) -> bool {

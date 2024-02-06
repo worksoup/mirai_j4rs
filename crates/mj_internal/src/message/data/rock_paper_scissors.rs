@@ -1,16 +1,18 @@
-use crate::message::message_trait::{
-    CodableMessageTrait, ConstrainSingleTrait, MarketFaceTrait, MessageContentTrait,
-    MessageHashCodeTrait, MessageTrait, SingleMessageTrait,
-};
 use j4rs::{Instance, InvocationArg, Jvm};
+
+use mj_base::env::GetClassTypeTrait;
 use mj_base::{
     env::{GetClassTypeTrait as _, GetInstanceTrait as _},
     utils::instance_is_null,
 };
-use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
+use mj_macro::mj_all;
 
-#[derive(AsInstanceDerive, GetInstanceDerive, FromInstanceDerive)]
-#[java_type("net.mamoe.mirai.message.data.RockPaperScissors")]
+use crate::message::message_trait::{
+    CodableMessageTrait, ConstrainSingleTrait, MarketFaceTrait, MessageContentTrait,
+    MessageHashCodeTrait, MessageTrait, SingleMessageTrait,
+};
+
+#[mj_all("message.data.RockPaperScissors")]
 pub struct RockPaperScissors {
     instance: Instance,
 }
@@ -55,11 +57,7 @@ impl RockPaperScissors {
     pub fn random() -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
-            .invoke_static(
-                "net.mamoe.mirai.message.data.RockPaperScissors",
-                "random",
-                &[],
-            )
+            .invoke_static(<Self as GetClassTypeTrait>::get_type_name(), "random", &[])
             .unwrap();
         Self { instance }
     }

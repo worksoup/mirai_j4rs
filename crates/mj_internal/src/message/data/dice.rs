@@ -1,13 +1,14 @@
+use j4rs::{Instance, InvocationArg, Jvm};
+
+use mj_base::env::GetClassTypeTrait;
+use mj_macro::mj_all;
+
 use crate::message::message_trait::{
     CodableMessageTrait, ConstrainSingleTrait, MarketFaceTrait, MessageContentTrait,
     MessageHashCodeTrait, MessageTrait, SingleMessageTrait,
 };
-use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::GetClassTypeTrait;
-use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
-#[derive(AsInstanceDerive, GetInstanceDerive, FromInstanceDerive)]
-#[java_type("net.mamoe.mirai.message.data.Dice")]
+#[mj_all("message.data.Dice")]
 pub struct Dice {
     instance: Instance,
 }

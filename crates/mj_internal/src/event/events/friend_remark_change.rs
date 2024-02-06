@@ -1,9 +1,11 @@
+use j4rs::Instance;
+
+use mj_macro::mj_event;
+
 use crate::event::{
     BotEventTrait, BroadcastControllableTrait, FriendEventTrait, FriendInfoChangeEventTrait,
     UserEventTrait,
 };
-use j4rs::Instance;
-use mj_macro::mj_event;
 
 #[mj_event]
 pub struct FriendRemarkChangeEvent {

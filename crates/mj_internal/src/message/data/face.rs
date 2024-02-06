@@ -1,3 +1,8 @@
+use j4rs::{Instance, InvocationArg, Jvm};
+
+use mj_base::env::{FromInstanceTrait, GetClassTypeTrait};
+use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
+
 use crate::message::{
     data::super_face::SuperFace,
     message_trait::{
@@ -5,12 +10,10 @@ use crate::message::{
         SingleMessageTrait,
     },
 };
-use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::FromInstanceTrait;
-use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
+
 include!("face_res.rs");
 #[derive(AsInstanceDerive, GetInstanceDerive)]
-#[java_type("net.mamoe.mirai.message.data.Face")]
+#[java_type("message.data.Face")]
 pub struct Face {
     name: String,
     id: i32,
@@ -55,7 +58,7 @@ impl From<FaceEnum> for Face {
         let instance = Jvm::attach_thread()
             .unwrap()
             .create_instance(
-                "net.mamoe.mirai.message.data.Face",
+                <Self as GetClassTypeTrait>::get_type_name(),
                 &[InvocationArg::try_from(id)
                     .unwrap()
                     .into_primitive()
@@ -71,37 +74,6 @@ impl From<SuperFace> for Face {
         super_face.get_face().into()
     }
 }
-// pub trait SetFace<T> {
-//     fn set(&mut self, face: T);
-// }
-// impl SetFace<i32> for Face {
-//     fn set(&mut self, face: i32) {
-//         self.id = face;
-//         self.instance = Jvm::attach_thread()
-//             .unwrap()
-//             .create_instance("net.mamoe.mirai.message.data.Face", &[InvocationArg::try_from(self.id).unwrap()])
-//             .unwrap();
-//         self.name = Jvm::attach_thread()
-//             .unwrap()
-//             .to_rust(
-//                 Jvm::attach_thread()
-//                     .unwrap()
-//                     .invoke(&self.instance, "getName", &[])
-//                     .unwrap(),
-//             )
-//             .unwrap()
-//     }
-// }
-// impl SetFace<FaceEnum> for Face {
-//     fn set(&mut self, face: FaceEnum) {
-//         self.name = format!("[{:?}]", face);
-//         self.id = face.into();
-//         self.instance = Jvm::attach_thread()
-//             .unwrap()
-//             .create_instance("class_name", &[InvocationArg::try_from(self.id).unwrap()])
-//             .unwrap();
-//     }
-// }
 
 impl MessageTrait for Face {
     fn to_content(&self) -> String {

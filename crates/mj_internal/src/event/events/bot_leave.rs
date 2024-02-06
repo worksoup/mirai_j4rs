@@ -1,13 +1,15 @@
+use j4rs::Instance;
+
+use mj_macro::mj_event;
+
 use crate::event::{
     BaseGroupMemberInfoChangeEventTrait, BotEventTrait, BotPassiveEventTrait, GroupEventTrait,
     GroupMemberInfoChangeEventTrait, GroupOperableEventTrait,
 };
-use j4rs::Instance;
-use mj_macro::mj_event;
 
 pub trait BotLeaveEventTrait: BotEventTrait + GroupMemberInfoChangeEventTrait {}
 
-#[mj_event("net.mamoe.mirai.event.events.BotLeaveEvent")]
+#[mj_event("event.events.BotLeaveEvent")]
 pub struct BotLeaveEvent {
     instance: Instance,
 }
@@ -18,7 +20,7 @@ impl GroupEventTrait for BotLeaveEvent {}
 impl BaseGroupMemberInfoChangeEventTrait for BotLeaveEvent {}
 impl GroupMemberInfoChangeEventTrait for BotLeaveEvent {}
 
-#[mj_event("net.mamoe.mirai.event.events.BotLeaveEvent$Active")]
+#[mj_event("event.events.BotLeaveEvent$Active")]
 pub struct Active {
     instance: Instance,
 }
@@ -29,7 +31,7 @@ impl GroupEventTrait for Active {}
 impl BaseGroupMemberInfoChangeEventTrait for Active {}
 impl GroupMemberInfoChangeEventTrait for Active {}
 
-#[mj_event("net.mamoe.mirai.event.events.BotLeaveEvent$Disband")]
+#[mj_event("event.events.BotLeaveEvent$Disband")]
 pub struct Disband {
     instance: Instance,
 }
@@ -41,7 +43,7 @@ impl GroupEventTrait for Disband {}
 impl BaseGroupMemberInfoChangeEventTrait for Disband {}
 impl GroupMemberInfoChangeEventTrait for Disband {}
 
-#[mj_event("net.mamoe.mirai.event.events.BotLeaveEvent$Kick")]
+#[mj_event("event.events.BotLeaveEvent$Kick")]
 pub struct Kick {
     instance: Instance,
 }

@@ -1,3 +1,10 @@
+use j4rs::{Instance, InvocationArg, Jvm};
+
+use mj_base::env::{FromInstanceTrait, GetClassTypeTrait};
+use mj_base::utils::instance_is_null;
+use mj_base::MIRAI_PREFIX;
+use mj_macro::mj_all;
+
 use crate::utils::contact::file::AbsoluteFile;
 use crate::{
     contact::FileSupportedTrait,
@@ -6,22 +13,17 @@ use crate::{
         SingleMessageTrait,
     },
 };
-use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::FromInstanceTrait;
-use mj_base::utils::instance_is_null;
-use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
 ///  # 文件消息。
-///  
+///
 ///  注: [`FileMessage`] 不可二次发送，包括转发消息。
-///  
+///
 ///  ## 文件操作
 ///  要下载这个文件, 可通过 [`FileMessage::to_absolute_file`] 获取到 [`AbsoluteFile`] 然后操作。
-///  
+///
 ///  要获取到 [`FileMessage`]，可以通过 [`MessageEvent`] 获取，或通过 [`AbsoluteFile::to_message`] 得到。
 // TODO: 实现 SendSupportedTrait, 限制某些消息的发送。
-#[derive(AsInstanceDerive, GetInstanceDerive, FromInstanceDerive)]
-#[java_type("net.mamoe.mirai.message.data.FileMessage")]
+#[mj_all("message.data.FileMessage")]
 pub struct FileMessage {
     instance: Instance,
 }
@@ -63,7 +65,7 @@ impl FileMessage {
             .unwrap();
         let instance = jvm
             .invoke_static(
-                "net.mamoe.mirai.message.data.FileMessage",
+                <Self as GetClassTypeTrait>::get_type_name(),
                 "create",
                 &[file_id, internal_id, name, size],
             )
@@ -80,7 +82,7 @@ impl FileMessage {
         let contact = InvocationArg::try_from(
             jvm.cast(
                 &contact.get_instance(),
-                "net.mamoe.mirai.contact.FileSupported",
+                (MIRAI_PREFIX.to_string() + "contact.FileSupported").as_str(),
             )
             .unwrap(),
         )

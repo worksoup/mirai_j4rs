@@ -1,16 +1,18 @@
+use j4rs::{Instance, InvocationArg, Jvm};
+
+use mj_base::env::{AsInstanceTrait, FromInstanceTrait};
+use mj_base::utils::instance_is_null;
+use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
+
 use crate::contact::{
     AssertMemberPermissionTrait, Bot, ContactOrBotTrait, ContactTrait, Friend, Group,
     MemberPermission, MemberTrait, NudgeSupportedTrait, SendMessageSupportedTrait, UserOrBotTrait,
     UserTrait,
 };
 use crate::utils::other::enums::AvatarSpec;
-use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{AsInstanceTrait, FromInstanceTrait};
-use mj_base::utils::instance_is_null;
-use mj_macro::{java_type, mj_all, AsInstanceDerive, GetInstanceDerive};
 
 #[derive(GetInstanceDerive, AsInstanceDerive)]
-#[java_type("net.mamoe.mirai.contact.NormalMember")]
+#[java_type("contact.NormalMember")]
 pub struct NormalMember {
     bot: Bot,
     instance: Instance,

@@ -1,3 +1,8 @@
+use j4rs::{Instance, InvocationArg, Jvm};
+
+use mj_base::env::{FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
+use mj_macro::{java_type, mj_all, AsInstanceDerive, GetInstanceDerive};
+
 use crate::{
     contact::{ContactTrait, UserOrBotTrait},
     message::{
@@ -8,11 +13,9 @@ use crate::{
         },
     },
 };
-use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstanceTrait, GetInstanceTrait};
-use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
 #[derive(AsInstanceDerive, GetInstanceDerive)]
+#[java_type("message.data.ForwardMessageBuilder")]
 pub struct ForwardMessageBuilder {
     instance: Instance,
 }
@@ -23,10 +26,7 @@ impl ForwardMessageBuilder {
         let contact = contact.get_instance();
         let contact = InvocationArg::try_from(contact).unwrap();
         let instance = jvm
-            .create_instance(
-                "net.mamoe.mirai.message.data.ForwardMessageBuilder",
-                &[contact],
-            )
+            .create_instance(<Self as GetClassTypeTrait>::get_type_name(), &[contact])
             .unwrap();
         Self { instance }
     }
@@ -97,8 +97,7 @@ impl ForwardMessageBuilder {
 
 // TODO: RawForwardMessage is necessary for set_display_strategy.
 // TODO: to_forward_message for message and chain, etc.
-#[derive(AsInstanceDerive, GetInstanceDerive, FromInstanceDerive)]
-#[java_type("net.mamoe.mirai.message.data.ForwardMessage")]
+#[mj_all("message.data.ForwardMessage")]
 pub struct ForwardMessage {
     instance: Instance,
 }

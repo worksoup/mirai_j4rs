@@ -1,12 +1,14 @@
+use j4rs::Instance;
+
+use mj_macro::mj_all;
+
 use crate::contact::{
     ContactOrBotTrait, ContactTrait, NudgeSupportedTrait, SendMessageSupportedTrait,
     UserOrBotTrait, UserTrait,
 };
 use crate::utils::other::enums::AvatarSpec;
-use j4rs::Instance;
-use mj_macro::{mj_all, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
-#[mj_all("net.mamoe.mirai.contact.Stranger")]
+#[mj_all("contact.Stranger")]
 pub struct Stranger {
     instance: Instance,
 }

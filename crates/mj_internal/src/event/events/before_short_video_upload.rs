@@ -1,6 +1,8 @@
-use crate::event::{BotActiveEventTrait, BotEventTrait, CancellableEventTrait};
 use j4rs::Instance;
+
 use mj_macro::mj_event;
+
+use crate::event::{BotActiveEventTrait, BotEventTrait, CancellableEventTrait};
 
 #[mj_event]
 pub struct BeforeShortVideoUploadEvent {

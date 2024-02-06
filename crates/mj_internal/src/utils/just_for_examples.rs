@@ -1,9 +1,11 @@
+use std::path::Path;
+
+use serde::{Deserialize, Serialize};
+
 use crate::utils::bot_builder::BotBuilder;
 use crate::{
     auth::bot_authorization::BotAuthorization, contact::Bot, utils::other::enums::MiraiProtocol,
 };
-use serde::{Deserialize, Serialize};
-use std::path::Path;
 
 #[derive(Deserialize, Serialize)]
 pub(crate) struct Config {

@@ -1,9 +1,10 @@
+use mj_macro::mj_all;
+
 use crate::contact::{
     ContactOrBotTrait, ContactTrait, Friend, Member, Stranger, UserOrBotTrait, UserTrait,
 };
-use mj_macro::mj_all;
 
-#[mj_all("net.mamoe.mirai.contact.User")]
+#[mj_all("contact.User")]
 pub enum User {
     Member(Member),
     Friend(Friend),

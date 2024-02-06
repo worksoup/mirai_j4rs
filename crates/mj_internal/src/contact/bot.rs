@@ -1,3 +1,13 @@
+use j4rs::{Instance, InvocationArg, Jvm};
+
+use mj_base::env::GetClassTypeTrait;
+use mj_base::utils::java_iter_to_rust_vec;
+use mj_base::{
+    env::{FromInstanceTrait, GetInstanceTrait},
+    utils::instance_is_null,
+};
+use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
+
 use crate::utils::contact::ContactList;
 use crate::utils::{BotConfiguration, MiraiLogger};
 use crate::{
@@ -9,15 +19,9 @@ use crate::{
     event::EventChannel,
     utils::{contact::friend_group::FriendGroups, other::enums::AvatarSpec},
 };
-use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::utils::java_iter_to_rust_vec;
-use mj_base::{
-    env::{FromInstanceTrait, GetInstanceTrait},
-    utils::instance_is_null,
-};
-use mj_macro::{AsInstanceDerive, GetInstanceDerive};
 
 #[derive(GetInstanceDerive, AsInstanceDerive)]
+#[java_type("Bot")]
 pub struct Bot {
     _jvm: Jvm,
     instance: Instance,
@@ -55,7 +59,11 @@ impl Bot {
     pub fn get_bots() -> Vec<Bot> {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
-            .invoke_static("net.mamoe.mirai.Bot$Companion", "getInstances", &[])
+            .invoke_static(
+                (<Self as GetClassTypeTrait>::get_type_name().to_string() + "$Companion").as_str(),
+                "getInstances",
+                &[],
+            )
             .unwrap();
         let iter = jvm.invoke(&instance, "iterator", &[]).unwrap();
         java_iter_to_rust_vec(&jvm, iter)
@@ -65,7 +73,7 @@ impl Bot {
         let jvm = Jvm::attach_thread().unwrap();
         let bot = jvm
             .invoke_static(
-                "net.mamoe.mirai.Bot$Companion",
+                (<Self as GetClassTypeTrait>::get_type_name().to_string() + "$Companion").as_str(),
                 "findInstance",
                 &[InvocationArg::try_from(id)
                     .unwrap()
@@ -142,7 +150,7 @@ impl Bot {
     pub fn get_friend_groups(&self) -> FriendGroups {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm.invoke(&self.instance, "getFriendGroups", &[]).unwrap();
-        FriendGroups { instance }
+        FriendGroups::from_instance(instance)
     }
     pub fn get_friends(&self) -> ContactList<Friend> {
         ContactList::from_instance(

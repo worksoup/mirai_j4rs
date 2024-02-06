@@ -1,12 +1,15 @@
 #[cfg(test)]
 mod tests {
+    use std::cmp::Ordering;
+
+    use j4rs::{ClasspathEntry, Instance, InvocationArg, Jvm, JvmBuilder};
+
+    use mj_base::env::{FromInstanceTrait, GetInstanceTrait};
+
     use crate::{
         comparator::Comparator, consumer::Consumer, function::Function, kt_func_0::KtFunc0,
         kt_func_1::KtFunc1, kt_func_2::KtFunc2, predicate::Predicate,
     };
-    use j4rs::{ClasspathEntry, Instance, InvocationArg, Jvm, JvmBuilder};
-    use mj_base::env::{FromInstanceTrait, GetInstanceTrait};
-    use std::cmp::Ordering;
 
     struct X {
         instance: Instance,

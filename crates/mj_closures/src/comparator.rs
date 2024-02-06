@@ -1,7 +1,9 @@
+use std::{cmp::Ordering, marker::PhantomData, mem::transmute};
+
 use j4rs::{Instance, InvocationArg, Jvm};
+
 use mj_base::{data_wrapper::DataWrapper, env::FromInstanceTrait, utils::instance_from_i8_16};
 use mj_macro::GetInstanceDerive;
-use std::{cmp::Ordering, marker::PhantomData, mem::transmute};
 
 pub struct Comparator<'a, T: FromInstanceTrait> {
     instance: Instance,

@@ -1,6 +1,8 @@
-use j4rs::{Instance, Jvm};
-use mj_base::data_wrapper::DataWrapper;
 use std::intrinsics::transmute;
+
+use j4rs::{Instance, Jvm};
+
+use mj_base::data_wrapper::DataWrapper;
 
 pub enum OnEvent<'a, E> {
     Fn(&'a Box<dyn Fn(E)>),

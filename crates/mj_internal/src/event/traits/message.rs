@@ -1,8 +1,10 @@
+use j4rs::Jvm;
+
+use mj_base::env::FromInstanceTrait;
+
 use crate::contact::{Bot, ContactTrait};
 use crate::event::{BotPassiveEventTrait, MiraiEventTrait, OtherClientEventTrait};
 use crate::message::data::MessageChain;
-use j4rs::Jvm;
-use mj_base::env::FromInstanceTrait;
 
 pub trait MessageEventTrait<Sender: ContactTrait, Subject: ContactTrait>
 where
@@ -32,7 +34,7 @@ where
         .unwrap()
     }
     fn get_source(&self) -> () {
-        todo!("net.mamoe.mirai.message.data.OnlineMessageSource.Incoming")
+        todo!("message.data.OnlineMessageSource.Incoming")
     }
     fn get_subject(&self) -> Subject {
         let jvm = Jvm::attach_thread().unwrap();

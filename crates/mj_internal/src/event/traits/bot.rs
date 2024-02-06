@@ -1,10 +1,11 @@
+use j4rs::Jvm;
+
+use mj_base::env::FromInstanceTrait;
+
 use crate::contact::{Bot, ContactTrait, Member, NormalMember, UserTrait};
 use crate::event::{
-    CancellableEventTrait, GroupAwareMessageTrait, GroupMemberInfoChangeEventTrait,
-    MiraiEventTrait, UserMessageEventTrait,
+    CancellableEventTrait, GroupAwareMessageTrait, MiraiEventTrait, UserMessageEventTrait,
 };
-use j4rs::Jvm;
-use mj_base::env::FromInstanceTrait;
 
 pub trait BotEventTrait
 where

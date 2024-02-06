@@ -1,11 +1,14 @@
+use std::hint::unreachable_unchecked;
+
+use j4rs::{Instance, Jvm};
+
+use mj_base::env::{FromInstanceTrait, GetClassTypeTrait};
+use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
+
 use crate::message::message_trait::{
     CodableMessageTrait, ConstrainSingleTrait, MessageContentTrait, MessageHashCodeTrait,
     MessageTrait, SingleMessageTrait,
 };
-use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
-use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
-use std::hint::unreachable_unchecked;
 
 #[derive(Clone, Copy)]
 pub enum PokeMessageEnum {
@@ -90,7 +93,7 @@ impl PokeMessageEnum {
     }
 }
 #[derive(AsInstanceDerive, GetInstanceDerive)]
-#[java_type("net.mamoe.mirai.message.data.PokeMessage")]
+#[java_type("message.data.PokeMessage")]
 pub struct PokeMessage {
     r#enum: PokeMessageEnum,
     instance: Instance,
@@ -140,57 +143,26 @@ impl From<PokeMessage> for PokeMessageEnum {
 impl From<PokeMessageEnum> for PokeMessage {
     fn from(value: PokeMessageEnum) -> PokeMessage {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = match value {
-            PokeMessageEnum::戳一戳 => jvm
-                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "ChuoYiChuo")
-                .unwrap(),
-            PokeMessageEnum::比心 => jvm
-                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "BiXin")
-                .unwrap(),
-            PokeMessageEnum::点赞 => jvm
-                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "DianZan")
-                .unwrap(),
-            PokeMessageEnum::心碎 => jvm
-                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "XinSui")
-                .unwrap(),
-            PokeMessageEnum::六六六 => jvm
-                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "LiuLiuLiu")
-                .unwrap(),
-            PokeMessageEnum::放大招 => jvm
-                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "FangDaZhao")
-                .unwrap(),
-            PokeMessageEnum::宝贝球 => jvm
-                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "BaoBeiQiu")
-                .unwrap(),
-            PokeMessageEnum::玫瑰花 => jvm
-                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "Rose")
-                .unwrap(),
-            PokeMessageEnum::召唤术 => jvm
-                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "ZhaoHuanShu")
-                .unwrap(),
-            PokeMessageEnum::让你皮 => jvm
-                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "RangNiPi")
-                .unwrap(),
-            PokeMessageEnum::结印 => jvm
-                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "JieYin")
-                .unwrap(),
-            PokeMessageEnum::手雷 => jvm
-                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "ShouLei")
-                .unwrap(),
-            PokeMessageEnum::勾引 => jvm
-                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "GouYin")
-                .unwrap(),
-            PokeMessageEnum::抓一下 => jvm
-                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "ZhuaYiXia")
-                .unwrap(),
-            PokeMessageEnum::碎屏 => jvm
-                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "SuiPing")
-                .unwrap(),
-            PokeMessageEnum::敲门 => jvm
-                .static_class_field("net.mamoe.mirai.message.data.PokeMessage", "QiaoMen")
-                .unwrap(),
+        let type_name = <PokeMessage as GetClassTypeTrait>::get_type_name();
+        let field = match value {
+            PokeMessageEnum::戳一戳 => "ChuoYiChuo",
+            PokeMessageEnum::比心 => "BiXin",
+            PokeMessageEnum::点赞 => "DianZan",
+            PokeMessageEnum::心碎 => "XinSui",
+            PokeMessageEnum::六六六 => "LiuLiuLiu",
+            PokeMessageEnum::放大招 => "FangDaZhao",
+            PokeMessageEnum::宝贝球 => "BaoBeiQiu",
+            PokeMessageEnum::玫瑰花 => "Rose",
+            PokeMessageEnum::召唤术 => "ZhaoHuanShu",
+            PokeMessageEnum::让你皮 => "RangNiPi",
+            PokeMessageEnum::结印 => "JieYin",
+            PokeMessageEnum::手雷 => "ShouLei",
+            PokeMessageEnum::勾引 => "GouYin",
+            PokeMessageEnum::抓一下 => "ZhuaYiXia",
+            PokeMessageEnum::碎屏 => "SuiPing",
+            PokeMessageEnum::敲门 => "QiaoMen",
         };
-        PokeMessage::from_instance(instance)
+        PokeMessage::from_instance(jvm.static_class_field(type_name, field).unwrap())
     }
 }
 impl PokeMessage {

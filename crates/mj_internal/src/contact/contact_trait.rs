@@ -1,3 +1,8 @@
+use j4rs::{InvocationArg, Jvm};
+
+use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
+use mj_base::MIRAI_PREFIX;
+
 use crate::error::MiraiRsErrorEnum;
 use crate::message::action::Nudge;
 use crate::message::data::OfflineAudio;
@@ -10,14 +15,12 @@ use crate::{
         Friend,
     },
     error::MiraiRsError,
-    message::{action::NudgeTrait, data::Image, MessageReceipt, MessageTrait},
+    message::{data::Image, MessageReceipt, MessageTrait},
     utils::{
         contact::file::{ExternalResource, RemoteFiles},
         other::enums::AvatarSpec,
     },
 };
-use j4rs::{InvocationArg, Jvm};
-use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetInstanceTrait};
 
 pub trait AssertMemberPermissionTrait: MemberTrait {
     fn is_owner(&self) -> bool;
@@ -67,7 +70,7 @@ where
                 .field(
                     &Jvm::attach_thread()
                         .unwrap()
-                        .static_class("net.mamoe.mirai.contact.AvatarSpec")
+                        .static_class(<AvatarSpec as GetClassTypeTrait>::get_type_name())
                         .unwrap(),
                     match size.unwrap() {
                         AvatarSpec::XS => "SMALLEST",
@@ -159,7 +162,7 @@ where
         let instance = jvm
             .cast(
                 &self.get_instance(),
-                "net.mamoe.mirai.contact.FileSupported",
+                (MIRAI_PREFIX.to_string() + "contact.FileSupported").as_str(),
             )
             .unwrap();
         let instance = jvm.invoke(&instance, "getFiles", &[]).unwrap();
@@ -300,7 +303,7 @@ pub trait AnnouncementTrait: GetInstanceTrait {
         let a = InvocationArg::try_from(self.get_instance()).unwrap();
         let offline = jvm
             .invoke_static(
-                "net.mamoe.mirai.contact.announcement.AnnouncementKt",
+                (MIRAI_PREFIX.to_string() + "contact.announcement.AnnouncementKt").as_str(),
                 "toOffline",
                 &[a],
             )

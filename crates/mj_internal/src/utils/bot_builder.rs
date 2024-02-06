@@ -1,3 +1,10 @@
+use std::path::{Path, PathBuf};
+
+use j4rs::{ClasspathEntry, Instance, InvocationArg, JavaOpt, Jvm, JvmBuilder};
+
+use mj_base::env::{FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
+use mj_macro::java_type;
+
 use crate::event::bot_offline::BotOfflineEvent;
 use crate::{
     auth::bot_authorization::BotAuthorization,
@@ -8,11 +15,9 @@ use crate::{
         BotConfiguration, ContactListCache,
     },
 };
-use j4rs::{ClasspathEntry, Instance, InvocationArg, JavaOpt, Jvm, JvmBuilder};
-use mj_base::env::{FromInstanceTrait, GetInstanceTrait};
-use std::path::{Path, PathBuf};
 
 /// bot builder
+#[java_type("BotFactory")]
 pub struct BotBuilder {
     instance: Instance,
     jvm: Jvm,
@@ -84,7 +89,8 @@ impl BotBuilder {
         let jvm = Self::create_jvm(&working_dir, jar_paths, java_opts);
         let instance = jvm
             .field(
-                &jvm.static_class("net.mamoe.mirai.BotFactory").unwrap(),
+                &jvm.static_class(<Self as GetClassTypeTrait>::get_type_name())
+                    .unwrap(),
                 "INSTANCE",
             )
             .unwrap();

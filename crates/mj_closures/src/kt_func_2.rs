@@ -1,11 +1,13 @@
+use std::{marker::PhantomData, mem::transmute};
+
 use j4rs::{Instance, InvocationArg, Jvm};
+
 use mj_base::{
     data_wrapper::DataWrapper,
     env::{FromInstanceTrait, GetInstanceTrait},
     utils::instance_from_i8_16,
 };
 use mj_macro::GetInstanceDerive;
-use std::{marker::PhantomData, mem::transmute};
 
 pub struct KtFunc2<'a, P1, P2, R>
 where

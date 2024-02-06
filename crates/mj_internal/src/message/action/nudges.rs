@@ -1,11 +1,14 @@
-use crate::{
-    contact::{Bot, ContactTrait, Friend, NormalMember, Stranger, UserOrBotTrait},
-    message::message_trait::MessageHashCodeTrait,
-};
+use std::marker::PhantomData;
+
 use j4rs::{Instance, InvocationArg, Jvm};
+
 use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetInstanceTrait};
 use mj_macro::{AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
-use std::marker::PhantomData;
+
+use crate::{
+    contact::{ContactTrait, UserOrBotTrait},
+    message::message_trait::MessageHashCodeTrait,
+};
 
 pub trait NudgeTrait<UserOrBot: UserOrBotTrait>:
     GetInstanceTrait + MessageHashCodeTrait + FromInstanceTrait + AsInstanceTrait

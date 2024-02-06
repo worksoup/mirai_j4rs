@@ -1,14 +1,3 @@
-mod anonymous_member;
-mod bot;
-mod contact_trait;
-mod friend;
-mod group;
-mod member;
-mod normal_member;
-mod other_client;
-mod stranger;
-mod user;
-
 pub use anonymous_member::*;
 pub use bot::*;
 pub use contact_trait::*;
@@ -19,3 +8,14 @@ pub use normal_member::*;
 pub use other_client::*;
 pub use stranger::*;
 pub use user::*;
+
+mod anonymous_member;
+mod bot;
+mod contact_trait;
+mod friend;
+mod group;
+mod member;
+mod normal_member;
+mod other_client;
+mod stranger;
+mod user;

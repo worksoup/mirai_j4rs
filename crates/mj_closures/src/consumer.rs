@@ -1,8 +1,10 @@
+use std::{marker::PhantomData, mem::transmute};
+
 use j4rs::{prelude::*, Instance, InvocationArg, Jvm};
 use j4rs_derive::*;
+
 use mj_base::{data_wrapper::DataWrapper, env::FromInstanceTrait, utils::instance_from_i8_16};
 use mj_macro::GetInstanceDerive;
-use std::{marker::PhantomData, mem::transmute};
 
 #[call_from_java("rt.lea.LumiaConsumer.nativeAccept")]
 fn lumia_consumer_accept(consumer_as_i8_16: Instance, arg: Instance) {

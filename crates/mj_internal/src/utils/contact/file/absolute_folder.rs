@@ -1,17 +1,18 @@
+use j4rs::{Instance, InvocationArg, Jvm};
+
+use mj_base::env::{AsInstanceTrait, FromInstanceTrait};
+use mj_macro::mj_all;
+
 use crate::utils::{
     contact::file::{AbsoluteFile, AbsoluteFileFolder, AbsoluteFileFolderTrait, ExternalResource},
     JavaStream,
 };
-use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetInstanceTrait};
-use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
 /// # 绝对目录标识。
 /// 精确表示一个远程目录。不会受同名文件或目录的影响。
 /// Mirai 中有些方法会返回 Flow 或 Stream, 后者的方法名称有 Stream 后缀，
 /// 这里包装的全部都是 Stream 版本，哪怕没有后缀。这些方法会返回一个迭代器，以此模拟其操作。
-#[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
-#[java_type("net.mamoe.mirai.contact.file.AbsoluteFolder")]
+#[mj_all("contact.file.AbsoluteFolder")]
 pub struct AbsoluteFolder {
     instance: Instance,
 }

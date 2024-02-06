@@ -1,5 +1,6 @@
-use crate::env::{AsInstanceTrait, FromInstanceTrait, GetInstanceTrait};
 use j4rs::{Instance, Jvm};
+
+use crate::env::{AsInstanceTrait, FromInstanceTrait, GetInstanceTrait};
 
 pub struct UnknownTypeValue(Instance);
 

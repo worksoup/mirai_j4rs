@@ -1,10 +1,12 @@
+use j4rs::{Instance, InvocationArg, Jvm};
+
+use mj_base::env::FromInstanceTrait as _;
+
 use crate::{
     contact::ContactTrait,
     error::MiraiRsError,
     message::{data::QuoteReply, message_trait::MessageTrait},
 };
-use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::FromInstanceTrait as _;
 
 pub struct MessageReceipt<'a, T>
 where
@@ -25,7 +27,7 @@ where
         self.target
     }
     pub fn get_source(&self) -> () {
-        todo!("net.mamoe.mirai.message.data.OnlineMessageSource.Outgoing")
+        todo!("message.data.OnlineMessageSource.Outgoing")
     }
     pub fn is_to_group(&self) -> bool {
         Jvm::attach_thread()

@@ -1,6 +1,8 @@
-use crate::event::{BotEventTrait, FriendEventTrait, FriendInfoChangeEventTrait, UserEventTrait};
 use j4rs::Instance;
+
 use mj_macro::mj_event;
+
+use crate::event::{BotEventTrait, FriendEventTrait, FriendInfoChangeEventTrait, UserEventTrait};
 
 #[mj_event]
 pub struct FriendNickChangedEvent {

@@ -1,14 +1,15 @@
-use crate::message::data::FileMessage;
-use crate::utils::contact::file::{AbsoluteFileFolderTrait, AbsoluteFolder};
 use j4rs::{Instance, InvocationArg, Jvm};
+
 use mj_base::{
     env::{FromInstanceTrait, GetInstanceTrait},
     utils::primitive_byte_array_to_string,
 };
-use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
+use mj_macro::mj_all;
 
-#[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
-#[java_type("net.mamoe.mirai.contact.file.AbsoluteFile")]
+use crate::message::data::FileMessage;
+use crate::utils::contact::file::{AbsoluteFileFolderTrait, AbsoluteFolder};
+
+#[mj_all("contact.file.AbsoluteFile")]
 pub struct AbsoluteFile {
     instance: Instance,
 }

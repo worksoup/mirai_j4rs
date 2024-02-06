@@ -2,14 +2,14 @@
 mod tests {
     use mirai_j4rs::{
         contact::{
-            AudioSupportedTrait, ContactOrBotTrait, FileSupportedTrait, Group, NudgeSupportedTrait,
+            AudioSupportedTrait, ContactOrBotTrait, FileSupportedTrait, Group,
             SendMessageSupportedTrait,
         },
         message::{
-            action::{BotNudge, NudgeTrait},
+            action::BotNudge,
             data::{
-                At, AtAll, Dice, Face, ForwardMessageBuilder, Image, MarketFace, PlainText,
-                PokeMessage, PokeMessageEnum, RockPaperScissors,
+                At, AtAll, Dice, Face, ForwardMessageBuilder, Image, PlainText, PokeMessage,
+                PokeMessageEnum, RockPaperScissors,
             },
             AudioTrait, CodableMessageTrait, MessageHashCodeTrait, MessageTrait,
         },

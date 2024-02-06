@@ -1,8 +1,10 @@
-use crate::contact::{Bot, Group};
-use crate::utils::contact::file::{AbsoluteFile, AbsoluteFolder, ExternalResource};
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetInstanceTrait};
+
+use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait};
 use mj_macro::{AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
+
+use crate::contact::Group;
+use crate::utils::contact::file::{AbsoluteFile, AbsoluteFolder, ExternalResource};
 
 #[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
 pub struct RemoteFiles {
@@ -15,7 +17,7 @@ impl RemoteFiles {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm.invoke(&self.instance, "getContact", &[]).unwrap();
         let instance = jvm
-            .cast(&instance, "net.mamoe.mirai.contact.Group")
+            .cast(&instance, <Group as GetClassTypeTrait>::get_type_name())
             .unwrap();
         Group::from_instance(instance)
     }

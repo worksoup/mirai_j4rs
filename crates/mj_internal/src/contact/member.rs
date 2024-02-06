@@ -1,8 +1,9 @@
+use mj_macro::mj_all;
+
 use crate::contact::{
     AnonymousMember, ContactOrBotTrait, ContactTrait, MemberTrait, NormalMember, UserOrBotTrait,
     UserTrait,
 };
-use mj_macro::mj_all;
 
 /// **注意**
 ///
@@ -10,7 +11,7 @@ use mj_macro::mj_all;
 /// [Member] 本质上是一个枚举，如果需要发送消息请使用 `match` 等语句获取枚举中的 [NormalMember], 然后再发送消息。
 ///
 /// 发送 [NormalMemberNudge] 同理。
-#[mj_all("net.mamoe.mirai.contact.Member")]
+#[mj_all("contact.Member")]
 pub enum Member {
     NormalMember(NormalMember),
     AnonymousMember(AnonymousMember),

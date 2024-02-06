@@ -1,12 +1,13 @@
+use j4rs::Instance;
+
+use mj_macro::mj_all;
+
 use crate::message::message_trait::{
     CodableMessageTrait, ConstrainSingleTrait, MessageContentTrait, MessageTrait,
     SingleMessageTrait,
 };
-use j4rs::Instance;
-use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
-#[derive(AsInstanceDerive, GetInstanceDerive, FromInstanceDerive)]
-#[java_type("net.mamoe.mirai.message.data.MusicShare")]
+#[mj_all("message.data.MusicShare")]
 pub struct MusicShare {
     instance: Instance,
 }

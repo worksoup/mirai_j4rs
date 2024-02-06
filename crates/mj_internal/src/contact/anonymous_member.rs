@@ -1,8 +1,10 @@
-use crate::contact::{ContactOrBotTrait, ContactTrait, MemberTrait, UserOrBotTrait, UserTrait};
 use j4rs::{Instance, Jvm};
+
 use mj_macro::mj_all;
 
-#[mj_all("net.mamoe.mirai.contact.AnonymousMember")]
+use crate::contact::{ContactOrBotTrait, ContactTrait, MemberTrait, UserOrBotTrait, UserTrait};
+
+#[mj_all("contact.AnonymousMember")]
 pub struct AnonymousMember {
     instance: Instance,
 }

@@ -1,12 +1,13 @@
+use j4rs::{Instance, Jvm};
+
+use mj_macro::mj_all;
+
 use crate::message::message_trait::{
     CodableMessageTrait, MessageContentTrait, MessageHashCodeTrait, MessageTrait, RichMessageTrait,
     SingleMessageTrait,
 };
-use j4rs::{Instance, Jvm};
-use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
-#[derive(AsInstanceDerive, GetInstanceDerive, FromInstanceDerive)]
-#[java_type("net.mamoe.mirai.message.data.LightApp")]
+#[mj_all("message.data.LightApp")]
 pub struct LightApp {
     instance: Instance,
 }

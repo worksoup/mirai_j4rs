@@ -1,4 +1,5 @@
 use j4rs::Jvm;
+
 use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
 
 pub trait MiraiEventTrait

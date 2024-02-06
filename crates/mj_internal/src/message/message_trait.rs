@@ -1,10 +1,12 @@
+use j4rs::{InvocationArg, Jvm};
+
+use mj_base::env::{AsInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
+use mj_base::utils::primitive_byte_array_to_string;
+
 use crate::{
     contact::ContactTrait,
     message::data::{MessageChain, SingleMessage},
 };
-use j4rs::{InvocationArg, Jvm};
-use mj_base::env::{AsInstanceTrait, GetInstanceTrait};
-use mj_base::utils::primitive_byte_array_to_string;
 
 //TODO : message_chain_builder
 pub trait MessageTrait
@@ -100,7 +102,7 @@ where
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke_static(
-                "net.mamoe.mirai.message.data.MessageChain",
+                <MessageChain as GetClassTypeTrait>::get_type_name(),
                 "deserializeFromJsonString",
                 &[InvocationArg::try_from(json).unwrap()],
             )
@@ -111,7 +113,7 @@ where
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke_static(
-                "net.mamoe.mirai.message.data.MessageChain",
+                <MessageChain as GetClassTypeTrait>::get_type_name(),
                 "deserializeFromMiraiCode",
                 &[
                     InvocationArg::try_from(code).unwrap(),
@@ -128,7 +130,7 @@ where
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke_static(
-                "net.mamoe.mirai.message.data.MessageChain",
+                <MessageChain as GetClassTypeTrait>::get_type_name(),
                 "serializeToJsonString",
                 &[InvocationArg::try_from(chain.get_instance()).unwrap()],
             )
@@ -139,7 +141,7 @@ where
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke_static(
-                "net.mamoe.mirai.message.data.MessageChain",
+                <MessageChain as GetClassTypeTrait>::get_type_name(),
                 "serializeToString",
                 &[InvocationArg::try_from(chain.get_instance()).unwrap()],
             )

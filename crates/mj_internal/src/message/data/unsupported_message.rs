@@ -1,6 +1,8 @@
-use crate::message::message_trait::{MessageContentTrait, MessageTrait, SingleMessageTrait};
 use j4rs::Instance;
+
 use mj_macro::{AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
+
+use crate::message::message_trait::{MessageContentTrait, MessageTrait, SingleMessageTrait};
 
 #[derive(AsInstanceDerive, GetInstanceDerive, FromInstanceDerive)]
 pub struct UnsupportedMessage {

@@ -1,5 +1,8 @@
-use crate::contact::Bot;
+use std::ops::Deref;
+
 use j4rs::{Instance, InvocationArg, Jvm};
+
+use mj_base::env::GetClassTypeTrait;
 use mj_base::{
     data_wrapper::DataWrapper,
     env::{FromInstanceTrait, GetInstanceTrait},
@@ -8,8 +11,9 @@ use mj_closures::{
     kt_func_0::KtFunc0, kt_func_0::KtFunc0Raw, kt_func_1::KtFunc1, kt_func_1::KtFunc1Raw,
     kt_func_2::KtFunc2, kt_func_2::KtFunc2Raw,
 };
-use mj_macro::{AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
-use std::ops::Deref;
+use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
+
+use crate::contact::Bot;
 
 /// 该结构体未实现 [`LoginSolverTrait`], 如需使用相关功能请调用本实例的 `get_instance` 方法，获得 `Instance` 后直接操作。
 #[derive(AsInstanceDerive, GetInstanceDerive, FromInstanceDerive)]
@@ -17,6 +21,7 @@ pub struct LoginSolver {
     instance: Instance,
 }
 
+#[java_type("auth.QRCodeLoginListener$State")]
 pub enum State {
     /// 等待扫描中，请在此阶段请扫描二维码.
     WaitingForScan,
@@ -50,7 +55,7 @@ impl GetInstanceTrait for State {
     fn get_instance(&self) -> Instance {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.static_class_field(
-            "net.mamoe.mirai.auth.QRCodeLoginListener$State",
+            <Self as GetClassTypeTrait>::get_type_name(),
             match self {
                 State::WaitingForScan => "WAITING_FOR_SCAN",
                 State::WaitingForConfirm => "WAITING_FOR_CONFIRM",

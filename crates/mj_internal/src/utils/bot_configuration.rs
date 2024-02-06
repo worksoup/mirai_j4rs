@@ -1,3 +1,15 @@
+use std::path::PathBuf;
+
+use j4rs::{Instance, InvocationArg, Jvm};
+
+use mj_base::env::GetClassTypeTrait;
+use mj_base::{
+    env::{FromInstanceTrait, GetInstanceTrait},
+    utils::instance_is_null,
+};
+use mj_closures::{kt_func_1::KtFunc1Raw, kt_func_2::KtFunc2Raw};
+use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
+
 use crate::{
     contact::Bot,
     utils::{
@@ -6,14 +18,6 @@ use crate::{
         DeviceInfo, MiraiLogger,
     },
 };
-use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::{
-    env::{FromInstanceTrait, GetInstanceTrait},
-    utils::instance_is_null,
-};
-use mj_closures::{kt_func_1::KtFunc1Raw, kt_func_2::KtFunc2Raw};
-use mj_macro::{AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
-use std::path::PathBuf;
 
 #[derive(AsInstanceDerive, GetInstanceDerive, FromInstanceDerive)]
 pub struct ContactListCache {
@@ -95,6 +99,7 @@ impl ContactListCache {
     }
 }
 #[derive(AsInstanceDerive, GetInstanceDerive)]
+#[java_type("utils.BotConfiguration")]
 pub struct BotConfiguration {
     instance: Instance,
     _login_solver_holder: Option<(KtFunc2Raw, KtFunc2Raw, KtFunc1Raw, KtFunc2Raw)>,
@@ -124,7 +129,11 @@ impl Default for BotConfiguration {
     fn default() -> Self {
         let instance = Jvm::attach_thread()
             .unwrap()
-            .invoke_static("net.mamoe.mirai.utils.BotConfiguration", "getDefault", &[])
+            .invoke_static(
+                <Self as GetClassTypeTrait>::get_type_name(),
+                "getDefault",
+                &[],
+            )
             .unwrap();
         BotConfiguration {
             instance,
@@ -456,7 +465,9 @@ impl BotConfiguration {
                             &Jvm::attach_thread()
                                 .unwrap()
                                 .static_class(
-                                    "net.mamoe.mirai.utils.BotConfiguration$HeartbeatStrategy",
+                                    (<Self as GetClassTypeTrait>::get_type_name().to_string()
+                                        + "$HeartbeatStrategy")
+                                        .as_str(),
                                 )
                                 .unwrap(),
                             match heartbeat_strategy {

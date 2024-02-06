@@ -1,10 +1,12 @@
+use j4rs::Instance;
+
+use mj_macro::mj_event;
+
 use crate::contact::Member;
 use crate::event::{
     BotActiveEventTrait, BotEventTrait, MessagePostSendEventTrait, TempMessagePostSendEventTrait,
     UserMessagePostSendEventTrait,
 };
-use j4rs::Instance;
-use mj_macro::mj_event;
 
 #[mj_event]
 pub struct GroupTempMessagePostSendEvent {

@@ -1,12 +1,15 @@
-use crate::contact::MemberPermission;
-use crate::error::MiraiRsErrorEnum::LumiaException;
-use j4rs::errors::J4RsError;
-use j4rs::Instance;
-use mj_base::env::{FromInstanceTrait, GetInstanceTrait};
 use std::{
     error::Error,
     fmt::{Display, Formatter},
 };
+
+use j4rs::errors::J4RsError;
+use j4rs::Instance;
+
+use mj_base::env::{FromInstanceTrait, GetInstanceTrait};
+
+use crate::contact::MemberPermission;
+use crate::error::MiraiRsErrorEnum::LumiaException;
 
 #[derive(Debug)]
 pub struct MemberPermissionCheck {

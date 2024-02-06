@@ -1,6 +1,9 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::GetInstanceTrait;
 
+use mj_base::env::{GetClassTypeTrait, GetInstanceTrait};
+use mj_macro::java_type;
+
+#[java_type("auth.BotAuthorization")]
 pub enum BotAuthorization {
     Password(String),
     Md5([u8; 16]),
@@ -14,7 +17,7 @@ impl GetInstanceTrait for BotAuthorization {
         match self {
             BotAuthorization::Password(password) => jvm
                 .invoke_static(
-                    "net.mamoe.mirai.auth.BotAuthorization",
+                    <Self as GetClassTypeTrait>::get_type_name(),
                     "byPassword",
                     &[InvocationArg::try_from(password).unwrap()],
                 )
@@ -29,14 +32,18 @@ impl GetInstanceTrait for BotAuthorization {
                 let arg = jvm.create_java_array("byte", &password_md5).unwrap();
                 let arg = InvocationArg::try_from(arg).unwrap();
                 jvm.invoke_static(
-                    "net.mamoe.mirai.auth.BotAuthorization",
+                    <Self as GetClassTypeTrait>::get_type_name(),
                     "byPassword",
                     &[arg],
                 )
                 .unwrap()
             }
             BotAuthorization::QrCode => jvm
-                .invoke_static("net.mamoe.mirai.auth.BotAuthorization", "byQRCode", &[])
+                .invoke_static(
+                    <Self as GetClassTypeTrait>::get_type_name(),
+                    "byQRCode",
+                    &[],
+                )
                 .unwrap(),
         }
     }

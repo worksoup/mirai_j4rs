@@ -1,14 +1,16 @@
-use crate::message::message_trait::{
-    CodableMessageTrait, MessageContentTrait, MessageHashCodeTrait, MessageTrait,
-    SingleMessageTrait,
-};
 use j4rs::{Instance, InvocationArg, Jvm};
+
 use mj_base::env::FromInstanceTrait;
 use mj_base::env::GetClassTypeTrait;
 use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
 
+use crate::message::message_trait::{
+    CodableMessageTrait, MessageContentTrait, MessageHashCodeTrait, MessageTrait,
+    SingleMessageTrait,
+};
+
 #[derive(AsInstanceDerive, GetInstanceDerive)]
-#[java_type("net.mamoe.mirai.message.data.PlainText")]
+#[java_type("message.data.PlainText")]
 pub struct PlainText {
     content: String,
     instance: Instance,

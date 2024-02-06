@@ -1,3 +1,8 @@
+use j4rs::{Instance, InvocationArg, Jvm};
+
+use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
+use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
+
 use crate::{
     contact::Group,
     message::message_trait::{
@@ -5,12 +10,9 @@ use crate::{
         SingleMessageTrait,
     },
 };
-use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
-use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
 
 #[derive(GetInstanceDerive, AsInstanceDerive)]
-#[java_type("net.mamoe.mirai.message.data.At")]
+#[java_type("message.data.At")]
 pub struct At {
     id: i64,
     instance: Instance,

@@ -220,6 +220,19 @@ pub fn mj_all(type_name: TokenStream, input: TokenStream) -> TokenStream {
     };
     gen.into()
 }
+
+#[proc_macro_derive(MiraiEventDerive)]
+pub fn mirai_event_derive(input: TokenStream) -> TokenStream {
+    let ast: &DeriveInput = &syn::parse(input).unwrap();
+    let name = &ast.ident;
+    let generics = &ast.generics;
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    let gen = quote! {
+        impl #impl_generics crate::event::MiraiEventTrait for #name #ty_generics #where_clause {
+        }
+    };
+    gen.into()
+}
 #[proc_macro_attribute]
 pub fn mj_event(mj_type: TokenStream, input: TokenStream) -> TokenStream {
     let ast: &DeriveInput = &syn::parse(input).unwrap();
@@ -233,7 +246,8 @@ pub fn mj_event(mj_type: TokenStream, input: TokenStream) -> TokenStream {
         syn::parse(mj_type).expect("类型名称请用字符串表示！")
     };
     let gen = quote! {
-        #[mj_macro::mj_all(#type_name)]
+        #[derive(mj_macro::AsInstanceDerive, mj_macro::FromInstanceDerive, mj_macro::GetInstanceDerive, mj_macro::MiraiEventDerive)]
+        #[mj_macro::java_type(#type_name)]
         #ast
     };
     gen.into()

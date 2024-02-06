@@ -1,5 +1,19 @@
+use crate::contact::Stranger;
+use crate::event::{
+    BotActiveEventTrait, BotEventTrait, MessagePostSendEventTrait, UserMessagePostSendEventTrait,
+};
 use j4rs::Instance;
-use mj_macro::mj_all;
+use mj_macro::mj_event;
 
-#[mj_all("")]
-pub struct StrangerMessagePostSendEvent {instance: Instance,}
+#[mj_event]
+pub struct StrangerMessagePostSendEvent {
+    instance: Instance,
+}
+
+impl MessagePostSendEventTrait<Stranger> for StrangerMessagePostSendEvent {}
+
+impl BotEventTrait for StrangerMessagePostSendEvent {}
+
+impl BotActiveEventTrait for StrangerMessagePostSendEvent {}
+
+impl UserMessagePostSendEventTrait<Stranger> for StrangerMessagePostSendEvent {}

@@ -1,12 +1,11 @@
 use crate::event::{
     BaseGroupMemberInfoChangeEventTrait, BotEventTrait, BotPassiveEventTrait, GroupEventTrait,
-    GroupMemberInfoChangeEventTrait, MiraiEventTrait,
+    GroupMemberInfoChangeEventTrait,
 };
 use j4rs::Instance;
-use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
+use mj_macro::mj_event;
 
-#[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
-#[java_type("net.mamoe.mirai.event.events.BotUnmuteEvent")]
+#[mj_event]
 pub struct BotUnmuteEvent {
     instance: Instance,
 }
@@ -16,8 +15,6 @@ impl BotEventTrait for BotUnmuteEvent {}
 impl GroupEventTrait for BotUnmuteEvent {}
 
 impl BotPassiveEventTrait for BotUnmuteEvent {}
-
-impl MiraiEventTrait for BotUnmuteEvent {}
 
 impl BaseGroupMemberInfoChangeEventTrait for BotUnmuteEvent {}
 

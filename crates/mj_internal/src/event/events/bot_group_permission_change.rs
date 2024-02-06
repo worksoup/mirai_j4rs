@@ -1,9 +1,8 @@
-use crate::event::{BotEventTrait, BotPassiveEventTrait, MiraiEventTrait};
+use crate::event::{BotEventTrait, BotPassiveEventTrait};
 use j4rs::Instance;
-use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
+use mj_macro::mj_event;
 
-#[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
-#[java_type("net.mamoe.mirai.event.events.BotGroupPermissionChangeEvent")]
+#[mj_event]
 pub struct BotGroupPermissionChangeEvent {
     instance: Instance,
 }
@@ -11,4 +10,3 @@ pub struct BotGroupPermissionChangeEvent {
 impl BotEventTrait for BotGroupPermissionChangeEvent {}
 
 impl BotPassiveEventTrait for BotGroupPermissionChangeEvent {}
-impl MiraiEventTrait for BotGroupPermissionChangeEvent {}

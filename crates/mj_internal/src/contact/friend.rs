@@ -6,9 +6,10 @@ use crate::utils::contact::friend_group::FriendGroup;
 use crate::utils::other::enums::AvatarSpec;
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::{AsInstanceTrait, FromInstance};
-use mj_macro::{AsInstanceDerive, GetInstanceDerive};
+use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
 
 #[derive(GetInstanceDerive, AsInstanceDerive)]
+#[java_type("net.mamoe.mirai.contact.Friend")]
 pub struct Friend {
     bot: Bot,
     instance: Instance,

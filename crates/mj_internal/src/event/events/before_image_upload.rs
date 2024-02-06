@@ -1,9 +1,8 @@
-use crate::event::{BotActiveEventTrait, BotEventTrait, CancellableEventTrait, MiraiEventTrait};
+use crate::event::{BotActiveEventTrait, BotEventTrait, CancellableEventTrait};
 use j4rs::Instance;
-use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
+use mj_macro::mj_event;
 
-#[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
-#[java_type("net.mamoe.mirai.event.events.BeforeImageUploadEvent")]
+#[mj_event]
 pub struct BeforeImageUploadEvent {
     instance: Instance,
 }
@@ -11,5 +10,4 @@ pub struct BeforeImageUploadEvent {
 impl BotEventTrait for BeforeImageUploadEvent {}
 
 impl BotActiveEventTrait for BeforeImageUploadEvent {}
-impl MiraiEventTrait for BeforeImageUploadEvent {}
 impl CancellableEventTrait for BeforeImageUploadEvent {}

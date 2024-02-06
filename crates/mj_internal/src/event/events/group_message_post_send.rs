@@ -1,11 +1,9 @@
 use crate::contact::Group;
-use crate::event::{
-    BotActiveEventTrait, BotEventTrait, MessagePostSendEventTrait, MiraiEventTrait,
-};
+use crate::event::{BotActiveEventTrait, BotEventTrait, MessagePostSendEventTrait};
 use j4rs::Instance;
-use mj_macro::mj_all;
+use mj_macro::mj_event;
 
-#[mj_all("net.mamoe.mirai.event.events.GroupMessagePostSendEvent")]
+#[mj_event]
 pub struct GroupMessagePostSendEvent {
     instance: Instance,
 }
@@ -15,5 +13,3 @@ impl MessagePostSendEventTrait<Group> for GroupMessagePostSendEvent {}
 impl BotEventTrait for GroupMessagePostSendEvent {}
 
 impl BotActiveEventTrait for GroupMessagePostSendEvent {}
-
-impl MiraiEventTrait for GroupMessagePostSendEvent {}

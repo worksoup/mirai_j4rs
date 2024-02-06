@@ -1,12 +1,10 @@
-use crate::event::{BaseGroupMemberInfoChangeEventTrait, BotEventTrait, MiraiEventTrait};
+use crate::event::{BaseGroupMemberInfoChangeEventTrait, BotEventTrait};
 use j4rs::Instance;
-use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
+use mj_macro::mj_event;
 
-#[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
-#[java_type("net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent")]
+#[mj_event]
 pub struct BotInvitedJoinGroupRequestEvent {
     instance: Instance,
 }
 impl BotEventTrait for BotInvitedJoinGroupRequestEvent {}
-impl MiraiEventTrait for BotInvitedJoinGroupRequestEvent {}
 impl BaseGroupMemberInfoChangeEventTrait for BotInvitedJoinGroupRequestEvent {}

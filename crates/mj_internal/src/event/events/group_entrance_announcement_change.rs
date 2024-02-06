@@ -1,12 +1,12 @@
 use crate::event::{
     BaseGroupMemberInfoChangeEventTrait, BotEventTrait, BotPassiveEventTrait,
     BroadcastControllableTrait, GroupEventTrait, GroupMemberInfoChangeEventTrait,
-    GroupOperableEventTrait, GroupSettingsChangeEventTrait, MiraiEventTrait,
+    GroupOperableEventTrait, GroupSettingsChangeEventTrait,
 };
 use j4rs::Instance;
-use mj_macro::mj_all;
+use mj_macro::mj_event;
 
-#[mj_all("net.mamoe.mirai.event.events.GroupEntranceAnnouncementChangeEvent")]
+#[mj_event]
 pub struct GroupEntranceAnnouncementChangeEvent {
     instance: Instance,
 }
@@ -15,7 +15,6 @@ impl GroupSettingsChangeEventTrait<String> for GroupEntranceAnnouncementChangeEv
 impl GroupOperableEventTrait for GroupEntranceAnnouncementChangeEvent {}
 impl GroupMemberInfoChangeEventTrait for GroupEntranceAnnouncementChangeEvent {}
 
-impl MiraiEventTrait for GroupEntranceAnnouncementChangeEvent {}
 impl BotEventTrait for GroupEntranceAnnouncementChangeEvent {}
 impl GroupEventTrait for GroupEntranceAnnouncementChangeEvent {}
 impl BaseGroupMemberInfoChangeEventTrait for GroupEntranceAnnouncementChangeEvent {}

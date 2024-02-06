@@ -1,15 +1,14 @@
 use crate::event::{
     BotActiveEventTrait, BotEventTrait, CancellableEventTrait, MessagePreSendEventTrait,
-    MiraiEventTrait, UserMessagePreSendEventTrait,
+    UserMessagePreSendEventTrait,
 };
 use j4rs::Instance;
-use mj_macro::mj_all;
+use mj_macro::mj_event;
 
-#[mj_all("net.mamoe.mirai.event.events.FriendMessagePreSendEvent")]
+#[mj_event]
 pub struct FriendMessagePreSendEvent {
     instance: Instance,
 }
-impl MiraiEventTrait for FriendMessagePreSendEvent {}
 
 impl MessagePreSendEventTrait for FriendMessagePreSendEvent {}
 

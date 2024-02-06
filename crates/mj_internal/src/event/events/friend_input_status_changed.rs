@@ -1,12 +1,11 @@
-use crate::event::{BotEventTrait, FriendEventTrait, MiraiEventTrait, UserEventTrait};
+use crate::event::{BotEventTrait, FriendEventTrait, UserEventTrait};
 use j4rs::Instance;
-use mj_macro::mj_all;
+use mj_macro::mj_event;
 
-#[mj_all("net.mamoe.mirai.event.events.FriendInputStatusChangedEvent")]
+#[mj_event]
 pub struct FriendInputStatusChangedEvent {
     instance: Instance,
 }
-impl MiraiEventTrait for FriendInputStatusChangedEvent {}
 
 impl BotEventTrait for FriendInputStatusChangedEvent {}
 

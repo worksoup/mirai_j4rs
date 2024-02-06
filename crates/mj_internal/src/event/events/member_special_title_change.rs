@@ -1,7 +1,24 @@
+use crate::event::{
+    BaseGroupMemberInfoChangeEventTrait, BotEventTrait, GroupEventTrait, GroupMemberEventTrait,
+    GroupMemberInfoChangeEventTrait, GroupOperableEventTrait, UserEventTrait,
+};
 use j4rs::Instance;
-use mj_macro::mj_all;
+use mj_macro::mj_event;
 
-#[mj_all("")]
+#[mj_event]
 pub struct MemberSpecialTitleChangeEvent {
     instance: Instance,
 }
+
+impl BotEventTrait for MemberSpecialTitleChangeEvent {}
+
+impl GroupEventTrait for MemberSpecialTitleChangeEvent {}
+
+impl BaseGroupMemberInfoChangeEventTrait for MemberSpecialTitleChangeEvent {}
+
+impl GroupMemberInfoChangeEventTrait for MemberSpecialTitleChangeEvent {}
+
+impl UserEventTrait for MemberSpecialTitleChangeEvent {}
+
+impl GroupMemberEventTrait for MemberSpecialTitleChangeEvent {}
+impl GroupOperableEventTrait for MemberSpecialTitleChangeEvent {}

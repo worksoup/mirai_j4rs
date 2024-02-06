@@ -3,10 +3,10 @@ use crate::event::{BotEventTrait, MiraiEventTrait};
 use crate::message::MessageHashCodeTrait;
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::FromInstance;
-use mj_macro::{java_type, mj_all, AsInstanceDerive, GetInstanceDerive};
+use mj_macro::mj_event;
 
 // TODO: BaseGroupMemberInfoChangeEvent
-#[mj_all("net.mamoe.mirai.event.events.MemberJoinRequestEvent")]
+#[mj_event]
 pub struct MemberJoinRequestEvent {
     instance: Instance,
 }
@@ -16,8 +16,16 @@ impl MemberJoinRequestEvent {
         let jvm = Jvm::attach_thread().unwrap();
         let _ = jvm.invoke(&self.instance, "getBot", &[]).unwrap();
     }
-    pub fn equals(&self, other: Self) -> bool {
-        todo!()
+    pub fn equals(&self, other: impl MiraiEventTrait) -> bool {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm
+            .invoke(
+                &self.instance,
+                "equals",
+                &[InvocationArg::try_from(other.get_instance()).unwrap()],
+            )
+            .unwrap();
+        jvm.to_rust(instance).unwrap()
     }
     pub fn get_bot(&self) -> Bot {
         let instance = Jvm::attach_thread()
@@ -95,7 +103,5 @@ impl MemberJoinRequestEvent {
     }
 }
 impl MessageHashCodeTrait for MemberJoinRequestEvent {}
-
-impl MiraiEventTrait for MemberJoinRequestEvent {}
 
 impl BotEventTrait for MemberJoinRequestEvent {}

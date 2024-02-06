@@ -1,12 +1,12 @@
 use crate::contact::NormalMember;
 use crate::event::{
     BotEventTrait, BotPassiveEventTrait, GroupAwareMessageTrait, MessageEventTrait,
-    MessageSyncEventTrait, MiraiEventTrait, OtherClientEventTrait,
+    MessageSyncEventTrait, OtherClientEventTrait,
 };
 use j4rs::Instance;
-use mj_macro::mj_all;
+use mj_macro::mj_event;
 
-#[mj_all("net.mamoe.mirai.event.events.GroupTempMessageSyncEvent")]
+#[mj_event]
 pub struct GroupTempMessageSyncEvent {
     instance: Instance,
 }
@@ -16,5 +16,4 @@ impl GroupAwareMessageTrait<NormalMember, NormalMember> for GroupTempMessageSync
 impl BotEventTrait for GroupTempMessageSyncEvent {}
 impl OtherClientEventTrait for GroupTempMessageSyncEvent {}
 impl BotPassiveEventTrait for GroupTempMessageSyncEvent {}
-impl MiraiEventTrait for GroupTempMessageSyncEvent {}
 impl MessageEventTrait<NormalMember, NormalMember> for GroupTempMessageSyncEvent {}

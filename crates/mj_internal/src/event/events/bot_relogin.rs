@@ -1,9 +1,8 @@
-use crate::event::{BotActiveEventTrait, BotEventTrait, MiraiEventTrait};
-use j4rs::{Instance, Jvm};
-use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
+use crate::event::{BotActiveEventTrait, BotEventTrait};
+use j4rs::Instance;
+use mj_macro::mj_event;
 
-#[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
-#[java_type("net.mamoe.mirai.event.events.BotReloginEvent")]
+#[mj_event]
 pub struct BotReloginEvent {
     instance: Instance,
 }
@@ -13,5 +12,3 @@ impl BotReloginEvent {}
 impl BotEventTrait for BotReloginEvent {}
 
 impl BotActiveEventTrait for BotReloginEvent {}
-
-impl MiraiEventTrait for BotReloginEvent {}

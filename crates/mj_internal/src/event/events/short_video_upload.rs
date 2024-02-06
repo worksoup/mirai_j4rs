@@ -3,8 +3,8 @@ use j4rs::Instance;
 use mj_macro::mj_event;
 
 #[mj_event]
-pub struct ImageUploadEvent {
+pub struct ShortVideoUploadEvent {
     instance: Instance,
 }
-impl BotEventTrait for ImageUploadEvent {}
-impl BotActiveEventTrait for ImageUploadEvent {}
+impl BotEventTrait for ShortVideoUploadEvent {}
+impl BotActiveEventTrait for ShortVideoUploadEvent {}

@@ -1,11 +1,11 @@
 use crate::event::{
     BotActiveEventTrait, BotEventTrait, CancellableEventTrait, MessagePreSendEventTrait,
-    MiraiEventTrait, TempMessagePreSendEventTrait, UserMessagePreSendEventTrait,
+    TempMessagePreSendEventTrait, UserMessagePreSendEventTrait,
 };
 use j4rs::Instance;
-use mj_macro::mj_all;
+use mj_macro::mj_event;
 
-#[mj_all("net.mamoe.mirai.event.events.GroupTempMessagePreSendEvent")]
+#[mj_event]
 pub struct GroupTempMessagePreSendEvent {
     instance: Instance,
 }
@@ -19,7 +19,5 @@ impl BotEventTrait for GroupTempMessagePreSendEvent {}
 impl BotActiveEventTrait for GroupTempMessagePreSendEvent {}
 
 impl CancellableEventTrait for GroupTempMessagePreSendEvent {}
-
-impl MiraiEventTrait for GroupTempMessagePreSendEvent {}
 
 impl TempMessagePreSendEventTrait for GroupTempMessagePreSendEvent {}

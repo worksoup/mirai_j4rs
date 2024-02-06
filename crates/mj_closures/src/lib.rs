@@ -16,12 +16,12 @@
 
 pub mod comparator;
 pub mod consumer;
+mod ffi_internal_test;
 pub mod function;
-pub mod predicate;
 pub mod kt_func_0;
 pub mod kt_func_1;
 pub mod kt_func_2;
-mod ffi_internal_test;
+pub mod predicate;
 
 impl Drop for comparator::ComparatorRaw {
     fn drop(&mut self) {

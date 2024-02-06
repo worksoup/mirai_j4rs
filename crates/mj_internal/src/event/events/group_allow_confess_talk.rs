@@ -1,12 +1,12 @@
 use crate::event::{
     BaseGroupMemberInfoChangeEventTrait, BotEventTrait, BotPassiveEventTrait,
     BroadcastControllableTrait, GroupEventTrait, GroupMemberInfoChangeEventTrait,
-    GroupSettingsChangeEventTrait, MiraiEventTrait,
+    GroupSettingsChangeEventTrait,
 };
 use j4rs::Instance;
-use mj_macro::mj_all;
+use mj_macro::mj_event;
 
-#[mj_all("net.mamoe.mirai.event.events.GroupAllowConfessTalkEvent")]
+#[mj_event]
 pub struct GroupAllowConfessTalkEvent {
     instance: Instance,
 }
@@ -17,6 +17,6 @@ impl GroupMemberInfoChangeEventTrait for GroupAllowConfessTalkEvent {}
 impl BotEventTrait for GroupAllowConfessTalkEvent {}
 impl GroupEventTrait for GroupAllowConfessTalkEvent {}
 impl BaseGroupMemberInfoChangeEventTrait for GroupAllowConfessTalkEvent {}
-impl MiraiEventTrait for GroupAllowConfessTalkEvent {}
+
 impl BroadcastControllableTrait for GroupAllowConfessTalkEvent {}
 impl BotPassiveEventTrait for GroupAllowConfessTalkEvent {}

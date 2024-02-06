@@ -1,11 +1,9 @@
-use crate::event::{BotEventTrait, MiraiEventTrait};
+use crate::event::BotEventTrait;
 use j4rs::Instance;
-use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
+use mj_macro::mj_event;
 
-#[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
-#[java_type("net.mamoe.mirai.event.events.BotAvatarChangedEvent")]
+#[mj_event]
 pub struct BotAvatarChangedEvent {
     instance: Instance,
 }
 impl BotEventTrait for BotAvatarChangedEvent {}
-impl MiraiEventTrait for BotAvatarChangedEvent {}

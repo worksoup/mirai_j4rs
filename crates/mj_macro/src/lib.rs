@@ -252,3 +252,22 @@ pub fn mj_event(mj_type: TokenStream, input: TokenStream) -> TokenStream {
     };
     gen.into()
 }
+#[proc_macro_attribute]
+pub fn mj_event_without_default_traits(mj_type: TokenStream, input: TokenStream) -> TokenStream {
+    let ast: &DeriveInput = &syn::parse(input).unwrap();
+    let type_name = if mj_type.is_empty() {
+        let name = &ast.ident;
+        LitStr::new(
+            format!("net.mamoe.mirai.event.events.{name}").as_str(),
+            Span::mixed_site(),
+        )
+    } else {
+        syn::parse(mj_type).expect("类型名称请用字符串表示！")
+    };
+    let gen = quote! {
+        #[derive(mj_macro::AsInstanceDerive, mj_macro::FromInstanceDerive, mj_macro::GetInstanceDerive)]
+        #[mj_macro::java_type(#type_name)]
+        #ast
+    };
+    gen.into()
+}

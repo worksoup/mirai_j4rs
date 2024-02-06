@@ -1,12 +1,12 @@
 use crate::event::{
     BaseGroupMemberInfoChangeEventTrait, BotEventTrait, BotPassiveEventTrait,
     BroadcastControllableTrait, GroupEventTrait, GroupMemberInfoChangeEventTrait,
-    GroupOperableEventTrait, GroupSettingsChangeEventTrait, MiraiEventTrait,
+    GroupOperableEventTrait, GroupSettingsChangeEventTrait,
 };
 use j4rs::Instance;
-use mj_macro::mj_all;
+use mj_macro::mj_event;
 
-#[mj_all("net.mamoe.mirai.event.events.GroupMuteAllEvent")]
+#[mj_event]
 pub struct GroupMuteAllEvent {
     instance: Instance,
 }
@@ -15,7 +15,6 @@ impl GroupSettingsChangeEventTrait<bool> for GroupMuteAllEvent {}
 impl GroupOperableEventTrait for GroupMuteAllEvent {}
 impl GroupMemberInfoChangeEventTrait for GroupMuteAllEvent {}
 
-impl MiraiEventTrait for GroupMuteAllEvent {}
 impl BotEventTrait for GroupMuteAllEvent {}
 impl GroupEventTrait for GroupMuteAllEvent {}
 impl BaseGroupMemberInfoChangeEventTrait for GroupMuteAllEvent {}

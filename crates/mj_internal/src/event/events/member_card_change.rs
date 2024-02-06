@@ -1,11 +1,11 @@
 use crate::event::{
     BaseGroupMemberInfoChangeEventTrait, BotEventTrait, GroupEventTrait, GroupMemberEventTrait,
-    GroupMemberInfoChangeEventTrait, MiraiEventTrait, UserEventTrait,
+    GroupMemberInfoChangeEventTrait, UserEventTrait,
 };
 use j4rs::Instance;
-use mj_macro::mj_all;
+use mj_macro::mj_event;
 
-#[mj_all("net.mamoe.mirai.event.events.MemberCardChangeEvent")]
+#[mj_event]
 pub struct MemberCardChangeEvent {
     instance: Instance,
 }
@@ -15,5 +15,5 @@ impl GroupMemberInfoChangeEventTrait for MemberCardChangeEvent {}
 impl GroupEventTrait for MemberCardChangeEvent {}
 impl BotEventTrait for MemberCardChangeEvent {}
 impl UserEventTrait for MemberCardChangeEvent {}
-impl MiraiEventTrait for MemberCardChangeEvent {}
+
 impl BaseGroupMemberInfoChangeEventTrait for MemberCardChangeEvent {}

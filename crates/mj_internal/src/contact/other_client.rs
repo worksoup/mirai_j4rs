@@ -1,17 +1,10 @@
 use crate::contact::{ContactOrBotTrait, ContactTrait, SendMessageSupportedTrait};
 use j4rs::Instance;
-use mj_base::env::FromInstanceTrait;
-use mj_macro::{AsInstanceDerive, GetInstanceDerive};
+use mj_macro::mj_all;
 
-#[derive(GetInstanceDerive, AsInstanceDerive)]
+#[mj_all("net.mamoe.mirai.contact.OtherClient")]
 pub struct OtherClient {
     instance: Instance,
-}
-
-impl FromInstanceTrait for OtherClient {
-    fn from_instance(instance: Instance) -> Self {
-        Self { instance }
-    }
 }
 
 impl ContactOrBotTrait for OtherClient {}

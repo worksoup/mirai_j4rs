@@ -1,11 +1,10 @@
 use crate::contact::{ContactOrBotTrait, ContactTrait, MemberTrait, UserOrBotTrait, UserTrait};
 use j4rs::{Instance, Jvm};
-use mj_base::env::FromInstanceTrait;
-use mj_macro::{AsInstanceDerive, GetInstanceDerive};
+use mj_macro::mj_all;
 
-#[derive(GetInstanceDerive, AsInstanceDerive)]
+#[mj_all("net.mamoe.mirai.contact.AnonymousMember")]
 pub struct AnonymousMember {
-    pub(crate) instance: Instance,
+    instance: Instance,
 }
 
 impl AnonymousMember {
@@ -13,12 +12,6 @@ impl AnonymousMember {
         let jvm = Jvm::attach_thread().unwrap();
         let id = jvm.invoke(&self.instance, "getAnonymousId", &[]).unwrap();
         jvm.to_rust(id).unwrap()
-    }
-}
-
-impl FromInstanceTrait for AnonymousMember {
-    fn from_instance(instance: Instance) -> Self {
-        Self { instance }
     }
 }
 

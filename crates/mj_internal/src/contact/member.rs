@@ -2,9 +2,7 @@ use crate::contact::{
     AnonymousMember, ContactOrBotTrait, ContactTrait, MemberTrait, NormalMember, UserOrBotTrait,
     UserTrait,
 };
-use j4rs::{Instance, Jvm};
-use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetInstanceTrait};
-use mj_macro::{java_type, mj_all, AsInstanceDerive, GetInstanceDerive};
+use mj_macro::mj_all;
 
 /// **注意**
 ///
@@ -12,26 +10,10 @@ use mj_macro::{java_type, mj_all, AsInstanceDerive, GetInstanceDerive};
 /// [Member] 本质上是一个枚举，如果需要发送消息请使用 `match` 等语句获取枚举中的 [NormalMember], 然后再发送消息。
 ///
 /// 发送 [NormalMemberNudge] 同理。
-#[derive(GetInstanceDerive, AsInstanceDerive)]
-#[java_type("net.mamoe.mirai.contact.Member")]
+#[mj_all("net.mamoe.mirai.contact.Member")]
 pub enum Member {
     NormalMember(NormalMember),
     AnonymousMember(AnonymousMember),
-}
-
-impl FromInstanceTrait for Member {
-    fn from_instance(instance: Instance) -> Self {
-        // TODO: 这样的转换存在非常情况，并不科学。
-        let jvm = Jvm::attach_thread().unwrap();
-        let special_title: String = jvm
-            .to_rust(jvm.invoke(&instance, "getSpecialTitle", &[]).unwrap())
-            .unwrap();
-        if special_title.as_str() != "匿名" {
-            Member::NormalMember(NormalMember::from_instance(instance))
-        } else {
-            Member::AnonymousMember(AnonymousMember::from_instance(instance))
-        }
-    }
 }
 
 impl MemberTrait for Member {}

@@ -144,17 +144,22 @@ pub fn from_instance_derive(input: TokenStream) -> TokenStream {
                     ))
                 }
             }
-            let fall_arm = fall_arm.expect("须有 `fall` 属性！");
-            let fall_arm_ty = match &fall_arm.fields {
-                Fields::Unnamed(fields) => &fields.unnamed.first().expect("无名枚举没有字段！").ty,
-                _ => {
-                    panic!("不支持无内含值的枚举以及有名枚举！")
-                }
-            };
-            let fall_arm_ident = &fall_arm.ident;
-            impl_tokens.extend(quote!(
-                {#name::#fall_arm_ident(<#fall_arm_ty as mj_base::env::FromInstanceTrait>::from_instance(instance))}
-            ));
+            if let Some(fall_arm) = fall_arm {
+                let fall_arm_ty = match &fall_arm.fields {
+                    Fields::Unnamed(fields) => {
+                        &fields.unnamed.first().expect("无名枚举没有字段！").ty
+                    }
+                    _ => {
+                        panic!("不支持无内含值的枚举以及有名枚举！")
+                    }
+                };
+                let fall_arm_ident = &fall_arm.ident;
+                impl_tokens.extend(quote!(
+                    {#name::#fall_arm_ident(<#fall_arm_ty as mj_base::env::FromInstanceTrait>::from_instance(instance))}
+                ));
+            } else {
+                impl_tokens.extend(quote!({ panic!("意料之外的类型！") }))
+            }
             impl_tokens
         }
         Data::Union(_) => panic!("不支持使用 `union`!"),

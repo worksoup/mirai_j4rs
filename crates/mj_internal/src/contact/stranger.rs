@@ -4,9 +4,9 @@ use crate::contact::{
 };
 use crate::utils::other::enums::AvatarSpec;
 use j4rs::Instance;
-use mj_macro::{AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
+use mj_macro::{mj_all, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
-#[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
+#[mj_all("net.mamoe.mirai.contact.Stranger")]
 pub struct Stranger {
     instance: Instance,
 }

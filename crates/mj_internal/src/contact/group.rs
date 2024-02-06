@@ -17,12 +17,12 @@ use crate::{
     },
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::AsInstanceTrait;
+use mj_base::env::{AsInstanceTrait, GetClassTypeTrait};
 use mj_base::{
     env::{FromInstanceTrait, GetInstanceTrait},
     utils::{instance_is_null, is_instance_of, java_iter_to_rust_hash_set, java_iter_to_rust_vec},
 };
-use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
+use mj_macro::{java_type, mj_all, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 use std::{
     cmp::Ordering,
     collections::{HashMap, HashSet},
@@ -287,24 +287,17 @@ impl FromInstanceTrait for AnnouncementParameters {
     }
 }
 
-#[derive(GetInstanceDerive, AsInstanceDerive)]
+#[mj_all("net.mamoe.mirai.contact.announcement.OfflineAnnouncement")]
 pub struct OfflineAnnouncement {
     instance: Instance,
 }
-
-impl FromInstanceTrait for OfflineAnnouncement {
-    fn from_instance(instance: Instance) -> Self {
-        Self { instance }
-    }
-}
-
 impl OfflineAnnouncement {
     fn from_announcement(announcement: impl AnnouncementTrait) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let announcement = InvocationArg::try_from(announcement.get_instance()).unwrap();
         let offline_announcement = jvm
             .invoke_static(
-                "net.mamoe.mirai.contact.announcement.OfflineAnnouncement",
+                <Self as GetClassTypeTrait>::get_type_name(),
                 "from",
                 &[announcement],
             )
@@ -332,16 +325,9 @@ impl AnnouncementTrait for OfflineAnnouncement {}
 /// 依靠 [`fid`][OnlineAnnouncement::get_fid] 唯一识别。可[删除][OnlineAnnouncement::delete]。
 ///
 /// 另见 [`Announcement`] 与 [`AnnouncementTrait`]
-#[derive(GetInstanceDerive, AsInstanceDerive)]
-#[java_type("net.mamoe.mirai.contact.announcement.OnlineAnnouncement")]
+#[mj_all("net.mamoe.mirai.contact.announcement.OnlineAnnouncement")]
 pub struct OnlineAnnouncement {
     instance: Instance,
-}
-
-impl FromInstanceTrait for OnlineAnnouncement {
-    fn from_instance(instance: Instance) -> Self {
-        Self { instance }
-    }
 }
 
 impl OnlineAnnouncement {
@@ -454,31 +440,10 @@ impl AnnouncementTrait for OnlineAnnouncement {}
 ///
 /// 通过一个群的 [`Announcements`] 获取到 [`OnlineAnnouncement`], 然后调用 [`OnlineAnnouncement::publish_to`] 即可。
 /// 由于 `Mirai` 目前不支持获取公告图片，所以转发的公告也不会带有原公告的图片。
+#[mj_all("net.mamoe.mirai.contact.announcement.Announcement")]
 pub enum Announcement {
     OnlineAnnouncement(OnlineAnnouncement),
     OfflineAnnouncement(OfflineAnnouncement),
-}
-
-impl GetInstanceTrait for Announcement {
-    fn get_instance(&self) -> Instance {
-        match self {
-            Announcement::OnlineAnnouncement(a) => a.get_instance(),
-            Announcement::OfflineAnnouncement(a) => a.get_instance(),
-        }
-    }
-}
-
-impl FromInstanceTrait for Announcement {
-    fn from_instance(instance: Instance) -> Self {
-        if is_instance_of(
-            &instance,
-            "net.mamoe.mirai.contact.announcement.OnlineAnnouncement",
-        ) {
-            Self::OnlineAnnouncement(OnlineAnnouncement::from_instance(instance))
-        } else {
-            Self::OfflineAnnouncement(OfflineAnnouncement::from_instance(instance))
-        }
-    }
 }
 
 impl AnnouncementTrait for Announcement {}

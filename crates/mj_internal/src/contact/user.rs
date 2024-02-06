@@ -7,7 +7,6 @@ use mj_macro::mj_all;
 pub enum User {
     Member(Member),
     Friend(Friend),
-    #[fall]
     Stranger(Stranger),
 }
 impl UserTrait for User {}

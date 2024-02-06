@@ -3,44 +3,12 @@ use crate::message::message_trait::{
 };
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
-use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
+use mj_macro::{java_type, mj_all, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
-#[java_type("net.mamoe.mirai.message.data.Audio")]
+#[mj_all("net.mamoe.mirai.message.data.Audio")]
 pub enum Audio {
     OnlineAudio(OnlineAudio),
     OfflineAudio(OfflineAudio),
-}
-impl GetInstanceTrait for Audio {
-    fn get_instance(&self) -> Instance {
-        match self {
-            Audio::OfflineAudio(a) => a.get_instance(),
-            Audio::OnlineAudio(a) => a.get_instance(),
-        }
-    }
-}
-
-impl AsInstanceTrait for Audio {
-    fn as_instance(&self) -> &Instance {
-        match self {
-            Audio::OfflineAudio(a) => a.as_instance(),
-            Audio::OnlineAudio(a) => a.as_instance(),
-        }
-    }
-}
-impl FromInstanceTrait for Audio {
-    fn from_instance(instance: Instance) -> Self {
-        if OfflineAudio::is_this_type(&instance) {
-            Audio::OfflineAudio(OfflineAudio::from_instance(
-                OfflineAudio::cast_to_this_type(instance),
-            ))
-        } else if OnlineAudio::is_this_type(&instance) {
-            Audio::OnlineAudio(OnlineAudio::from_instance(OnlineAudio::cast_to_this_type(
-                instance,
-            )))
-        } else {
-            panic!("预料之外的错误：该语音既不是在线语音也不是离线语音。")
-        }
-    }
 }
 impl AudioTrait for Audio {}
 impl SingleMessageTrait for Audio {}
@@ -48,8 +16,7 @@ impl MessageContentTrait for Audio {}
 impl ConstrainSingleTrait for Audio {}
 impl MessageTrait for Audio {}
 
-#[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
-#[java_type("net.mamoe.mirai.message.data.OfflineAudio")]
+#[mj_all("net.mamoe.mirai.message.data.OfflineAudio")]
 pub struct OfflineAudio {
     instance: Instance,
 }
@@ -87,8 +54,7 @@ impl MessageContentTrait for OfflineAudio {}
 
 impl AudioTrait for OfflineAudio {}
 
-#[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
-#[java_type("net.mamoe.mirai.message.data.OnlineAudio")]
+#[mj_all("net.mamoe.mirai.message.data.OnlineAudio")]
 pub struct OnlineAudio {
     instance: Instance,
 }

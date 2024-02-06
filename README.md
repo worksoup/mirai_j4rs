@@ -17,7 +17,7 @@
 
 请查看该 [issue](https://github.com/worksoup/mirai_j4rs/issues/2#issue-2114138266).
 
-# 使用方法
+## 使用方法
 在 `Cargo.toml` 中添加：
 
  ``` toml
@@ -27,7 +27,7 @@ mirai_j4rs={ git = "https://github.com/worksoup/mirai_j4rs.git" }
 
 可以参考 [示例](./examples)。
 
-# 关于开源协议
+## 关于开源协议
 
 根据 Mirai 的协议和强烈建议，以及 `fix-protocol-version` 的协议，此项目应当是 `AGPL`.
 同样地，本项目严禁用于商业用途并强烈建议直接或间接接触到本软件的项目使用 `AGPL` 协议进行分发（以该协议原文和 `Mirai`

@@ -20,7 +20,9 @@ use mj_base::{
 use mj_closures::{
     comparator::Comparator, consumer::Consumer, function::Function, predicate::Predicate,
 };
+use mj_macro::{AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 use std::{cmp::Ordering, marker::PhantomData};
+
 pub trait MiraiRsCollectionTrait {
     type Element;
     fn get_size(&self) -> i32;
@@ -32,27 +34,10 @@ pub trait MiraiRsCollectionTrait {
 pub trait MiraiRsIterableTrait: Iterator {}
 
 /// 对应 `Stream<AbsoluteFileFolder>`
+#[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
 pub struct JavaStream<T: FromInstance + GetClassTypeTrait> {
     pub(crate) instance: Instance,
     pub(crate) _unused: PhantomData<T>,
-}
-
-impl<T: FromInstance + GetClassTypeTrait> GetInstanceTrait for JavaStream<T> {
-    fn get_instance(&self) -> Instance {
-        Jvm::attach_thread()
-            .unwrap()
-            .clone_instance(&self.instance)
-            .unwrap()
-    }
-}
-
-impl<T: FromInstance + GetClassTypeTrait> FromInstance for JavaStream<T> {
-    fn from_instance(instance: Instance) -> Self {
-        JavaStream {
-            instance,
-            _unused: PhantomData::default(),
-        }
-    }
 }
 
 impl<T: FromInstance + GetClassTypeTrait> JavaStream<T> {

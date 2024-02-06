@@ -1,9 +1,10 @@
 extern crate proc_macro;
 
 use proc_macro::TokenStream;
+use proc_macro2::Span;
 use quote::quote;
 use syn;
-use syn::{Attribute, Data, DeriveInput, Field, Fields, Meta, Type};
+use syn::{Data, DeriveInput, Field, Fields, LitStr, Type};
 fn impl_get_as(
     ast_data: &Data,
     name: &proc_macro2::Ident,
@@ -210,11 +211,29 @@ pub fn java_type(type_name: TokenStream, input: TokenStream) -> TokenStream {
 }
 #[proc_macro_attribute]
 pub fn mj_all(type_name: TokenStream, input: TokenStream) -> TokenStream {
-    let ast: &syn::DeriveInput = &syn::parse(input).unwrap();
-    let type_name: &syn::LitStr = &syn::parse(type_name).expect("类型名称请用字符串表示！");
+    let ast: &DeriveInput = &syn::parse(input).unwrap();
+    let type_name: LitStr = syn::parse(type_name).expect("类型名称请用字符串表示！");
     let gen = quote! {
         #[derive(mj_macro::AsInstanceDerive, mj_macro::FromInstanceDerive, mj_macro::GetInstanceDerive)]
         #[mj_macro::java_type(#type_name)]
+        #ast
+    };
+    gen.into()
+}
+#[proc_macro_attribute]
+pub fn mj_event(mj_type: TokenStream, input: TokenStream) -> TokenStream {
+    let ast: &DeriveInput = &syn::parse(input).unwrap();
+    let type_name = if mj_type.is_empty() {
+        let name = &ast.ident;
+        LitStr::new(
+            format!("net.mamoe.mirai.event.events.{name}").as_str(),
+            Span::mixed_site(),
+        )
+    } else {
+        syn::parse(mj_type).expect("类型名称请用字符串表示！")
+    };
+    let gen = quote! {
+        #[mj_macro::mj_all(#type_name)]
         #ast
     };
     gen.into()

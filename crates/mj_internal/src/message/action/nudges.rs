@@ -3,12 +3,12 @@ use crate::{
     message::message_trait::MessageHashCodeTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{AsInstanceTrait, FromInstance, GetInstanceTrait};
+use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetInstanceTrait};
 use mj_macro::{AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 use std::marker::PhantomData;
 
 pub trait NudgeTrait<UserOrBot: UserOrBotTrait>:
-    GetInstanceTrait + MessageHashCodeTrait + FromInstance + AsInstanceTrait
+    GetInstanceTrait + MessageHashCodeTrait + FromInstanceTrait + AsInstanceTrait
 {
     fn get_target(&self) -> UserOrBot {
         let jvm = Jvm::attach_thread().unwrap();

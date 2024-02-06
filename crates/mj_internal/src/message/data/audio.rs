@@ -2,7 +2,7 @@ use crate::message::message_trait::{
     AudioTrait, ConstrainSingleTrait, MessageContentTrait, MessageTrait, SingleMessageTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{AsInstanceTrait, FromInstance, GetClassTypeTrait, GetInstanceTrait};
+use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
 use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
 #[java_type("net.mamoe.mirai.message.data.Audio")]
@@ -27,7 +27,7 @@ impl AsInstanceTrait for Audio {
         }
     }
 }
-impl FromInstance for Audio {
+impl FromInstanceTrait for Audio {
     fn from_instance(instance: Instance) -> Self {
         if OfflineAudio::is_this_type(&instance) {
             Audio::OfflineAudio(OfflineAudio::from_instance(

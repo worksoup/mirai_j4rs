@@ -7,7 +7,7 @@ use mj_base::env::GetInstanceTrait;
 pub mod enums {
     use crate::utils::other::{protocol_enum_r2j, protocol_str2enum};
     use j4rs::{Instance, Jvm};
-    use mj_base::env::{FromInstance, GetInstanceTrait};
+    use mj_base::env::{FromInstanceTrait, GetInstanceTrait};
     use num_enum::IntoPrimitive;
 
     pub enum HeartbeatStrategy {
@@ -48,7 +48,7 @@ pub mod enums {
         }
     }
 
-    impl FromInstance for MiraiProtocol {
+    impl FromInstanceTrait for MiraiProtocol {
         fn from_instance(instance: Instance) -> Self {
             let jvm = Jvm::attach_thread().unwrap();
             let mp: String = jvm.to_rust(instance).unwrap();
@@ -114,7 +114,7 @@ pub mod enums {
 
     impl Eq for MemberMedalType {}
 
-    impl FromInstance for MemberMedalType {
+    impl FromInstanceTrait for MemberMedalType {
         fn from_instance(instance: Instance) -> Self {
             let jvm = Jvm::attach_thread().unwrap();
             jvm.to_rust::<i32>(jvm.invoke(&instance, "getMask", &[]).unwrap())
@@ -154,7 +154,7 @@ pub mod enums {
         }
     }
 
-    impl FromInstance for GroupHonorType {
+    impl FromInstanceTrait for GroupHonorType {
         fn from_instance(instance: Instance) -> Self {
             let jvm = Jvm::attach_thread().unwrap();
             let id: i32 = jvm

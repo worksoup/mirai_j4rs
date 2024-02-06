@@ -2,7 +2,7 @@ use crate::contact::{Bot, Group, NormalMember};
 use crate::event::{BotEventTrait, MiraiEventTrait};
 use crate::message::MessageHashCodeTrait;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::FromInstance;
+use mj_base::env::FromInstanceTrait;
 use mj_macro::mj_event;
 
 // TODO: BaseGroupMemberInfoChangeEvent

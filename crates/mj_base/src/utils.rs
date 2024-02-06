@@ -1,4 +1,4 @@
-use crate::env::FromInstance;
+use crate::env::FromInstanceTrait;
 use j4rs::{Instance, InvocationArg, Jvm};
 use std::collections::HashSet;
 use std::hash::Hash;
@@ -75,7 +75,7 @@ pub fn instance_is_null(instance: &Instance) -> bool {
 }
 
 #[inline]
-pub fn java_iter_to_rust_vec<T: FromInstance>(jvm: &Jvm, iter: Instance) -> Vec<T> {
+pub fn java_iter_to_rust_vec<T: FromInstanceTrait>(jvm: &Jvm, iter: Instance) -> Vec<T> {
     let mut res = Vec::new();
     while jvm
         .to_rust(jvm.invoke(&iter, "hasNext", &[]).unwrap())
@@ -88,7 +88,7 @@ pub fn java_iter_to_rust_vec<T: FromInstance>(jvm: &Jvm, iter: Instance) -> Vec<
 }
 
 #[inline]
-pub fn java_iter_to_rust_hash_set<T: FromInstance + Hash + Eq>(
+pub fn java_iter_to_rust_hash_set<T: FromInstanceTrait + Hash + Eq>(
     jvm: &Jvm,
     iter: Instance,
 ) -> HashSet<T> {

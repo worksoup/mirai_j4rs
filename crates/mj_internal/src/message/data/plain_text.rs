@@ -3,7 +3,7 @@ use crate::message::message_trait::{
     SingleMessageTrait,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::FromInstance;
+use mj_base::env::FromInstanceTrait;
 use mj_base::env::GetClassTypeTrait;
 use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
 
@@ -72,7 +72,7 @@ impl MessageContentTrait for PlainText {}
 
 impl MessageHashCodeTrait for PlainText {}
 
-impl FromInstance for PlainText {
+impl FromInstanceTrait for PlainText {
     fn from_instance(instance: Instance) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         PlainText {

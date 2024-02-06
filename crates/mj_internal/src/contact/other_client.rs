@@ -1,6 +1,6 @@
 use crate::contact::{ContactOrBotTrait, ContactTrait, SendMessageSupportedTrait};
 use j4rs::Instance;
-use mj_base::env::FromInstance;
+use mj_base::env::FromInstanceTrait;
 use mj_macro::{AsInstanceDerive, GetInstanceDerive};
 
 #[derive(GetInstanceDerive, AsInstanceDerive)]
@@ -8,7 +8,7 @@ pub struct OtherClient {
     instance: Instance,
 }
 
-impl FromInstance for OtherClient {
+impl FromInstanceTrait for OtherClient {
     fn from_instance(instance: Instance) -> Self {
         Self { instance }
     }

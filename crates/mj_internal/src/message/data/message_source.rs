@@ -1,6 +1,6 @@
 use crate::message::message_trait::{ConstrainSingleTrait, MessageTrait, SingleMessageTrait};
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstance, GetInstanceTrait};
+use mj_base::env::{FromInstanceTrait, GetInstanceTrait};
 use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
 
 // TODO
@@ -16,7 +16,7 @@ impl SingleMessageTrait for MessageSource {}
 
 impl ConstrainSingleTrait for MessageSource {}
 
-impl FromInstance for MessageSource {
+impl FromInstanceTrait for MessageSource {
     fn from_instance(instance: Instance) -> Self {
         Self { instance }
     }

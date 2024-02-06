@@ -3,7 +3,7 @@ use crate::utils::{
     JavaStream,
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{AsInstanceTrait, FromInstance, GetInstanceTrait};
+use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetInstanceTrait};
 use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
 /// # 绝对目录标识。

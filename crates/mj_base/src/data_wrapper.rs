@@ -1,4 +1,4 @@
-use crate::env::{FromInstance, GetInstanceTrait};
+use crate::env::{FromInstanceTrait, GetInstanceTrait};
 use j4rs::{Instance, InvocationArg, Jvm};
 use std::ops::Deref;
 
@@ -20,7 +20,7 @@ impl<T> From<T> for DataWrapper<T> {
     }
 }
 
-impl FromInstance for DataWrapper<String> {
+impl FromInstanceTrait for DataWrapper<String> {
     fn from_instance(instance: Instance) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.to_rust::<String>(instance).unwrap().into()
@@ -33,7 +33,7 @@ impl GetInstanceTrait for DataWrapper<String> {
     }
 }
 
-impl FromInstance for DataWrapper<Vec<i8>> {
+impl FromInstanceTrait for DataWrapper<Vec<i8>> {
     fn from_instance(instance: Instance) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.to_rust::<Vec<_>>(instance).unwrap().into()
@@ -42,18 +42,18 @@ impl FromInstance for DataWrapper<Vec<i8>> {
 
 impl<P1, P2> DataWrapper<(P1, P2)>
 where
-    P1: FromInstance,
-    P2: FromInstance,
+    P1: FromInstanceTrait,
+    P2: FromInstanceTrait,
 {
     pub fn get_pair(self) -> (P1, P2) {
         self.data
     }
 }
 
-impl<P1, P2> FromInstance for DataWrapper<(P1, P2)>
+impl<P1, P2> FromInstanceTrait for DataWrapper<(P1, P2)>
 where
-    P1: FromInstance,
-    P2: FromInstance,
+    P1: FromInstanceTrait,
+    P2: FromInstanceTrait,
 {
     fn from_instance(instance: Instance) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
@@ -69,7 +69,7 @@ where
 impl DataWrapper<Instance> {
     pub fn get<E>(&self) -> E
     where
-        E: FromInstance,
+        E: FromInstanceTrait,
     {
         E::from_instance(
             Jvm::attach_thread()
@@ -87,13 +87,13 @@ impl GetInstanceTrait for DataWrapper<Instance> {
     }
 }
 
-impl FromInstance for DataWrapper<Instance> {
+impl FromInstanceTrait for DataWrapper<Instance> {
     fn from_instance(instance: Instance) -> Self {
         Self { data: instance }
     }
 }
 
-impl FromInstance for DataWrapper<()> {
+impl FromInstanceTrait for DataWrapper<()> {
     fn from_instance(_instance: Instance) -> Self {
         Self { data: () }
     }
@@ -107,9 +107,9 @@ impl GetInstanceTrait for DataWrapper<()> {
     }
 }
 
-impl<T: FromInstance> FromInstance for DataWrapper<T> {
+impl<T: FromInstanceTrait> FromInstanceTrait for DataWrapper<T> {
     fn from_instance(instance: Instance) -> Self {
-        <T as FromInstance>::from_instance(instance).into()
+        <T as FromInstanceTrait>::from_instance(instance).into()
     }
 }
 

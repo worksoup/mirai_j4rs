@@ -2,7 +2,7 @@ use crate::contact::{Bot, ContactTrait};
 use crate::event::{BotPassiveEventTrait, MiraiEventTrait, OtherClientEventTrait};
 use crate::message::data::MessageChain;
 use j4rs::Jvm;
-use mj_base::env::FromInstance;
+use mj_base::env::FromInstanceTrait;
 
 pub trait MessageEventTrait<Sender: ContactTrait, Subject: ContactTrait>
 where

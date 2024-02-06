@@ -6,7 +6,7 @@ use crate::message::{
     },
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::FromInstance;
+use mj_base::env::FromInstanceTrait;
 use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
 include!("face_res.rs");
 #[derive(AsInstanceDerive, GetInstanceDerive)]
@@ -17,7 +17,7 @@ pub struct Face {
     instance: Instance,
 }
 
-impl FromInstance for Face {
+impl FromInstanceTrait for Face {
     fn from_instance(instance: Instance) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         Face {

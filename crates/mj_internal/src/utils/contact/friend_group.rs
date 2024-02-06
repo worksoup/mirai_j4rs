@@ -1,7 +1,7 @@
 use crate::contact::Friend;
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::{
-    env::{FromInstance, GetInstanceTrait},
+    env::{FromInstanceTrait, GetInstanceTrait},
     utils::java_iter_to_rust_vec,
 };
 use mj_macro::{AsInstanceDerive, GetInstanceDerive};
@@ -11,7 +11,7 @@ pub struct FriendGroup {
     pub(crate) instance: Instance,
 }
 
-impl FromInstance for FriendGroup {
+impl FromInstanceTrait for FriendGroup {
     fn from_instance(instance: Instance) -> Self {
         Self { instance }
     }

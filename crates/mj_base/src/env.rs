@@ -22,6 +22,6 @@ pub trait AsInstanceTrait {
 }
 
 /// 通过 `j4rs::Instance` 获得当前结构体。
-pub trait FromInstance {
+pub trait FromInstanceTrait {
     fn from_instance(instance: Instance) -> Self;
 }

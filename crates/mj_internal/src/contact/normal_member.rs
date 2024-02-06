@@ -5,7 +5,7 @@ use crate::contact::{
 };
 use crate::utils::other::enums::AvatarSpec;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{AsInstanceTrait, FromInstance};
+use mj_base::env::{AsInstanceTrait, FromInstanceTrait};
 use mj_base::utils::instance_is_null;
 use mj_macro::{AsInstanceDerive, GetInstanceDerive};
 
@@ -30,7 +30,7 @@ impl AssertMemberPermissionTrait for NormalMember {
     }
 }
 
-impl FromInstance for NormalMember {
+impl FromInstanceTrait for NormalMember {
     fn from_instance(instance: Instance) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let bot = jvm.invoke(&instance, "getBot", &[]).unwrap();

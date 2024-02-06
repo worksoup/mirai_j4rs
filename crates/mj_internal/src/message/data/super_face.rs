@@ -7,7 +7,7 @@ use crate::message::{
 };
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::{
-    env::{FromInstance, GetClassTypeTrait as _, GetInstanceTrait as _},
+    env::{FromInstanceTrait, GetClassTypeTrait as _, GetInstanceTrait as _},
     utils::instance_is_null,
 };
 use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};

@@ -12,7 +12,7 @@ use crate::{
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::utils::java_iter_to_rust_vec;
 use mj_base::{
-    env::{FromInstance, GetInstanceTrait},
+    env::{FromInstanceTrait, GetInstanceTrait},
     utils::instance_is_null,
 };
 use mj_macro::{AsInstanceDerive, GetInstanceDerive};
@@ -32,7 +32,7 @@ impl Clone for Bot {
         }
     }
 }
-impl FromInstance for Bot {
+impl FromInstanceTrait for Bot {
     fn from_instance(instance: Instance) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let id = Jvm::attach_thread()

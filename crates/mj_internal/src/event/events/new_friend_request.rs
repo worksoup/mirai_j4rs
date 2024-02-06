@@ -2,7 +2,7 @@ use crate::contact::Group;
 use crate::event::{BotEventTrait, FriendInfoChangeEventTrait};
 use crate::message::MessageHashCodeTrait;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::{env::FromInstance, utils::instance_is_null};
+use mj_base::{env::FromInstanceTrait, utils::instance_is_null};
 use mj_macro::mj_event;
 
 #[mj_event]

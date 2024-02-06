@@ -9,7 +9,7 @@ use crate::{
     },
 };
 use j4rs::{ClasspathEntry, Instance, InvocationArg, JavaOpt, Jvm, JvmBuilder};
-use mj_base::env::{FromInstance, GetInstanceTrait};
+use mj_base::env::{FromInstanceTrait, GetInstanceTrait};
 use std::path::{Path, PathBuf};
 
 /// bot builder

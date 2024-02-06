@@ -2,7 +2,7 @@ use j4rs::{prelude::*, Instance, InvocationArg, Jvm};
 use j4rs_derive::*;
 use mj_base::{
     data_wrapper::DataWrapper,
-    env::{FromInstance, GetInstanceTrait},
+    env::{FromInstanceTrait, GetInstanceTrait},
     utils::instance_from_i8_16,
 };
 use mj_macro::GetInstanceDerive;
@@ -30,7 +30,7 @@ fn lumia_function_apply(
     Ok(value)
 }
 
-pub struct Function<'a, T: FromInstance, R: GetInstanceTrait + FromInstance> {
+pub struct Function<'a, T: FromInstanceTrait, R: GetInstanceTrait + FromInstanceTrait> {
     instance: Instance,
     internal_closure_raw: [i8; 16],
     __a: PhantomData<&'a ()>,
@@ -53,7 +53,7 @@ impl FunctionRaw {
     }
 }
 
-impl<'a, T: FromInstance, R: GetInstanceTrait + FromInstance> Function<'a, T, R> {
+impl<'a, T: FromInstanceTrait, R: GetInstanceTrait + FromInstanceTrait> Function<'a, T, R> {
     #[inline]
     fn internal_closure_as_i8_16<F>(f: &'a F) -> [i8; 16]
     where

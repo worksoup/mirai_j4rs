@@ -2,19 +2,19 @@ use crate::contact::ContactTrait;
 use crate::message::MessageHashCodeTrait;
 use crate::utils::MiraiRsCollectionTrait;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstance, GetInstanceTrait};
+use mj_base::env::{FromInstanceTrait, GetInstanceTrait};
 use mj_base::utils::instance_is_null;
 use std::marker::PhantomData;
 
 pub struct ContactList<T>
 where
-    T: ContactTrait + FromInstance,
+    T: ContactTrait + FromInstanceTrait,
 {
     pub(crate) instance: Instance,
     pub(crate) _unused: PhantomData<T>,
 }
 
-impl<T: ContactTrait + FromInstance> FromInstance for ContactList<T> {
+impl<T: ContactTrait + FromInstanceTrait> FromInstanceTrait for ContactList<T> {
     fn from_instance(instance: Instance) -> Self {
         ContactList {
             instance,
@@ -23,7 +23,7 @@ impl<T: ContactTrait + FromInstance> FromInstance for ContactList<T> {
     }
 }
 
-impl<T: ContactTrait + FromInstance> GetInstanceTrait for ContactList<T> {
+impl<T: ContactTrait + FromInstanceTrait> GetInstanceTrait for ContactList<T> {
     fn get_instance(&self) -> Instance {
         Jvm::attach_thread()
             .unwrap()
@@ -34,7 +34,7 @@ impl<T: ContactTrait + FromInstance> GetInstanceTrait for ContactList<T> {
 
 impl<T> ContactList<T>
 where
-    T: ContactTrait + FromInstance,
+    T: ContactTrait + FromInstanceTrait,
 {
     pub fn contains(&self, contact: T) -> bool {
         Jvm::attach_thread()
@@ -122,8 +122,8 @@ where
     }
 }
 
-impl<T: ContactTrait + FromInstance> MessageHashCodeTrait for ContactList<T> {}
-impl<T: ContactTrait + FromInstance> MiraiRsCollectionTrait for ContactList<T> {
+impl<T: ContactTrait + FromInstanceTrait> MessageHashCodeTrait for ContactList<T> {}
+impl<T: ContactTrait + FromInstanceTrait> MiraiRsCollectionTrait for ContactList<T> {
     type Element = T;
 
     fn get_size(&self) -> i32 {

@@ -5,7 +5,7 @@ use crate::contact::{
 use crate::utils::contact::friend_group::FriendGroup;
 use crate::utils::other::enums::AvatarSpec;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{AsInstanceTrait, FromInstance};
+use mj_base::env::{AsInstanceTrait, FromInstanceTrait};
 use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
 
 #[derive(GetInstanceDerive, AsInstanceDerive)]
@@ -16,7 +16,7 @@ pub struct Friend {
     id: i64,
 }
 
-impl FromInstance for Friend {
+impl FromInstanceTrait for Friend {
     fn from_instance(instance: Instance) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let bot = jvm.invoke(&instance, "getBot", &[]).unwrap();

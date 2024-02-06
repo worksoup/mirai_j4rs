@@ -2,7 +2,7 @@ use j4rs::{prelude::*, Instance, Jvm};
 use j4rs_derive::*;
 use mj_base::{
     data_wrapper::DataWrapper,
-    env::{FromInstance, GetInstanceTrait},
+    env::{FromInstanceTrait, GetInstanceTrait},
     utils::instance_from_i8_16,
 };
 use mj_macro::GetInstanceDerive;
@@ -26,7 +26,7 @@ fn lumia_kt_func_0_invoke(kt_func_0_raw_as_i8_16: Instance) -> Result<Instance, 
     Ok(value)
 }
 
-pub struct KtFunc0<'a, R: GetInstanceTrait + FromInstance> {
+pub struct KtFunc0<'a, R: GetInstanceTrait + FromInstanceTrait> {
     instance: Instance,
     internal_closure_raw: [i8; 16],
     __a: PhantomData<&'a ()>,
@@ -48,7 +48,7 @@ impl KtFunc0Raw {
     }
 }
 
-impl<'a, R: GetInstanceTrait + FromInstance> KtFunc0<'a, R> {
+impl<'a, R: GetInstanceTrait + FromInstanceTrait> KtFunc0<'a, R> {
     #[inline]
     fn internal_closure_as_i8_16<F: Fn() -> R>(f: &'a F) -> [i8; 16] {
         let call_from_java = || -> Instance { f().get_instance() };

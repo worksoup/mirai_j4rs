@@ -1,9 +1,9 @@
 use j4rs::Jvm;
-use mj_base::env::{AsInstanceTrait, FromInstance, GetClassTypeTrait, GetInstanceTrait};
+use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
 
 pub trait MiraiEventTrait
 where
-    Self: GetInstanceTrait + GetClassTypeTrait + FromInstance + AsInstanceTrait,
+    Self: GetInstanceTrait + GetClassTypeTrait + FromInstanceTrait + AsInstanceTrait,
 {
     fn cancel(&self) {
         let jvm = Jvm::attach_thread().unwrap();

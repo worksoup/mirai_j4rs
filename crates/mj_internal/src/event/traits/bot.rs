@@ -4,7 +4,7 @@ use crate::event::{
     MiraiEventTrait, UserMessageEventTrait,
 };
 use j4rs::Jvm;
-use mj_base::env::FromInstance;
+use mj_base::env::FromInstanceTrait;
 
 pub trait BotEventTrait
 where

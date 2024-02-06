@@ -2,7 +2,7 @@ use crate::contact::Bot;
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::{
     data_wrapper::DataWrapper,
-    env::{FromInstance, GetInstanceTrait},
+    env::{FromInstanceTrait, GetInstanceTrait},
 };
 use mj_closures::{
     kt_func_0::KtFunc0, kt_func_0::KtFunc0Raw, kt_func_1::KtFunc1, kt_func_1::KtFunc1Raw,
@@ -32,7 +32,7 @@ pub enum State {
     Default,
 }
 
-impl FromInstance for State {
+impl FromInstanceTrait for State {
     fn from_instance(instance: Instance) -> Self {
         let mp: String = Jvm::attach_thread().unwrap().to_rust(instance).unwrap();
         match mp.as_str() {
@@ -228,7 +228,7 @@ impl GetInstanceTrait for QrCodeLoginListener {
     }
 }
 
-impl FromInstance for QrCodeLoginListener {
+impl FromInstanceTrait for QrCodeLoginListener {
     fn from_instance(instance: Instance) -> Self {
         Self {
             instance: Some(instance),
@@ -246,7 +246,7 @@ impl FromInstance for QrCodeLoginListener {
 
 pub trait QrCodeLoginListenerTrait
 where
-    Self: FromInstance + GetInstanceTrait,
+    Self: FromInstanceTrait + GetInstanceTrait,
 {
     const QR_CODE_SIZE: i32 = 3;
     const QR_CODE_MARGIN: i32 = 4;
@@ -328,7 +328,7 @@ impl DeviceVerificationRequests {
     }
 }
 
-impl FromInstance for DeviceVerificationRequests {
+impl FromInstanceTrait for DeviceVerificationRequests {
     fn from_instance(instance: Instance) -> Self {
         Self { instance }
     }
@@ -339,7 +339,7 @@ pub struct DeviceVerificationResult {
     instance: Instance,
 }
 
-impl FromInstance for DeviceVerificationResult {
+impl FromInstanceTrait for DeviceVerificationResult {
     fn from_instance(instance: Instance) -> Self {
         Self { instance }
     }

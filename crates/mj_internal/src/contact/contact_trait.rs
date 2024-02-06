@@ -17,7 +17,7 @@ use crate::{
     },
 };
 use j4rs::{InvocationArg, Jvm};
-use mj_base::env::{AsInstanceTrait, FromInstance, GetInstanceTrait};
+use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetInstanceTrait};
 
 pub trait AssertMemberPermissionTrait: MemberTrait {
     fn is_owner(&self) -> bool;
@@ -27,7 +27,7 @@ pub trait AssertMemberPermissionTrait: MemberTrait {
 
 pub trait ContactOrBotTrait
 where
-    Self: Sized + GetInstanceTrait + FromInstance + AsInstanceTrait,
+    Self: Sized + GetInstanceTrait + FromInstanceTrait + AsInstanceTrait,
 {
     fn get_bot(&self) -> crate::contact::bot::Bot {
         let instance = Jvm::attach_thread()

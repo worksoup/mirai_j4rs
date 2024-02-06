@@ -14,7 +14,7 @@ pub use mirai_logger::*;
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::GetClassTypeTrait;
 use mj_base::{
-    env::{FromInstance, GetInstanceTrait},
+    env::{FromInstanceTrait, GetInstanceTrait},
     utils::instance_is_null,
 };
 use mj_closures::{
@@ -35,12 +35,12 @@ pub trait MiraiRsIterableTrait: Iterator {}
 
 /// 对应 `Stream<AbsoluteFileFolder>`
 #[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
-pub struct JavaStream<T: FromInstance + GetClassTypeTrait> {
+pub struct JavaStream<T: FromInstanceTrait + GetClassTypeTrait> {
     pub(crate) instance: Instance,
     pub(crate) _unused: PhantomData<T>,
 }
 
-impl<T: FromInstance + GetClassTypeTrait> JavaStream<T> {
+impl<T: FromInstanceTrait + GetClassTypeTrait> JavaStream<T> {
     pub fn sorted_array_by<F>(&self, compare: F) -> Vec<T>
     where
         F: FnMut(&T, &T) -> Ordering,
@@ -52,7 +52,7 @@ impl<T: FromInstance + GetClassTypeTrait> JavaStream<T> {
     pub fn filter<P>(&self, p: &P) -> JavaStream<T>
     where
         P: Fn(T) -> bool,
-        T: FromInstance,
+        T: FromInstanceTrait,
     {
         let jvm = Jvm::attach_thread().unwrap();
         let p = Predicate::new(p);
@@ -62,11 +62,11 @@ impl<T: FromInstance + GetClassTypeTrait> JavaStream<T> {
         JavaStream::from_instance(instance)
     }
 
-    pub fn map<B: FromInstance + GetClassTypeTrait, F>(&self, f: &F) -> JavaStream<B>
+    pub fn map<B: FromInstanceTrait + GetClassTypeTrait, F>(&self, f: &F) -> JavaStream<B>
     where
         F: Fn(T) -> B,
-        T: FromInstance,
-        B: GetInstanceTrait + FromInstance,
+        T: FromInstanceTrait,
+        B: GetInstanceTrait + FromInstanceTrait,
     {
         let jvm = Jvm::attach_thread().unwrap();
         let f = Function::new(f);
@@ -93,10 +93,10 @@ impl<T: FromInstance + GetClassTypeTrait> JavaStream<T> {
         jvm.to_rust(instance).unwrap()
     }
 
-    pub fn flat_map<U: FromInstance + GetClassTypeTrait, F>(&self, f: &F) -> JavaStream<U>
+    pub fn flat_map<U: FromInstanceTrait + GetClassTypeTrait, F>(&self, f: &F) -> JavaStream<U>
     where
         F: Fn(T) -> JavaStream<U>,
-        T: FromInstance,
+        T: FromInstanceTrait,
     {
         let jvm = Jvm::attach_thread().unwrap();
         let f = Function::new(f);

@@ -1,7 +1,7 @@
 use crate::utils::contact::file::{AbsoluteFile, AbsoluteFileFolderTrait, AbsoluteFolder};
 use j4rs::Instance;
 use mj_base::{
-    env::{AsInstanceTrait, FromInstance, GetInstanceTrait},
+    env::{AsInstanceTrait, FromInstanceTrait, GetInstanceTrait},
     utils::is_instance_of,
 };
 use mj_macro::java_type;
@@ -12,7 +12,7 @@ pub enum AbsoluteFileFolder {
     AbsoluteFolder(AbsoluteFolder),
 }
 
-impl FromInstance for AbsoluteFileFolder {
+impl FromInstanceTrait for AbsoluteFileFolder {
     fn from_instance(instance: Instance) -> Self {
         if is_instance_of(&instance, "net.mamoe.mirai.contact.file.AbsoluteFile") {
             AbsoluteFileFolder::AbsoluteFile(AbsoluteFile::from_instance(instance))

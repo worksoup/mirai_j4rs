@@ -8,7 +8,7 @@ use crate::{
 };
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::{
-    env::{FromInstance, GetInstanceTrait},
+    env::{FromInstanceTrait, GetInstanceTrait},
     utils::instance_is_null,
 };
 use mj_closures::{kt_func_1::KtFunc1Raw, kt_func_2::KtFunc2Raw};
@@ -99,7 +99,7 @@ pub struct BotConfiguration {
     instance: Instance,
     _login_solver_holder: Option<(KtFunc2Raw, KtFunc2Raw, KtFunc1Raw, KtFunc2Raw)>,
 }
-impl FromInstance for BotConfiguration {
+impl FromInstanceTrait for BotConfiguration {
     fn from_instance(instance: Instance) -> Self {
         Self {
             instance,

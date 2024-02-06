@@ -1,6 +1,6 @@
 use j4rs::{errors::J4RsError, prelude::*, Instance, InvocationArg, Jvm};
 use j4rs_derive::*;
-use mj_base::{data_wrapper::DataWrapper, env::FromInstance, utils::instance_from_i8_16};
+use mj_base::{data_wrapper::DataWrapper, env::FromInstanceTrait, utils::instance_from_i8_16};
 use mj_macro::GetInstanceDerive;
 use std::{marker::PhantomData, mem::transmute};
 
@@ -29,7 +29,7 @@ fn lumia_predicate_test(
 
 pub struct Predicate<'a, T>
 where
-    T: FromInstance,
+    T: FromInstanceTrait,
 {
     instance: Instance,
     internal_closure_raw: [i8; 16],
@@ -56,7 +56,7 @@ impl PredicateRaw {
 
 impl<'a, T> Predicate<'a, T>
 where
-    T: FromInstance,
+    T: FromInstanceTrait,
 {
     #[inline]
     fn internal_closure_as_i8_16<F: Fn(T) -> bool>(f: &'a F) -> [i8; 16] {

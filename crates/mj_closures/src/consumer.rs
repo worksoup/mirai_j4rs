@@ -1,6 +1,6 @@
 use j4rs::{prelude::*, Instance, InvocationArg, Jvm};
 use j4rs_derive::*;
-use mj_base::{data_wrapper::DataWrapper, env::FromInstance, utils::instance_from_i8_16};
+use mj_base::{data_wrapper::DataWrapper, env::FromInstanceTrait, utils::instance_from_i8_16};
 use mj_macro::GetInstanceDerive;
 use std::{marker::PhantomData, mem::transmute};
 
@@ -23,7 +23,7 @@ fn lumia_consumer_accept(consumer_as_i8_16: Instance, arg: Instance) {
     };
 }
 
-pub struct Consumer<'a, T: FromInstance> {
+pub struct Consumer<'a, T: FromInstanceTrait> {
     instance: Instance,
     internal_closure_raw: [i8; 16],
     _t: PhantomData<T>,
@@ -45,7 +45,7 @@ impl ConsumerRaw {
     }
 }
 
-impl<'a, T: FromInstance> Consumer<'a, T> {
+impl<'a, T: FromInstanceTrait> Consumer<'a, T> {
     #[inline]
     fn internal_closure_as_i8_16<F: Fn(T) -> ()>(f: &'a F) -> [i8; 16] {
         let call_from_java = |value: DataWrapper<Instance>| {

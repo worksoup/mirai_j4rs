@@ -5,7 +5,7 @@ use crate::message::message_trait::{
 };
 use j4rs::Instance;
 use mj_base::env::{AsInstanceTrait, GetClassTypeTrait};
-use mj_base::env::{FromInstance, GetInstanceTrait};
+use mj_base::env::{FromInstanceTrait, GetInstanceTrait};
 use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
 #[derive(AsInstanceDerive, GetInstanceDerive, FromInstanceDerive)]
@@ -51,7 +51,7 @@ impl AsInstanceTrait for MarketFaceAll {
     }
 }
 
-impl FromInstance for MarketFaceAll {
+impl FromInstanceTrait for MarketFaceAll {
     fn from_instance(instance: Instance) -> Self {
         if Dice::is_this_type(&instance) {
             MarketFaceAll::Dice(Dice::from_instance(Dice::cast_to_this_type(instance)))

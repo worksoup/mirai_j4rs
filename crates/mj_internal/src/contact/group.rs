@@ -19,7 +19,7 @@ use crate::{
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::AsInstanceTrait;
 use mj_base::{
-    env::{FromInstance, GetInstanceTrait},
+    env::{FromInstanceTrait, GetInstanceTrait},
     utils::{instance_is_null, is_instance_of, java_iter_to_rust_hash_set, java_iter_to_rust_vec},
 };
 use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
@@ -257,7 +257,7 @@ impl GetInstanceTrait for AnnouncementParameters {
     }
 }
 
-impl FromInstance for AnnouncementParameters {
+impl FromInstanceTrait for AnnouncementParameters {
     fn from_instance(instance: Instance) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let image = jvm.invoke(&instance, "image", &[]).unwrap();
@@ -292,7 +292,7 @@ pub struct OfflineAnnouncement {
     instance: Instance,
 }
 
-impl FromInstance for OfflineAnnouncement {
+impl FromInstanceTrait for OfflineAnnouncement {
     fn from_instance(instance: Instance) -> Self {
         Self { instance }
     }
@@ -338,7 +338,7 @@ pub struct OnlineAnnouncement {
     instance: Instance,
 }
 
-impl FromInstance for OnlineAnnouncement {
+impl FromInstanceTrait for OnlineAnnouncement {
     fn from_instance(instance: Instance) -> Self {
         Self { instance }
     }
@@ -468,7 +468,7 @@ impl GetInstanceTrait for Announcement {
     }
 }
 
-impl FromInstance for Announcement {
+impl FromInstanceTrait for Announcement {
     fn from_instance(instance: Instance) -> Self {
         if is_instance_of(
             &instance,
@@ -684,7 +684,7 @@ impl ActiveRankRecord {
         // 笔记： rust 中此类代码的行为：完全限定的方法调用。
         // 同时指定了特型和类型。
         // 如果是 `FromInstance` 的话，应该是调用了默认的实现？
-        <NormalMember as FromInstance>::from_instance(instance)
+        <NormalMember as FromInstanceTrait>::from_instance(instance)
     }
     pub fn get_member_id(&self) -> i64 {
         if let Some(id) = self.member_id {
@@ -945,7 +945,7 @@ impl MemberMedalInfo {
     }
 }
 
-impl FromInstance for MemberMedalInfo {
+impl FromInstanceTrait for MemberMedalInfo {
     fn from_instance(instance: Instance) -> Self {
         Self { instance }
     }
@@ -955,7 +955,7 @@ pub struct MemberActive {
     instance: Instance,
 }
 
-impl FromInstance for MemberActive {
+impl FromInstanceTrait for MemberActive {
     fn from_instance(instance: Instance) -> Self {
         Self { instance }
     }
@@ -1154,7 +1154,7 @@ impl GroupActive {
     }
 }
 
-impl FromInstance for Group {
+impl FromInstanceTrait for Group {
     fn from_instance(instance: Instance) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let bot = jvm.invoke(&instance, "getBot", &[]).unwrap();

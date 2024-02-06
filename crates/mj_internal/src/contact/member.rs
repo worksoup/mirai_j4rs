@@ -3,7 +3,7 @@ use crate::contact::{
     UserTrait,
 };
 use j4rs::{Instance, Jvm};
-use mj_base::env::{AsInstanceTrait, FromInstance, GetInstanceTrait};
+use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetInstanceTrait};
 use mj_macro::{java_type, mj_all, AsInstanceDerive, GetInstanceDerive};
 
 /// **注意**
@@ -19,7 +19,7 @@ pub enum Member {
     AnonymousMember(AnonymousMember),
 }
 
-impl FromInstance for Member {
+impl FromInstanceTrait for Member {
     fn from_instance(instance: Instance) -> Self {
         // TODO: 这样的转换存在非常情况，并不科学。
         let jvm = Jvm::attach_thread().unwrap();

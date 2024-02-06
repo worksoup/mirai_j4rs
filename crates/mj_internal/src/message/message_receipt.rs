@@ -4,7 +4,7 @@ use crate::{
     message::{data::QuoteReply, message_trait::MessageTrait},
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::FromInstance as _;
+use mj_base::env::FromInstanceTrait as _;
 
 pub struct MessageReceipt<'a, T>
 where

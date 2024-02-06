@@ -6,7 +6,7 @@ use crate::{
     },
 };
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{AsInstanceTrait, FromInstance, GetClassTypeTrait, GetInstanceTrait};
+use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
 use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
 
 #[derive(GetInstanceDerive, AsInstanceDerive)]
@@ -79,7 +79,7 @@ impl MessageHashCodeTrait for At {
     }
 }
 
-impl FromInstance for At {
+impl FromInstanceTrait for At {
     fn from_instance(instance: Instance) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         Self {

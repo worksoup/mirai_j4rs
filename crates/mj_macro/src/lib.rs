@@ -153,7 +153,7 @@ pub fn from_instance_derive(input: TokenStream) -> TokenStream {
             };
             let fall_arm_ident = &fall_arm.ident;
             impl_tokens.extend(quote!(
-                {#name::#fall_arm_ident(<#fall_arm_ty as mj_base::env::FromInstance>::from_instance(instance))}
+                {#name::#fall_arm_ident(<#fall_arm_ty as mj_base::env::FromInstanceTrait>::from_instance(instance))}
             ));
             impl_tokens
         }
@@ -161,7 +161,7 @@ pub fn from_instance_derive(input: TokenStream) -> TokenStream {
     };
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let gen = quote! {
-        impl #impl_generics mj_base::env::FromInstance for #name #ty_generics #where_clause {
+        impl #impl_generics mj_base::env::FromInstanceTrait for #name #ty_generics #where_clause {
             fn from_instance(instance: j4rs::Instance) -> Self{
                 #impl_tokens
             }

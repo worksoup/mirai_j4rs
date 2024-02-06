@@ -1,6 +1,6 @@
 use crate::contact::{ContactOrBotTrait, ContactTrait, MemberTrait, UserOrBotTrait, UserTrait};
 use j4rs::{Instance, Jvm};
-use mj_base::env::FromInstance;
+use mj_base::env::FromInstanceTrait;
 use mj_macro::{AsInstanceDerive, GetInstanceDerive};
 
 #[derive(GetInstanceDerive, AsInstanceDerive)]
@@ -16,7 +16,7 @@ impl AnonymousMember {
     }
 }
 
-impl FromInstance for AnonymousMember {
+impl FromInstanceTrait for AnonymousMember {
     fn from_instance(instance: Instance) -> Self {
         Self { instance }
     }

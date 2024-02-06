@@ -1,5 +1,8 @@
-use crate::contact::{Bot, ContactTrait, UserTrait};
-use crate::event::{CancellableEventTrait, GroupMemberInfoChangeEventTrait, MiraiEventTrait};
+use crate::contact::{Bot, ContactTrait, Member, NormalMember, UserTrait};
+use crate::event::{
+    CancellableEventTrait, GroupAwareMessageTrait, GroupMemberInfoChangeEventTrait,
+    MiraiEventTrait, UserMessageEventTrait,
+};
 use j4rs::Jvm;
 use mj_base::env::FromInstance;
 
@@ -39,3 +42,9 @@ pub trait MessagePreSendEventTrait:
 {
 }
 pub trait UserMessagePreSendEventTrait: MessagePreSendEventTrait {}
+pub trait TempMessagePostSendEventTrait: UserMessagePostSendEventTrait<Member> {}
+pub trait TempMessagePreSendEventTrait: UserMessagePreSendEventTrait {}
+pub trait TempMessageEventTrait<Subject: ContactTrait>:
+    GroupAwareMessageTrait<NormalMember, Subject> + UserMessageEventTrait<NormalMember, Subject>
+{
+}

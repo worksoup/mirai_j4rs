@@ -15,5 +15,5 @@ impl GroupMemberInfoChangeEventTrait for MemberCardChangeEvent {}
 impl GroupEventTrait for MemberCardChangeEvent {}
 impl BotEventTrait for MemberCardChangeEvent {}
 impl UserEventTrait for MemberCardChangeEvent {}
-impl MiraiEventTrait for MemberCardChangeEvent {}
 impl BaseGroupMemberInfoChangeEventTrait for MemberCardChangeEvent {}
+impl MiraiEventTrait for MemberCardChangeEvent {}

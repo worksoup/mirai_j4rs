@@ -5,21 +5,14 @@ use crate::event::{
 };
 use j4rs::{Instance, Jvm};
 use mj_base::env::FromInstance;
-use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
+use mj_macro::mj_all;
 
-#[derive(GetInstanceDerive, AsInstanceDerive)]
-#[java_type("net.mamoe.mirai.event.events.GroupMessageEvent")]
+#[mj_all("net.mamoe.mirai.event.events.GroupMessageEvent")]
 pub struct GroupMessageEvent {
     instance: Instance,
 }
 
 impl GroupMessageEvent {}
-
-impl FromInstance for GroupMessageEvent {
-    fn from_instance(instance: Instance) -> Self {
-        GroupMessageEvent { instance }
-    }
-}
 
 // 这个特征实现了一个 event 所需要的函数。
 impl MiraiEventTrait for GroupMessageEvent {}

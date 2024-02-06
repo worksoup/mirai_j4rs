@@ -4,10 +4,9 @@ use crate::message::MessageHashCodeTrait;
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::FromInstance;
 use mj_base::utils::instance_is_null;
-use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
+use mj_macro::{java_type, mj_all, AsInstanceDerive, GetInstanceDerive};
 
-#[derive(GetInstanceDerive, AsInstanceDerive)]
-#[java_type("net.mamoe.mirai.event.events.NewFriendRequestEvent")]
+#[mj_all("net.mamoe.mirai.event.events.NewFriendRequestEvent")]
 pub struct NewFriendRequestEvent {
     instance: Instance,
 }
@@ -73,12 +72,6 @@ impl NewFriendRequestEvent {
 }
 
 impl MessageHashCodeTrait for NewFriendRequestEvent {}
-
-impl FromInstance for NewFriendRequestEvent {
-    fn from_instance(instance: Instance) -> Self {
-        NewFriendRequestEvent { instance }
-    }
-}
 
 impl MiraiEventTrait for NewFriendRequestEvent {}
 

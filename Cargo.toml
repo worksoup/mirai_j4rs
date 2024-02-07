@@ -17,3 +17,5 @@ default-members = ["crates/mj_*"]
 
 [dependencies]
 mj_internal = { path = "crates/mj_internal" }
+mj_base = { path = "crates/mj_base" }
+mj_closures = { path = "crates/mj_closures" }

@@ -16,6 +16,7 @@ use mj_macro::{java_type, mj_all, AsInstanceDerive, FromInstanceDerive, GetInsta
 
 use crate::contact::AudioSupportedTrait;
 use crate::error::MiraiRsErrorEnum;
+use crate::utils::{MiraiList, MiraiMap};
 use crate::{
     contact::{
         AnnouncementTrait, Bot, ContactOrBotTrait, ContactTrait, FileSupportedTrait, NormalMember,
@@ -611,6 +612,17 @@ pub struct ActiveRankRecord {
     temperature: Option<i32>,
     score: Option<i32>,
 }
+impl FromInstanceTrait for ActiveRankRecord {
+    fn from_instance(instance: Instance) -> Self {
+        Self {
+            instance,
+            member_name: None,
+            member_id: None,
+            temperature: None,
+            score: None,
+        }
+    }
+}
 
 impl ActiveRankRecord {
     pub fn new(
@@ -719,164 +731,6 @@ impl ActiveRankRecord {
         }
     }
 }
-
-pub struct MiraiMap<K, V> {
-    pub(crate) instance: Instance,
-    pub(crate) _t: Option<HashMap<K, V>>,
-}
-
-impl<K, V> MiraiMap<K, V> {
-    //顺序复制为rust HashMap.
-    pub fn to_hash_map_t(
-        &self,
-        cast: Box<
-            dyn Fn(
-                &Instance,                            //key
-                &Instance,                            //value
-                &Jvm,                                 //jvm
-                &dyn Fn(&Instance, &str) -> Instance, //java中的类型转换。
-            ) -> (K, V),
-        >,
-    ) -> HashMap<K, V>
-    where
-        K: Eq + PartialEq + std::hash::Hash,
-    {
-        let jvm = Jvm::attach_thread().unwrap();
-        let java_cast =
-            |instance: &Instance, obj: &str| -> Instance { jvm.cast(&instance, obj).unwrap() };
-        let mut map = HashMap::<K, V>::new();
-        let entry_set = jvm.invoke(&self.instance, "entrySet", &[]).unwrap();
-        let it = jvm.invoke(&entry_set, "iterator", &[]).unwrap();
-        while jvm
-            .chain(&it)
-            .unwrap()
-            .invoke("hasNext", &[])
-            .unwrap()
-            .to_rust()
-            .unwrap()
-        {
-            let entry = jvm.invoke(&it, "next", &[]).unwrap();
-            let entry = java_cast(&entry, "java.util.Map$Entry");
-            let k = jvm.invoke(&entry, "getKey", &[]).unwrap();
-            let v = jvm.invoke(&entry, "getValue", &[]).unwrap();
-
-            let ins = cast(&k, &v, &jvm, &java_cast);
-
-            map.insert(ins.0, ins.1);
-        }
-        map
-    }
-}
-
-//特化版本。
-impl MiraiMap<i32, String> {
-    pub fn to_hash_map(&self) -> HashMap<i32, String> {
-        self.to_hash_map_t(Box::new(
-            |k: &Instance,
-             v: &Instance,
-             jvm: &Jvm,
-             cast: &dyn Fn(&Instance, &str) -> Instance|
-             -> (i32, String) {
-                let k: i64 = jvm.to_rust(cast(&k, "java.lang.Integer")).unwrap();
-                let k: i32 = (k & i32::MAX as i64) as i32;
-                let v: String = jvm.to_rust(cast(&v, "java.lang.String")).unwrap();
-                (k, v)
-            },
-        ))
-    }
-}
-
-//特化版本。
-impl MiraiMap<String, i32> {
-    pub fn to_hash_map(&self) -> HashMap<String, i32> {
-        self.to_hash_map_t(Box::new(
-            |k: &Instance,
-             v: &Instance,
-             jvm: &Jvm,
-             cast: &dyn Fn(&Instance, &str) -> Instance|
-             -> (String, i32) {
-                let k: String = jvm.to_rust(cast(&k, "java.lang.String")).unwrap();
-                let v: i64 = jvm.to_rust(cast(&v, "java.lang.Integer")).unwrap();
-                let v: i32 = (v & i32::MAX as i64) as i32;
-                (k, v)
-            },
-        ))
-    }
-}
-
-//特化版本。该版本不应当使用。
-impl MiraiMap<String, String> {
-    pub fn to_hash_map(&self) -> HashMap<String, String> {
-        self.to_hash_map_t(Box::new(
-            |k: &Instance,
-             v: &Instance,
-             jvm: &Jvm,
-             cast: &dyn Fn(&Instance, &str) -> Instance|
-             -> (String, String) {
-                let k: String = jvm
-                    .to_rust(jvm.invoke(&k, "toString", &[]).unwrap())
-                    .unwrap();
-                let v: String = jvm.to_rust(cast(&v, "java.lang.String")).unwrap();
-                (k, v)
-            },
-        ))
-    }
-}
-
-impl<K, V> GetInstanceTrait for MiraiMap<K, V> {
-    fn get_instance(&self) -> Instance {
-        Jvm::attach_thread()
-            .unwrap()
-            .clone_instance(&self.instance)
-            .unwrap()
-    }
-}
-
-pub struct MiraiList<T> {
-    instance: Instance,
-    vec: Option<Vec<T>>,
-}
-
-impl MiraiList<ActiveRankRecord> {
-    ///这个函数记得改改。
-    pub fn to_vector(&self) -> &Option<Vec<ActiveRankRecord>> {
-        &self.vec
-    }
-    ///这个函数记得改改。
-    pub fn refresh_vector(&mut self) {
-        let jvm = Jvm::attach_thread().unwrap();
-        let it = jvm.invoke(&self.instance, "listIterator", &[]).unwrap();
-        let mut vec = Vec::<ActiveRankRecord>::new();
-        while jvm
-            .chain(&it)
-            .unwrap()
-            .invoke("hasNext", &[])
-            .unwrap()
-            .to_rust()
-            .unwrap()
-        {
-            let v = jvm.invoke(&it, "next", &[]).unwrap();
-            vec.push(ActiveRankRecord {
-                instance: v,
-                member_name: None,
-                member_id: None,
-                temperature: None,
-                score: None,
-            })
-        }
-        self.vec = Some(vec);
-    }
-}
-
-impl<T> GetInstanceTrait for MiraiList<T> {
-    fn get_instance(&self) -> Instance {
-        Jvm::attach_thread()
-            .unwrap()
-            .clone_instance(&self.instance)
-            .unwrap()
-    }
-}
-
 pub struct ActiveChart {
     instance: Instance,
 }
@@ -1016,13 +870,12 @@ impl GroupActive {
             .unwrap()
     }
     pub fn query_active_rank(&self) -> MiraiList<ActiveRankRecord> {
-        MiraiList {
-            instance: Jvm::attach_thread()
+        MiraiList::from_instance(
+            Jvm::attach_thread()
                 .unwrap()
                 .invoke(&self.instance, "queryActiveRank", &[])
                 .unwrap(),
-            vec: None,
-        }
+        )
     }
     pub fn query_chart(&self) -> ActiveChart {
         ActiveChart {

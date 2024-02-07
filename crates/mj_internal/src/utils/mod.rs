@@ -2,9 +2,6 @@ use std::{cmp::Ordering, marker::PhantomData};
 
 use j4rs::{Instance, InvocationArg, Jvm};
 
-pub use bot_configuration::*;
-pub use device_info::*;
-pub use mirai_logger::*;
 use mj_base::env::GetClassTypeTrait;
 use mj_base::{
     env::{FromInstanceTrait, GetInstanceTrait},
@@ -21,8 +18,15 @@ pub mod contact;
 mod device_info;
 pub mod just_for_examples;
 pub mod login_solver;
+mod mirai_list;
 mod mirai_logger;
+mod mirai_map;
 pub mod other;
+pub use bot_configuration::*;
+pub use device_info::*;
+pub use mirai_list::*;
+pub use mirai_logger::*;
+pub use mirai_map::*;
 
 pub trait MiraiRsCollectionTrait {
     type Element;

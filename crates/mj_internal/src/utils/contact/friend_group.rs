@@ -78,7 +78,7 @@ impl FriendGroups {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke_static(
-                <Self as GetClassTypeTrait>::get_type_name(),
+                <Self as GetClassTypeTrait>::get_type_name().as_str(),
                 "create",
                 &[name.try_into().unwrap()],
             )

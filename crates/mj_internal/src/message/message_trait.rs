@@ -102,7 +102,7 @@ where
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke_static(
-                <MessageChain as GetClassTypeTrait>::get_type_name(),
+                <MessageChain as GetClassTypeTrait>::get_type_name().as_str(),
                 "deserializeFromJsonString",
                 &[InvocationArg::try_from(json).unwrap()],
             )
@@ -113,7 +113,7 @@ where
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke_static(
-                <MessageChain as GetClassTypeTrait>::get_type_name(),
+                <MessageChain as GetClassTypeTrait>::get_type_name().as_str(),
                 "deserializeFromMiraiCode",
                 &[
                     InvocationArg::try_from(code).unwrap(),
@@ -130,7 +130,7 @@ where
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke_static(
-                <MessageChain as GetClassTypeTrait>::get_type_name(),
+                <MessageChain as GetClassTypeTrait>::get_type_name().as_str(),
                 "serializeToJsonString",
                 &[InvocationArg::try_from(chain.get_instance()).unwrap()],
             )
@@ -141,7 +141,7 @@ where
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke_static(
-                <MessageChain as GetClassTypeTrait>::get_type_name(),
+                <MessageChain as GetClassTypeTrait>::get_type_name().as_str(),
                 "serializeToString",
                 &[InvocationArg::try_from(chain.get_instance()).unwrap()],
             )

@@ -17,7 +17,7 @@ impl RemoteFiles {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm.invoke(&self.instance, "getContact", &[]).unwrap();
         let instance = jvm
-            .cast(&instance, <Group as GetClassTypeTrait>::get_type_name())
+            .cast(&instance, <Group as GetClassTypeTrait>::get_type_name().as_str())
             .unwrap();
         Group::from_instance(instance)
     }

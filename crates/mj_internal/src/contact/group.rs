@@ -140,7 +140,7 @@ impl PublishAnnouncementSupportedTrait for Group {
         let group = InvocationArg::try_from(group).unwrap();
         let content = InvocationArg::try_from(content).unwrap();
         let online = jvm.invoke_static(
-            <Announcement as GetClassTypeTrait>::get_type_name(),
+            <Announcement as GetClassTypeTrait>::get_type_name().as_str(),
             "publishAnnouncement",
             &[group, content],
         )?;
@@ -163,7 +163,7 @@ impl PublishAnnouncementSupportedTrait for Group {
         let parameters = parameters.get_instance();
         let parameters = InvocationArg::try_from(parameters).unwrap();
         let online = jvm.invoke_static(
-            <Announcement as GetClassTypeTrait>::get_type_name(),
+            <Announcement as GetClassTypeTrait>::get_type_name().as_str(),
             "publishAnnouncement",
             &[group, content, parameters],
         )?;
@@ -303,7 +303,7 @@ impl OfflineAnnouncement {
         let announcement = InvocationArg::try_from(announcement.get_instance()).unwrap();
         let offline_announcement = jvm
             .invoke_static(
-                <Self as GetClassTypeTrait>::get_type_name(),
+                <Self as GetClassTypeTrait>::get_type_name().as_str(),
                 "from",
                 &[announcement],
             )
@@ -623,7 +623,7 @@ impl ActiveRankRecord {
         let instance = Jvm::attach_thread()
             .unwrap()
             .create_instance(
-                <Self as GetClassTypeTrait>::get_type_name(),
+                <Self as GetClassTypeTrait>::get_type_name().as_str(),
                 &[
                     InvocationArg::try_from(member_name.clone()).unwrap(),
                     InvocationArg::try_from(member_id)

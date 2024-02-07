@@ -8,7 +8,7 @@ pub trait GetClassTypeTrait {
 
     fn cast_to_this_type(instance: Instance) -> Instance;
 
-    fn get_type_name() -> &'static str;
+    fn get_type_name() -> String;
 
     fn is_this_type(instance: &Instance) -> bool;
 }

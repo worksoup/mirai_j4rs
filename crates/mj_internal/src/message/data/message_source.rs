@@ -22,7 +22,7 @@ impl Clone for MessageSource {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .create_instance(
-                <Self as GetClassTypeTrait>::get_type_name(), // TODO: 之前这里是引用回复的类名，请检查是否出错。
+                <Self as GetClassTypeTrait>::get_type_name().as_str(), // TODO: 之前这里是引用回复的类名，请检查是否出错。
                 &[InvocationArg::try_from(self.get_instance()).unwrap()],
             )
             .unwrap();

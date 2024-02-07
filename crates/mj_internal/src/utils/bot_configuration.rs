@@ -130,7 +130,7 @@ impl Default for BotConfiguration {
         let instance = Jvm::attach_thread()
             .unwrap()
             .invoke_static(
-                <Self as GetClassTypeTrait>::get_type_name(),
+                <Self as GetClassTypeTrait>::get_type_name().as_str(),
                 "getDefault",
                 &[],
             )
@@ -465,7 +465,7 @@ impl BotConfiguration {
                             &Jvm::attach_thread()
                                 .unwrap()
                                 .static_class(
-                                    (<Self as GetClassTypeTrait>::get_type_name().to_string()
+                                    (<Self as GetClassTypeTrait>::get_type_name().as_str().to_string()
                                         + "$HeartbeatStrategy")
                                         .as_str(),
                                 )

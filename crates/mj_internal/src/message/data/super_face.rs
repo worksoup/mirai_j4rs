@@ -1,5 +1,6 @@
 use j4rs::{Instance, InvocationArg, Jvm};
 
+use mj_base::env::GetClassTypeTrait;
 use mj_base::{
     env::{FromInstanceTrait, GetClassTypeTrait as _, GetInstanceTrait as _},
     utils::instance_is_null,
@@ -32,7 +33,10 @@ impl SuperFace {
             .into_primitive()
             .unwrap();
         let instance = jvm
-            .create_instance(Self::get_type_name(), &[face_id, id, r#type])
+            .create_instance(
+                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                &[face_id, id, r#type],
+            )
             .unwrap();
         Self { instance }
     }
@@ -83,7 +87,7 @@ impl TryFrom<Face> for SuperFace {
         let jvm = Jvm::attach_thread().unwrap();
         let face = InvocationArg::try_from(face.get_instance()).unwrap();
         let instance = jvm
-            .invoke_static(Self::get_type_name(), "fromOrNull", &[face])
+            .invoke_static(<Self as GetClassTypeTrait>::get_type_name().as_str(), "fromOrNull", &[face])
             .unwrap();
         if !instance_is_null(&instance) {
             Ok(SuperFace::from_instance(instance))

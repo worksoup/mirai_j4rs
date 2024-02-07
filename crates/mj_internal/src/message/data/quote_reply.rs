@@ -38,7 +38,7 @@ impl From<MessageChain> for QuoteReply {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .create_instance(
-                <Self as GetClassTypeTrait>::get_type_name(),
+                <Self as GetClassTypeTrait>::get_type_name().as_str(),
                 &[InvocationArg::try_from(source_message.get_instance()).unwrap()],
             )
             .unwrap();

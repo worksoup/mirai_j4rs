@@ -162,7 +162,7 @@ impl From<PokeMessageEnum> for PokeMessage {
             PokeMessageEnum::碎屏 => "SuiPing",
             PokeMessageEnum::敲门 => "QiaoMen",
         };
-        PokeMessage::from_instance(jvm.static_class_field(type_name, field).unwrap())
+        PokeMessage::from_instance(jvm.static_class_field(type_name.as_str(), field).unwrap())
     }
 }
 impl PokeMessage {

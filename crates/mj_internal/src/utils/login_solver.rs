@@ -55,7 +55,7 @@ impl GetInstanceTrait for State {
     fn get_instance(&self) -> Instance {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.static_class_field(
-            <Self as GetClassTypeTrait>::get_type_name(),
+            <Self as GetClassTypeTrait>::get_type_name().as_str(),
             match self {
                 State::WaitingForScan => "WAITING_FOR_SCAN",
                 State::WaitingForConfirm => "WAITING_FOR_CONFIRM",

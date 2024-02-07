@@ -64,7 +64,7 @@ impl Image {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke_static(
-                <Self as GetClassTypeTrait>::get_type_name(),
+                <Self as GetClassTypeTrait>::get_type_name().as_str(),
                 "fromId",
                 &[InvocationArg::try_from(image_id).unwrap()],
             )
@@ -211,7 +211,7 @@ impl Image {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke_static(
-                <Self as GetClassTypeTrait>::get_type_name(),
+                <Self as GetClassTypeTrait>::get_type_name().as_str(),
                 "queryUrl",
                 &[InvocationArg::try_from(self.get_instance()).unwrap()],
             )

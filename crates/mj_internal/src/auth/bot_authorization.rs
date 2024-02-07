@@ -17,7 +17,7 @@ impl GetInstanceTrait for BotAuthorization {
         match self {
             BotAuthorization::Password(password) => jvm
                 .invoke_static(
-                    <Self as GetClassTypeTrait>::get_type_name(),
+                    <Self as GetClassTypeTrait>::get_type_name().as_str(),
                     "byPassword",
                     &[InvocationArg::try_from(password).unwrap()],
                 )
@@ -32,7 +32,7 @@ impl GetInstanceTrait for BotAuthorization {
                 let arg = jvm.create_java_array("byte", &password_md5).unwrap();
                 let arg = InvocationArg::try_from(arg).unwrap();
                 jvm.invoke_static(
-                    <Self as GetClassTypeTrait>::get_type_name(),
+                    <Self as GetClassTypeTrait>::get_type_name().as_str(),
                     "byPassword",
                     &[arg],
                 )
@@ -40,7 +40,7 @@ impl GetInstanceTrait for BotAuthorization {
             }
             BotAuthorization::QrCode => jvm
                 .invoke_static(
-                    <Self as GetClassTypeTrait>::get_type_name(),
+                    <Self as GetClassTypeTrait>::get_type_name().as_str(),
                     "byQRCode",
                     &[],
                 )

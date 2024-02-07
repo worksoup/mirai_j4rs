@@ -23,7 +23,7 @@ impl From<&str> for PlainText {
             content: value.to_string(),
             instance: jvm
                 .create_instance(
-                    Self::get_type_name(),
+                    <Self as GetClassTypeTrait>::get_type_name().as_str(),
                     &[InvocationArg::try_from(value).unwrap()],
                 )
                 .unwrap(),
@@ -36,7 +36,7 @@ impl From<String> for PlainText {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .create_instance(
-                Self::get_type_name(),
+                <Self as GetClassTypeTrait>::get_type_name().as_str(),
                 &[InvocationArg::try_from(&value).unwrap()],
             )
             .unwrap();

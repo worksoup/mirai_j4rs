@@ -190,7 +190,7 @@ pub fn protocol_enum_r2j(
             .field(
                 &Jvm::attach_thread()
                     .unwrap()
-                    .static_class(<MiraiProtocol as GetClassTypeTrait>::get_type_name())
+                    .static_class(<MiraiProtocol as GetClassTypeTrait>::get_type_name().as_str())
                     .unwrap(),
                 match protocol {
                     MiraiProtocol::A => "ANDROID_PHONE",

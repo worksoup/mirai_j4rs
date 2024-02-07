@@ -24,7 +24,7 @@ impl Dice {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .create_instance(
-                Self::get_type_name(),
+                <Self as GetClassTypeTrait>::get_type_name().as_str(),
                 &[InvocationArg::try_from(value)
                     .unwrap()
                     .into_primitive()

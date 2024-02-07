@@ -65,7 +65,7 @@ impl FileMessage {
             .unwrap();
         let instance = jvm
             .invoke_static(
-                <Self as GetClassTypeTrait>::get_type_name(),
+                <Self as GetClassTypeTrait>::get_type_name().as_str(),
                 "create",
                 &[file_id, internal_id, name, size],
             )

@@ -23,7 +23,7 @@ impl At {
         let instance = Jvm::attach_thread()
             .unwrap()
             .create_instance(
-                At::get_type_name(),
+                <Self as GetClassTypeTrait>::get_type_name().as_str(),
                 &[InvocationArg::try_from(id)
                     .unwrap()
                     .into_primitive()

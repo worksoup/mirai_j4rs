@@ -78,7 +78,7 @@ impl BotBuilder {
         let jvm = Self::create_jvm(&working_dir, jar_paths, java_opts);
         let instance = jvm
             .field(
-                &jvm.static_class(<Self as GetClassTypeTrait>::get_type_name())
+                &jvm.static_class(<Self as GetClassTypeTrait>::get_type_name().as_str())
                     .unwrap(),
                 "INSTANCE",
             )

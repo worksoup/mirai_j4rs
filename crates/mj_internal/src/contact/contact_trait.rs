@@ -70,7 +70,7 @@ where
                 .field(
                     &Jvm::attach_thread()
                         .unwrap()
-                        .static_class(<AvatarSpec as GetClassTypeTrait>::get_type_name())
+                        .static_class(<AvatarSpec as GetClassTypeTrait>::get_type_name().as_str())
                         .unwrap(),
                     match size.unwrap() {
                         AvatarSpec::XS => "SMALLEST",

@@ -23,7 +23,7 @@ impl RockPaperScissors {
     fn new(field: &str) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
-            .static_class_field(Self::get_type_name(), field)
+            .static_class_field(<Self as GetClassTypeTrait>::get_type_name().as_str(), field)
             .unwrap();
         Self { instance }
     }
@@ -57,7 +57,7 @@ impl RockPaperScissors {
     pub fn random() -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
-            .invoke_static(<Self as GetClassTypeTrait>::get_type_name(), "random", &[])
+            .invoke_static(<Self as GetClassTypeTrait>::get_type_name().as_str(), "random", &[])
             .unwrap();
         Self { instance }
     }

@@ -26,7 +26,7 @@ impl ForwardMessageBuilder {
         let contact = contact.get_instance();
         let contact = InvocationArg::try_from(contact).unwrap();
         let instance = jvm
-            .create_instance(<Self as GetClassTypeTrait>::get_type_name(), &[contact])
+            .create_instance(<Self as GetClassTypeTrait>::get_type_name().as_str(), &[contact])
             .unwrap();
         Self { instance }
     }

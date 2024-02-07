@@ -91,12 +91,6 @@ impl<'a, T: FromInstanceTrait, R: GetInstanceTrait + FromInstanceTrait> Function
         let jvm = Jvm::attach_thread().unwrap();
         jvm.clone_instance(&self.instance).unwrap()
     }
-    fn get_internal_closure_raw(&self) -> *mut dyn Fn(DataWrapper<Instance>) -> Instance {
-        unsafe { transmute(self.internal_closure_raw) }
-    }
-    pub(super) fn drop_internal_closure_raw(&self) {
-        let _boxed = unsafe { Box::from_raw(self.get_internal_closure_raw()) };
-    }
     pub fn drop_and_to_raw(self) -> FunctionRaw {
         let instance = self.instance;
         let internal_closure_raw = self.internal_closure_raw;

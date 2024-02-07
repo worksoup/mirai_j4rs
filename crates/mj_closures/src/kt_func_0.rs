@@ -79,12 +79,6 @@ impl<'a, R: GetInstanceTrait + FromInstanceTrait> KtFunc0<'a, R> {
         let result = jvm.invoke(&self.instance, "invoke", &[]).unwrap();
         R::from_instance(result)
     }
-    fn get_internal_closure_raw(&self) -> *mut dyn Fn(DataWrapper<Instance>) -> Instance {
-        unsafe { transmute(self.internal_closure_raw) }
-    }
-    pub(super) fn drop_internal_closure_raw(&self) {
-        let _boxed = unsafe { Box::from_raw(self.get_internal_closure_raw()) };
-    }
     pub fn drop_and_to_raw(self) -> KtFunc0Raw {
         let instance = self.instance;
         let internal_closure_raw = self.internal_closure_raw;

@@ -94,14 +94,6 @@ where
         let result = jvm.invoke(&self.instance, "test", &[arg]).unwrap();
         jvm.to_rust(result).unwrap()
     }
-    pub fn get_internal_closure_raw(
-        &self,
-    ) -> *mut dyn Fn(DataWrapper<Instance>) -> Result<InvocationArg, J4RsError> {
-        unsafe { transmute(self.internal_closure_raw) }
-    }
-    pub(super) fn drop_internal_closure_raw(&self) {
-        let _boxed = unsafe { Box::from_raw(self.get_internal_closure_raw()) };
-    }
     pub fn drop_and_to_raw(self) -> PredicateRaw {
         let instance = self.instance;
         let internal_closure_raw = self.internal_closure_raw;

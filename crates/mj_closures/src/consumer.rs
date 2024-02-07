@@ -81,12 +81,6 @@ impl<'a, T: FromInstanceTrait> Consumer<'a, T> {
             .clone_instance(&self.instance)
             .unwrap()
     }
-    fn get_internal_closure_raw(&self) -> *mut dyn Fn(DataWrapper<Instance>) -> () {
-        unsafe { transmute(self.internal_closure_raw) }
-    }
-    pub(super) fn drop_internal_closure_raw(&self) {
-        let _boxed = unsafe { Box::from_raw(self.get_internal_closure_raw()) };
-    }
     pub fn drop_and_to_raw(self) -> ConsumerRaw {
         let instance = self.instance;
         let internal_closure_raw = self.internal_closure_raw;

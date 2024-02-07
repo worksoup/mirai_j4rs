@@ -111,7 +111,7 @@ pub fn as_instance_derive(input: TokenStream) -> TokenStream {
 ///
 /// 这些类型需要满足如下条件：
 ///
-/// - 结构体必须拥有 `instance: `[`j4rs::Instance`](j4rs::Instance)`,` 字段，且其余字段必须都是 [`std::marker::PhantomData`] 类型。
+/// - 结构体必须拥有 `instance: `[`j4rs::Instance`]`,` 字段，且其余字段必须都是 [`std::marker::PhantomData`] 类型。
 /// - 枚举值则必须类似于此：
 ///
 ///   ```rust
@@ -283,7 +283,7 @@ pub fn java_type(type_name: TokenStream, input: TokenStream) -> TokenStream {
 
 /// ### `mj_all`
 ///
-/// 同时应用 [`GetInstanceDerive`], [`AsInstanceDerive`], [`FromInstanceDerive`] 和 [`java_type`].
+/// 同时应用 [`GetInstanceDerive`], [`AsInstanceDerive`], [`FromInstanceDerive`] 和 [`java_type`](macro@java_type).
 ///
 /// 接受一个字符串字面值参数传递给 `java_type` 属性。
 #[proc_macro_attribute]
@@ -299,7 +299,7 @@ pub fn mj_all(type_name: TokenStream, input: TokenStream) -> TokenStream {
 }
 /// ### `MiraiEventDerive`
 ///
-/// 为结构体和枚举类型实现 [`MiraiEventTrait`](mirai_j4rs::event::MiraiEventTrait).
+/// 为结构体和枚举类型实现 `MiraiEventTrait`.
 ///
 /// 对结构体或枚举等没有特殊要求。`MiraiEventTrait` 特型会有部分要求，请参看 `mj_internal` 代码。
 #[proc_macro_derive(MiraiEventDerive)]
@@ -317,7 +317,7 @@ pub fn mirai_event_derive(input: TokenStream) -> TokenStream {
 
 /// ### `mj_event`
 ///
-/// 根据结构体名称应用 [`mj_all`] 和 [`MiraiEventDerive`]. 类似于此：
+/// 根据结构体名称应用 [`mj_all`](macro@mj_all) 和 [`MiraiEventDerive`]. 类似于此：
 ///
 /// ```rust
 /// use mj_macro::mj_event;
@@ -354,7 +354,7 @@ pub fn mj_event(mj_type: TokenStream, input: TokenStream) -> TokenStream {
 
 /// ### `mj_event_without_default_traits`
 ///
-/// 与 [`mj_event`] 类似，只是没有应用 [`MiraiEventDerive`].
+/// 与 [`mj_event`](macro@mj_event) 类似，只是没有应用 [`MiraiEventDerive`].
 #[proc_macro_attribute]
 pub fn mj_event_without_default_traits(mj_type: TokenStream, input: TokenStream) -> TokenStream {
     let ast: &DeriveInput = &syn::parse(input).unwrap();

@@ -2,10 +2,9 @@ use std::path::{Path, PathBuf};
 
 use j4rs::{ClasspathEntry, Instance, InvocationArg, JavaOpt, Jvm, JvmBuilder};
 
-use mj_base::env::{FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
+use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
 use mj_macro::java_type;
 
-use crate::event::bot_offline::BotOfflineEvent;
 use crate::{
     auth::bot_authorization::BotAuthorization,
     contact::Bot,
@@ -16,7 +15,17 @@ use crate::{
     },
 };
 
-/// bot builder
+/// # [`BotBuilder`]
+/// 用来获得 [`Bot`].
+///
+/// 可以使用 [`default`](BotBuilder::default), [`new`](BotBuilder::new) 或 [`create`](BotBuilder::create)
+/// 来获取该类型。
+///
+/// [`create`](crate::utils::bot_builder::BotBuilder::create) 通过 `working_dir`, `jar_paths` 和 `java_opts` 获得该类型。
+///
+/// [`new`](crate::utils::bot_builder::BotBuilder::new)  即 `BotBuilder::create(working_dir, vec![], vec![])`.
+///
+/// [`default`](crate::utils::bot_builder::BotBuilder::default) 即 `BotBuilder::new(".")`.
 #[java_type("BotFactory")]
 pub struct BotBuilder {
     instance: Instance,
@@ -32,28 +41,7 @@ impl Default for BotBuilder {
 }
 impl BotBuilder {
     pub fn new<P: AsRef<Path>>(working_dir: P) -> Self {
-        let working_dir = std::fs::canonicalize(working_dir).expect("目录无法解析。");
-        let all_jars = fs_extra::dir::get_dir_content(&working_dir).unwrap().files;
-        let filtered_jars: Vec<String> = all_jars
-            .into_iter()
-            .filter(|jar_full_path| {
-                let name = jar_full_path
-                    .split(std::path::MAIN_SEPARATOR)
-                    .last()
-                    .unwrap_or(jar_full_path);
-                name.ends_with(".jar")
-            })
-            .collect();
-        let default = format!(
-            "-Djava.library.path={}",
-            working_dir.join("lib").to_str().unwrap()
-        );
-        let opt = if cfg!(windows) {
-            default
-        } else {
-            format!("{}:/usr/lib:/lib", default)
-        };
-        Self::create(working_dir, filtered_jars, vec![opt])
+        Self::create(working_dir, vec![], vec![])
     }
 
     fn create_jvm<P: AsRef<Path>>(
@@ -86,6 +74,7 @@ impl BotBuilder {
         jar_paths: Vec<String>,
         java_opts: Vec<String>,
     ) -> Self {
+        let working_dir = std::fs::canonicalize(working_dir).expect("目录无法解析。");
         let jvm = Self::create_jvm(&working_dir, jar_paths, java_opts);
         let instance = jvm
             .field(
@@ -95,7 +84,7 @@ impl BotBuilder {
             )
             .unwrap();
         let config = BotConfiguration::default();
-        config.set_working_dir(working_dir.as_ref().to_str().unwrap());
+        config.set_working_dir(working_dir.to_str().unwrap());
         Self {
             instance,
             jvm,
@@ -112,8 +101,8 @@ impl BotBuilder {
         self.bot_authorization = Some(bot_authorization);
         self
     }
-    /// 在被挤下线时（[`BotOfflineEvent::Force`]）自动重连。默认为 false.
-    /// 其他情况掉线都默认会自动重连，详见 [`BotOfflineEvent::reconnect`].
+    /// 在被挤下线时（[`BotOfflineEvent::Force`](crate::event::bot_offline::BotOfflineEvent::Force)）自动重连。默认为 false.
+    /// 其他情况掉线都默认会自动重连，详见 [`BotOfflineEvent::get_reconnect`](crate::event::bot_offline::BotOfflineEvent).
     pub fn auto_reconnect_on_force_offline(self) -> Self {
         self.config.auto_reconnect_on_force_offline();
         self
@@ -298,6 +287,15 @@ impl BotBuilder {
     }
     pub fn stat_heartbeat_period_millis(self, millis: i64) -> Self {
         self.config.set_stat_heartbeat_period_millis(millis);
+        self
+    }
+    /// 一些额外的工作。
+    /// 对于某些操作本库不可能完成，那么你可以通过此函数做一些额外的工作。
+    /// 传入闭包的三个参数分别是
+    /// `j4rs::Jvm`, Mirai 中的 `BotFactory` 类和 Mirai 中的 `BotConfiguration` 类。
+    /// 你可以通过 j4rs 库来完成一些额外的工作。
+    pub fn extra(self, extra: impl FnOnce(&Jvm, &Instance, &Instance)) -> Self {
+        extra(&self.jvm, &self.instance, self.config.as_instance());
         self
     }
     pub fn build(self) -> Bot {

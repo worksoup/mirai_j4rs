@@ -1,6 +1,6 @@
 use j4rs::{InvocationArg, Jvm};
 
-use mj_base::env::{GetClassTypeTrait, GetInstanceTrait};
+use mj_base::env::GetClassTypeTrait;
 
 use crate::utils::other::enums::MiraiProtocol;
 
@@ -84,7 +84,7 @@ pub mod enums {
         /// SMALLEST(40), 最高压缩等级。
         #[doc(alias = "SMALLEST")]
         XS = 40,
-        /// SMALL(41), 群员列表中的显示大小, 实际上是 40 px, 但会比 [`SMALLEST`] 好一些。
+        /// SMALL(41), 群员列表中的显示大小, 实际上是 40 px, 但会比 [`SMALLEST`](AvatarSpec::XS) 好一些。
         #[doc(alias = "SMALL")]
         S = 41,
         /// MEDIUM(100), 联系人列表中的显示大小。

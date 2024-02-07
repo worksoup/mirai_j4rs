@@ -19,9 +19,9 @@ use crate::{
 ///  注: [`FileMessage`] 不可二次发送，包括转发消息。
 ///
 ///  ## 文件操作
-///  要下载这个文件, 可通过 [`FileMessage::to_absolute_file`] 获取到 [`AbsoluteFile`] 然后操作。
+///  要下载这个文件, 可通过 [`to_absolute_file`](FileMessage::to_absolute_file) 获取到 [`AbsoluteFile`] 然后操作。
 ///
-///  要获取到 [`FileMessage`]，可以通过 [`MessageEvent`] 获取，或通过 [`AbsoluteFile::to_message`] 得到。
+///  要获取到 [`FileMessage`]，可以通过 [`MessageEvent`](crate::event::MessageEventTrait) 获取，或通过 [`AbsoluteFile::to_message`] 得到。
 // TODO: 实现 SendSupportedTrait, 限制某些消息的发送。
 #[mj_all("message.data.FileMessage")]
 pub struct FileMessage {

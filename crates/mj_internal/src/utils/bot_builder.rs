@@ -41,13 +41,13 @@ impl Default for BotBuilder {
 }
 impl BotBuilder {
     pub fn new<P: AsRef<Path>>(working_dir: P) -> Self {
-        Self::create(working_dir, vec![], vec![])
+        Self::create(working_dir, &vec![], &vec![])
     }
 
     fn create_jvm<P: AsRef<Path>>(
         working_dir: P,
-        jar_paths: Vec<String>,
-        java_opts: Vec<String>,
+        jar_paths: &Vec<String>,
+        java_opts: &Vec<String>,
     ) -> Jvm {
         let entries = jar_paths
             .iter()
@@ -71,8 +71,8 @@ impl BotBuilder {
     }
     pub fn create<P: AsRef<Path>>(
         working_dir: P,
-        jar_paths: Vec<String>,
-        java_opts: Vec<String>,
+        jar_paths: &Vec<String>,
+        java_opts: &Vec<String>,
     ) -> Self {
         let working_dir = std::fs::canonicalize(working_dir).expect("目录无法解析。");
         let jvm = Self::create_jvm(&working_dir, jar_paths, java_opts);

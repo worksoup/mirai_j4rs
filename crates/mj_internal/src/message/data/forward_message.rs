@@ -26,14 +26,17 @@ impl ForwardMessageBuilder {
         let contact = contact.get_instance();
         let contact = InvocationArg::try_from(contact).unwrap();
         let instance = jvm
-            .create_instance(<Self as GetClassTypeTrait>::get_type_name().as_str(), &[contact])
+            .create_instance(
+                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                &[contact],
+            )
             .unwrap();
         Self { instance }
     }
     pub fn add(
         self,
         user_or_bot: &impl UserOrBotTrait,
-        message: impl MessageTrait,
+        message: &impl MessageTrait,
         time: i32,
     ) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
@@ -53,7 +56,7 @@ impl ForwardMessageBuilder {
         self,
         sender_id: i64,
         sender_name: &str,
-        message: impl MessageTrait,
+        message: &impl MessageTrait,
         time: i32,
     ) -> Self {
         let jvm = Jvm::attach_thread().unwrap();

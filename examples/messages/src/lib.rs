@@ -145,10 +145,10 @@ mod tests {
         let message = ForwardMessageBuilder::new(&group)
             .add(
                 &bot,
-                PlainText::from("这条消息的时间戳是1706798170"),
+                &PlainText::from("这条消息的时间戳是1706798170"),
                 1706798170,
             )
-            .add_(3141592654_i64, "(｢・ω・)｢", AtAll::new(), 1706798166)
+            .add_(3141592654_i64, "(｢・ω・)｢", &AtAll::new(), 1706798166)
             .build();
         let _r = group.send_message(&message);
         bot.close();

@@ -103,7 +103,7 @@ where
 }
 
 pub trait SendMessageSupportedTrait: ContactTrait {
-    fn send_message(&self, message: impl MessageTrait) -> MessageReceipt<Self> {
+    fn send_message(&self, message: &impl MessageTrait) -> MessageReceipt<Self> {
         let instance = Jvm::attach_thread()
             .unwrap()
             .invoke(

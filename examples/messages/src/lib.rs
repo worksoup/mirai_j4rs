@@ -6,7 +6,7 @@ mod tests {
             SendMessageSupportedTrait,
         },
         message::{
-            action::BotNudge,
+            action::Nudge,
             data::{
                 At, AtAll, Dice, Face, ForwardMessageBuilder, Image, PlainText, PokeMessage,
                 PokeMessageEnum, RockPaperScissors,
@@ -35,7 +35,7 @@ mod tests {
         println!("{}", at.to_content());
         println!("{}", at.hash_code());
         println!("{}", at.to_string());
-        let r = group.send_message(at);
+        let r = group.send_message(&at);
         r.recall();
         bot.close();
     }
@@ -52,7 +52,7 @@ mod tests {
         println!("{}", at_all.to_content());
         println!("{}", at_all.hash_code());
         println!("{}", at_all.to_string());
-        let r = group.send_message(at_all);
+        let r = group.send_message(&at_all);
         r.recall();
         bot.close();
     }
@@ -72,7 +72,7 @@ mod tests {
         println!("{}", audio.get_file_size());
         println!("{}", audio.to_content());
         println!("{}", audio.to_string());
-        let _r = group.send_message(audio);
+        let _r = group.send_message(&audio);
         resource.close();
         bot.close();
     }
@@ -89,7 +89,7 @@ mod tests {
         println!("{}", face.to_content());
         println!("{}", face.hash_code());
         println!("{}", face.to_string());
-        let r = group.send_message(face);
+        let r = group.send_message(&face);
         r.recall();
         bot.close();
     }
@@ -150,7 +150,7 @@ mod tests {
             )
             .add_(3141592654_i64, "(｢・ω・)｢", AtAll::new(), 1706798166)
             .build();
-        let _r = group.send_message(message);
+        let _r = group.send_message(&message);
         bot.close();
     }
     #[test]
@@ -171,7 +171,7 @@ mod tests {
         println!("{}", image.get_width());
         println!("{}", image.get_height());
         let image = Image::from_id(image.get_image_id());
-        let _r = group.send_message(image);
+        let _r = group.send_message(&image);
         bot.close();
     }
 
@@ -186,14 +186,14 @@ mod tests {
         // let dice = Dice::new(2);
         // 随机点数。
         let dice = Dice::random();
-        let _r = group.send_message(dice);
+        let _r = group.send_message(&dice);
         // `RockPaperScissors`
         // 目前新版客户端可以接受该类型消息，但是不会显示结果。
         // 可以直接指定。
         // let rps = RockPaperScissors::paper();
         // 随机结果。
         let rps = RockPaperScissors::random();
-        let _r = group.send_message(rps);
+        let _r = group.send_message(&rps);
         // `MarketFace` 其他市场表情。
         // 不支持直接构造和发送。可以转发。
         bot.close();
@@ -223,11 +223,11 @@ mod tests {
         // 在群里可以发 SVIP 的戳一戳。
         // 官方客户端似乎不能在群里发该类型消息。
         let poke_message: PokeMessage = PokeMessageEnum::召唤术.into();
-        let r = group.send_message(poke_message);
+        let r = group.send_message(&poke_message);
         r.recall();
         // 但是只能给好友发普通戳一戳。
         let poke_message: PokeMessage = PokeMessageEnum::六六六.into();
-        let r = friend.send_message(poke_message);
+        let r = friend.send_message(&poke_message);
         r.recall();
         bot.close();
     }
@@ -239,7 +239,7 @@ mod tests {
         let group = Group::new(&bot, group_id).unwrap();
         // `PlainText`
         let plain_text = PlainText::from("你好！");
-        let _r = group.send_message(plain_text);
+        let _r = group.send_message(&plain_text);
         let _r = group.send_string("Hello!");
         bot.close();
     }
@@ -251,7 +251,7 @@ mod tests {
         let group = Group::new(&bot, group_id).unwrap();
         // `PlainText`
         let plain_text = PlainText::from("你好！");
-        let _r = group.send_message(plain_text);
+        let _r = group.send_message(&plain_text);
         let _r = group.send_string("Hello!");
         bot.close();
     }

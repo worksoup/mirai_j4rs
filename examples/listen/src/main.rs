@@ -60,7 +60,7 @@ fn match_single_message(msg: SingleMessage, contact: Option<Group>) {
                 MarketFaceAll::RockPaperScissors(rock_paper_scissors) => {
                     let rps = RockPaperScissors::random();
                     if let Some(contact) = contact {
-                        let _r = contact.send_message(rps);
+                        let _r = contact.send_message(&rps);
                     }
                     print!("市场表情：剪子包袱锤:");
                     if let Some(win) = rock_paper_scissors.eliminates(RockPaperScissors::random()) {

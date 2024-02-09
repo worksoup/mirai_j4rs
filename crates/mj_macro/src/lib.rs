@@ -189,7 +189,11 @@ pub fn from_instance_derive(input: TokenStream) -> TokenStream {
                     let ident = &variant.ident;
                     impl_tokens.extend(quote!(
                         if <#ty as mj_base::env::GetClassTypeTrait>::is_this_type(&instance) {
-                            #name::#ident(#ty::from_instance(instance))
+                            #name::#ident(
+                                #ty::from_instance(
+                                    <#ty as mj_base::env::GetClassTypeTrait>::cast_to_this_type(instance)
+                                )
+                            )
                         } else
                     ))
                 }

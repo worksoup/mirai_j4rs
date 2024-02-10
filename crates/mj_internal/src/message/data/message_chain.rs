@@ -1,7 +1,7 @@
 use j4rs::{Instance, InvocationArg, Jvm};
 
 use mj_base::env::{FromInstanceTrait, GetInstanceTrait};
-use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
+use mj_macro::{mj_all, AsInstanceDerive, GetInstanceDerive};
 
 use crate::{
     message::{
@@ -11,10 +11,9 @@ use crate::{
     utils::MiraiRsCollectionTrait,
 };
 
-#[derive(AsInstanceDerive, GetInstanceDerive)]
-#[java_type("message.data.MessageChain")]
+#[mj_all("message.data.MessageChain")]
 pub struct MessageChain {
-    pub(crate) instance: Instance,
+    instance: Instance,
 }
 
 impl MessageChain {}

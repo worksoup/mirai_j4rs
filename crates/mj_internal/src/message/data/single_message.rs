@@ -1,5 +1,6 @@
 use mj_macro::mj_all;
 
+use crate::message::data::message_origin::MessageOrigin;
 use crate::message::{
     data::{
         at::At, at_all::AtAll, audio::Audio, face::Face, file_message::FileMessage,
@@ -25,6 +26,7 @@ pub enum SingleMessage {
     LightApp(LightApp),
     MarketFaceAll(MarketFaceAll),
     MessageSource(MessageSource),
+    MessageOrigin(MessageOrigin),
     MusicShare(MusicShare),
     PlainText(PlainText),
     PokeMessage(PokeMessage),

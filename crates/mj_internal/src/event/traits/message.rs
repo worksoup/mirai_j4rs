@@ -18,7 +18,7 @@ where
     fn get_message(&self) -> MessageChain {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm.invoke(&self.as_instance(), "getMessage", &[]).unwrap();
-        MessageChain { instance }
+        MessageChain::from_instance(instance)
     }
     fn get_sender(&self) -> Sender {
         let jvm = Jvm::attach_thread().unwrap();
@@ -53,6 +53,7 @@ pub trait MessageSyncEventTrait<Sender: ContactTrait, Subject: ContactTrait>:
     MessageEventTrait<Sender, Subject> + OtherClientEventTrait
 {
 }
+
 pub trait GroupAwareMessageTrait<Sender: ContactTrait, Subject: ContactTrait>:
     MessageEventTrait<Sender, Subject>
 {

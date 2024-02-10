@@ -129,7 +129,7 @@ impl ForwardMessageNode {
     pub fn get_message_chain(&self) -> MessageChain {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm.invoke(&self.instance, "getMessageChain", &[]).unwrap();
-        MessageChain { instance }
+        MessageChain::from_instance(instance)
     }
 
     pub fn to_string(&self) {

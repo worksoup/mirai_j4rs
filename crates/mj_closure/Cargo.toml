@@ -7,7 +7,7 @@ edition = "2021"
 crate-type = ["cdylib", "lib"]
 
 [dependencies]
-j4rs = "0.17"
-j4rs_derive = "0.1"
+j4rs = { workspace = true }
+j4rs_derive = { workspace = true }
 mj_base = { path = "../mj_base" }
 mj_macro = { path = "../mj_macro" }

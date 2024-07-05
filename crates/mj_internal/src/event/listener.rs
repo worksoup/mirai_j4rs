@@ -1,6 +1,6 @@
 use std::intrinsics::transmute;
 
-use j4rs::{Instance, Jvm};
+use j4rs::{Instance, InvocationArg, Jvm};
 
 use mj_base::data_wrapper::DataWrapper;
 
@@ -27,7 +27,7 @@ impl<E> Listener<'_, E> {
         let call_from_java = unsafe { Box::from_raw(call_from_java) };
         drop(call_from_java);
         let jvm = Jvm::attach_thread().unwrap();
-        let b = jvm.invoke(&self.instance, "complete", &[]).unwrap();
+        let b = jvm.invoke(&self.instance, "complete", InvocationArg::empty()).unwrap();
         jvm.to_rust(b).unwrap()
     }
 }

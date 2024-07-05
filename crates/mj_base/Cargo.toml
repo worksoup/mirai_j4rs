@@ -6,5 +6,5 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-j4rs = "0.17"
-j4rs_derive = "0.1"
+j4rs = { workspace = true }
+j4rs_derive = { workspace = true }

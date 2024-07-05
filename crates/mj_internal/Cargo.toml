@@ -11,8 +11,8 @@ crate-type = ["cdylib", "lib"] # cdylib 供 jvm_side 使用。
 mj_macro = { path = "../mj_macro" }
 mj_base = { path = "../mj_base" }
 mj_closure = { path = "../mj_closure" }
-j4rs = "0.17"
-j4rs_derive = "0.1"
+j4rs = { workspace = true }
+j4rs_derive = { workspace = true }
 num_enum = "0.7"
 serde = { version = "1.0", features = ["derive"] }
 toml = "0.8"

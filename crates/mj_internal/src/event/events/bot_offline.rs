@@ -1,4 +1,4 @@
-use j4rs::{Instance, Jvm};
+use j4rs::{Instance, InvocationArg, Jvm};
 
 use mj_macro::mj_event;
 
@@ -9,7 +9,9 @@ pub trait BotOfflineEventTrait: BotEventTrait {
     /// 为 `true` 时会尝试重连，仅 [`BotOfflineEvent::Force`] 默认为 `false`, 其他默认为 `true`.
     fn get_reconnect(&self) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(self.as_instance(), "getReconnect", &[]).unwrap();
+        let instance = jvm
+            .invoke(self.as_instance(), "getReconnect", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(instance).unwrap()
     }
 }

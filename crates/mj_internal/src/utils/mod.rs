@@ -7,7 +7,7 @@ use mj_base::{
     env::{FromInstanceTrait, GetInstanceTrait},
     utils::instance_is_null,
 };
-use mj_closures::{
+use mj_closure::{
     comparator::Comparator, consumer::Consumer, function::Function, predicate::Predicate,
 };
 use mj_macro::{AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
@@ -94,7 +94,9 @@ impl<T: FromInstanceTrait + GetClassTypeTrait> JavaStream<T> {
 
     pub fn count(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "count", &[]).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "count", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(instance).unwrap()
     }
 
@@ -165,14 +167,23 @@ impl<T: FromInstanceTrait + GetClassTypeTrait> JavaStream<T> {
     pub fn to_vec(&self) -> Vec<T> {
         let jvm = Jvm::attach_thread().unwrap();
         let mut array = Vec::new();
-        let instance = jvm.invoke(&self.instance, "toList", &[]).unwrap();
-        let instance = jvm.invoke(&instance, "iterator", &[]).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "toList", InvocationArg::empty())
+            .unwrap();
+        let instance = jvm
+            .invoke(&instance, "iterator", InvocationArg::empty())
+            .unwrap();
         loop {
             let has_next: bool = jvm
-                .to_rust(jvm.invoke(&instance, "hasNext", &[]).unwrap())
+                .to_rust(
+                    jvm.invoke(&instance, "hasNext", InvocationArg::empty())
+                        .unwrap(),
+                )
                 .unwrap();
             if has_next {
-                let next = jvm.invoke(&instance, "next", &[]).unwrap();
+                let next = jvm
+                    .invoke(&instance, "next", InvocationArg::empty())
+                    .unwrap();
                 array.push(T::from_instance(T::cast_to_this_type(next)))
             } else {
                 break;

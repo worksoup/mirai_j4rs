@@ -20,7 +20,7 @@ impl AbsoluteFile {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(&self.instance)
             .unwrap()
-            .invoke("getExpiryTime", &[])
+            .invoke("getExpiryTime", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -41,7 +41,9 @@ impl AbsoluteFile {
     /// 0x5c -> 0x5c5c -- \\
     pub fn get_md5(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let bytes = jvm.invoke(&self.instance, "getMd5", &[]).unwrap();
+        let bytes = jvm
+            .invoke(&self.instance, "getMd5", InvocationArg::empty())
+            .unwrap();
         let bytes = primitive_byte_array_to_string(&jvm, bytes);
         jvm.to_rust(bytes).unwrap()
     }
@@ -61,7 +63,9 @@ impl AbsoluteFile {
     /// 0x5c -> 0x5c5c -- \\
     pub fn get_sha1(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let bytes = jvm.invoke(&self.instance, "getSha1", &[]).unwrap();
+        let bytes = jvm
+            .invoke(&self.instance, "getSha1", InvocationArg::empty())
+            .unwrap();
         let bytes = primitive_byte_array_to_string(&jvm, bytes);
         jvm.to_rust(bytes).unwrap()
     }
@@ -70,7 +74,7 @@ impl AbsoluteFile {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(&self.instance)
             .unwrap()
-            .invoke("getSize", &[])
+            .invoke("getSize", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -79,7 +83,7 @@ impl AbsoluteFile {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(&self.instance)
             .unwrap()
-            .invoke("getUrl", &[])
+            .invoke("getUrl", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -98,7 +102,9 @@ impl AbsoluteFile {
     /// 注: 在 上传文件 时就已经发送了文件消息, FileMessage 不可手动发送
     pub fn to_message(&self) -> FileMessage {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "refreshed", &[]).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "refreshed", InvocationArg::empty())
+            .unwrap();
         FileMessage::from_instance(instance)
     }
 }
@@ -106,7 +112,9 @@ impl AbsoluteFile {
 impl AbsoluteFileFolderTrait for AbsoluteFile {
     fn refreshed(&self) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "refreshed", &[]).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "refreshed", InvocationArg::empty())
+            .unwrap();
         AbsoluteFile { instance }
     }
 }

@@ -99,6 +99,9 @@ fn match_single_message(msg: SingleMessage, contact: Option<Group>) {
         SingleMessage::SuperFace(super_face) => {
             println!("超级表情 {}", super_face.to_string())
         }
+        SingleMessage::MessageOrigin(_) => {
+            //TODO
+        }
     }
 }
 

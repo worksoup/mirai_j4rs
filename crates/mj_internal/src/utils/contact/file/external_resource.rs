@@ -117,6 +117,6 @@ impl ExternalResource {
 
     pub fn close(self) {
         let jvm = Jvm::attach_thread().unwrap();
-        let _ = jvm.invoke(&self.instance, "close", &[]);
+        let _ = jvm.invoke(&self.instance, "close", InvocationArg::empty());
     }
 }

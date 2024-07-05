@@ -23,8 +23,11 @@ impl FromInstanceTrait for FriendGroup {
 impl FriendGroup {
     pub fn delete(&self) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "delete", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "delete", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn rename_to(&self, new_name: &str) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
@@ -40,24 +43,37 @@ impl FriendGroup {
     }
     pub fn get_name(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getName", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getName", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn get_id(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getId", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getId", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn get_friends(&self) -> Vec<Friend> {
         let jvm = Jvm::attach_thread().unwrap();
-        let collection = jvm.invoke(&self.instance, "getFriends", &[]).unwrap();
-        let iter = jvm.invoke(&collection, "iterator", &[]).unwrap();
+        let collection = jvm
+            .invoke(&self.instance, "getFriends", InvocationArg::empty())
+            .unwrap();
+        let iter = jvm
+            .invoke(&collection, "iterator", InvocationArg::empty())
+            .unwrap();
         java_iter_to_rust_vec(&jvm, iter)
     }
     pub fn get_count(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getCount", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getCount", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
 }
 
@@ -69,9 +85,13 @@ pub struct FriendGroups {
 impl FriendGroups {
     pub fn to_vec(&self) -> Vec<FriendGroup> {
         let jvm = Jvm::attach_thread().unwrap();
-        let collection = jvm.invoke(&self.instance, "asCollection", &[]).unwrap();
+        let collection = jvm
+            .invoke(&self.instance, "asCollection", InvocationArg::empty())
+            .unwrap();
 
-        let iter = jvm.invoke(&collection, "iterator", &[]).unwrap();
+        let iter = jvm
+            .invoke(&collection, "iterator", InvocationArg::empty())
+            .unwrap();
         java_iter_to_rust_vec(&jvm, iter)
     }
     pub fn create(name: String) -> FriendGroup {
@@ -80,7 +100,7 @@ impl FriendGroups {
             .invoke_static(
                 <Self as GetClassTypeTrait>::get_type_name().as_str(),
                 "create",
-                &[name.try_into().unwrap()],
+                &[InvocationArg::try_from(name).unwrap()],
             )
             .unwrap();
         FriendGroup { instance }
@@ -98,7 +118,9 @@ impl FriendGroups {
     }
     pub fn get_default(&self) -> FriendGroup {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getDefault", &[]).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "getDefault", InvocationArg::empty())
+            .unwrap();
         FriendGroup { instance }
     }
 }

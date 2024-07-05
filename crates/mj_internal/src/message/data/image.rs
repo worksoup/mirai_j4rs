@@ -75,7 +75,7 @@ impl Image {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(&self.instance)
             .unwrap()
-            .invoke("getHeight", &[])
+            .invoke("getHeight", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -106,7 +106,7 @@ impl Image {
             .to_rust(
                 Jvm::attach_thread()
                     .unwrap()
-                    .invoke(&self.instance, "getImageId", &[])
+                    .invoke(&self.instance, "getImageId", InvocationArg::empty())
                     .unwrap(),
             )
             .unwrap()
@@ -134,7 +134,9 @@ impl Image {
     /// 0x5c -> 0x5c5c -- \\
     pub fn get_md5(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let bytes = jvm.invoke(&self.instance, "getMd5", &[]).unwrap();
+        let bytes = jvm
+            .invoke(&self.instance, "getMd5", InvocationArg::empty())
+            .unwrap();
         let bytes = primitive_byte_array_to_string(&jvm, bytes);
         jvm.to_rust(bytes).unwrap()
     }
@@ -142,7 +144,7 @@ impl Image {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(&self.instance)
             .unwrap()
-            .invoke("getSize", &[])
+            .invoke("getSize", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -151,14 +153,16 @@ impl Image {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(&self.instance)
             .unwrap()
-            .invoke("getWidth", &[])
+            .invoke("getWidth", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
     }
     pub fn get_image_type(&self) -> ImageType {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getImageType", &[]).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "getImageType", InvocationArg::empty())
+            .unwrap();
         let r#type = jvm.to_rust::<String>(instance).unwrap();
         match r#type.as_str() {
             "PNG" => ImageType::PNG,
@@ -173,7 +177,7 @@ impl Image {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(&self.instance)
             .unwrap()
-            .invoke("isEmoji", &[])
+            .invoke("isEmoji", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()

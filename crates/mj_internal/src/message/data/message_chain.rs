@@ -29,14 +29,20 @@ impl MiraiRsCollectionTrait for MessageChain {
 
     fn get_size(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getSize", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getSize", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
 
     fn is_empty(&self) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "isEmpty", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "isEmpty", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
 
     fn contains(&self, element: &Self::Element) -> bool {
@@ -60,7 +66,9 @@ impl IntoIterator for MessageChain {
 
     fn into_iter(self) -> Self::IntoIter {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "iterator", &[]).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "iterator", InvocationArg::empty())
+            .unwrap();
         Self::IntoIter { instance }
     }
 }
@@ -76,20 +84,25 @@ impl Iterator for MessageChainIterator {
     fn next(&mut self) -> Option<Self::Item> {
         let jvm = Jvm::attach_thread().unwrap();
         let has_next = jvm
-            .to_rust(jvm.invoke(&self.instance, "hasNext", &[]).unwrap())
+            .to_rust(
+                jvm.invoke(&self.instance, "hasNext", InvocationArg::empty())
+                    .unwrap(),
+            )
             .unwrap();
         // 逻辑如下：
         // if hasNext
         //     return Some(next)
         // else return None
         if has_next {
-            let next = jvm.invoke(&self.instance, "next", &[]).unwrap();
+            let next = jvm
+                .invoke(&self.instance, "next", InvocationArg::empty())
+                .unwrap();
             let class_type: String = jvm
                 .chain(&next)
                 .unwrap()
-                .invoke("getClass", &[])
+                .invoke("getClass", InvocationArg::empty())
                 .unwrap()
-                .invoke("toString", &[])
+                .invoke("toString", InvocationArg::empty())
                 .unwrap()
                 .to_rust()
                 .unwrap();

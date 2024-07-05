@@ -15,7 +15,7 @@ impl RemoteFiles {
     /// 该函数返回 FileSupported, 但是目前应该只有 Group 的吧？
     pub fn get_contact(&self) -> Group {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getContact", &[]).unwrap();
+        let instance = jvm.invoke(&self.instance, "getContact", InvocationArg::empty()).unwrap();
         let instance = jvm
             .cast(&instance, <Group as GetClassTypeTrait>::get_type_name().as_str())
             .unwrap();
@@ -23,7 +23,7 @@ impl RemoteFiles {
     }
     pub fn get_root(&self) -> AbsoluteFolder {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getRoot", &[]).unwrap();
+        let instance = jvm.invoke(&self.instance, "getRoot", InvocationArg::empty()).unwrap();
         AbsoluteFolder::from_instance(instance)
     }
 

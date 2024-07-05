@@ -10,7 +10,7 @@ pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(self.as_instance())
             .unwrap()
-            .invoke("delete", &[])
+            .invoke("delete", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -19,7 +19,7 @@ pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(self.as_instance())
             .unwrap()
-            .invoke("exists", &[])
+            .invoke("exists", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -29,7 +29,7 @@ pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(self.as_instance())
             .unwrap()
-            .invoke("getAbsolutePath", &[])
+            .invoke("getAbsolutePath", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -37,14 +37,14 @@ pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
     // FileSupported 当前只有 Group
     fn get_contact(&self) -> Group {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(self.as_instance(), "getContact", &[]).unwrap();
+        let instance = jvm.invoke(self.as_instance(), "getContact", InvocationArg::empty()).unwrap();
         Group::from_instance(instance)
     }
     fn get_extension<T: AbsoluteFileFolderTrait>(file_or_folder: T) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(file_or_folder.as_instance())
             .unwrap()
-            .invoke("getExtension", &[])
+            .invoke("getExtension", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -53,7 +53,7 @@ pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(self.as_instance())
             .unwrap()
-            .invoke("getId", &[])
+            .invoke("getId", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -62,7 +62,7 @@ pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(self.as_instance())
             .unwrap()
-            .invoke("getLastModifiedTime", &[])
+            .invoke("getLastModifiedTime", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -72,7 +72,7 @@ pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
         let instance = self.get_instance();
         jvm.chain(&instance)
             .unwrap()
-            .invoke("getName", &[])
+            .invoke("getName", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -81,21 +81,21 @@ pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(file_or_folder.as_instance())
             .unwrap()
-            .invoke("getNameWithoutExtension", &[])
+            .invoke("getNameWithoutExtension", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
     }
     fn get_parent(&self) -> AbsoluteFolder {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(self.as_instance(), "getParent", &[]).unwrap();
+        let instance = jvm.invoke(self.as_instance(), "getParent", InvocationArg::empty()).unwrap();
         AbsoluteFolder::from_instance(instance)
     }
     fn get_upload_time(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(self.as_instance())
             .unwrap()
-            .invoke("getUploadTime", &[])
+            .invoke("getUploadTime", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -104,7 +104,7 @@ pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(self.as_instance())
             .unwrap()
-            .invoke("getUploaderId", &[])
+            .invoke("getUploaderId", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -113,7 +113,7 @@ pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(self.as_instance())
             .unwrap()
-            .invoke("isFile", &[])
+            .invoke("isFile", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -127,7 +127,7 @@ pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(self.as_instance())
             .unwrap()
-            .invoke("isFolder", &[])
+            .invoke("isFolder", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -141,7 +141,7 @@ pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(self.as_instance())
             .unwrap()
-            .invoke("refresh", &[])
+            .invoke("refresh", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -162,7 +162,7 @@ pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(self.as_instance())
             .unwrap()
-            .invoke("toString", &[])
+            .invoke("toString", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()

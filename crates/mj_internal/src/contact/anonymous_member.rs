@@ -1,4 +1,4 @@
-use j4rs::{Instance, Jvm};
+use j4rs::{Instance, InvocationArg, Jvm};
 
 use mj_macro::mj_all;
 
@@ -12,7 +12,9 @@ pub struct AnonymousMember {
 impl AnonymousMember {
     pub fn get_anonymous_id(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let id = jvm.invoke(&self.instance, "getAnonymousId", &[]).unwrap();
+        let id = jvm
+            .invoke(&self.instance, "getAnonymousId", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(id).unwrap()
     }
 }

@@ -20,7 +20,7 @@ pub struct AbsoluteFolder {
 impl AbsoluteFolder {
     pub fn children(&self) -> JavaStream<AbsoluteFileFolder> {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "childrenStream", &[]).unwrap();
+        let instance = jvm.invoke(&self.instance, "childrenStream", InvocationArg::empty()).unwrap();
         JavaStream {
             instance,
             _unused: Default::default(),
@@ -36,7 +36,7 @@ impl AbsoluteFolder {
     }
     pub fn files(&self) -> JavaStream<AbsoluteFile> {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "filesStream", &[]).unwrap();
+        let instance = jvm.invoke(&self.instance, "filesStream", InvocationArg::empty()).unwrap();
         JavaStream {
             instance,
             _unused: Default::default(),
@@ -44,7 +44,7 @@ impl AbsoluteFolder {
     }
     pub fn folders(&self) -> JavaStream<AbsoluteFolder> {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "foldersStream", &[]).unwrap();
+        let instance = jvm.invoke(&self.instance, "foldersStream", InvocationArg::empty()).unwrap();
         JavaStream {
             instance,
             _unused: Default::default(),
@@ -52,12 +52,12 @@ impl AbsoluteFolder {
     }
     pub fn get_contents_count(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getContentsCount", &[]).unwrap();
+        let instance = jvm.invoke(&self.instance, "getContentsCount", InvocationArg::empty()).unwrap();
         jvm.to_rust(instance).unwrap()
     }
     pub fn is_empty(&self) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "isEmpty", &[]).unwrap();
+        let instance = jvm.invoke(&self.instance, "isEmpty", InvocationArg::empty()).unwrap();
         jvm.to_rust(instance).unwrap()
     }
     pub fn resolve_all(&self, path: &str) -> JavaStream<AbsoluteFileFolder> {
@@ -135,7 +135,7 @@ impl AbsoluteFolder {
 impl AbsoluteFileFolderTrait for AbsoluteFolder {
     fn refreshed(&self) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "refreshed", &[]).unwrap();
+        let instance = jvm.invoke(&self.instance, "refreshed", InvocationArg::empty()).unwrap();
         AbsoluteFolder { instance }
     }
 }

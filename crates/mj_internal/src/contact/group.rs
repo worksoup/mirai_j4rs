@@ -44,7 +44,7 @@ impl GroupSettings {
             .unwrap()
             .chain(&self.instance)
             .unwrap()
-            .invoke("isAllowMemberInvite", &[])
+            .invoke("isAllowMemberInvite", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -54,7 +54,7 @@ impl GroupSettings {
             .unwrap()
             .chain(&self.instance)
             .unwrap()
-            .invoke("isAnonymousChatEnabled", &[])
+            .invoke("isAnonymousChatEnabled", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -64,7 +64,7 @@ impl GroupSettings {
             .unwrap()
             .chain(&self.instance)
             .unwrap()
-            .invoke("isAutoApproveEnabled", &[])
+            .invoke("isAutoApproveEnabled", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -74,7 +74,7 @@ impl GroupSettings {
             .unwrap()
             .chain(&self.instance)
             .unwrap()
-            .invoke("isMuteAll", &[])
+            .invoke("isMuteAll", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -221,7 +221,7 @@ impl GetInstanceTrait for AnnouncementParameters {
             .create_instance(
                 (MIRAI_PREFIX.to_string() + "contact.announcement.AnnouncementParametersBuilder")
                     .as_str(),
-                &[],
+                InvocationArg::empty(),
             )
             .unwrap();
         if let Some(image) = &self.image {
@@ -260,28 +260,41 @@ impl GetInstanceTrait for AnnouncementParameters {
             .invoke(&builder, "showEditCard", &[show_edit_card])
             .unwrap();
         builder = jvm.invoke(&builder, "showPopup", &[show_popup]).unwrap();
-        jvm.invoke(&builder, "build", &[]).unwrap()
+        jvm.invoke(&builder, "build", InvocationArg::empty())
+            .unwrap()
     }
 }
 
 impl FromInstanceTrait for AnnouncementParameters {
     fn from_instance(instance: Instance) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
-        let image = jvm.invoke(&instance, "image", &[]).unwrap();
+        let image = jvm
+            .invoke(&instance, "image", InvocationArg::empty())
+            .unwrap();
         let image = if !instance_is_null(&image) {
             Some(AnnouncementImage { instance: image })
         } else {
             None
         };
-        let is_pinned = jvm.invoke(&instance, "isPinned", &[]).unwrap();
+        let is_pinned = jvm
+            .invoke(&instance, "isPinned", InvocationArg::empty())
+            .unwrap();
         let is_pinned = jvm.to_rust(is_pinned).unwrap();
-        let require_confirmation = jvm.invoke(&instance, "requireConfirmation", &[]).unwrap();
+        let require_confirmation = jvm
+            .invoke(&instance, "requireConfirmation", InvocationArg::empty())
+            .unwrap();
         let require_confirmation = jvm.to_rust(require_confirmation).unwrap();
-        let send_to_new_member = jvm.invoke(&instance, "sendToNewMember", &[]).unwrap();
+        let send_to_new_member = jvm
+            .invoke(&instance, "sendToNewMember", InvocationArg::empty())
+            .unwrap();
         let send_to_new_member = jvm.to_rust(send_to_new_member).unwrap();
-        let show_edit_card = jvm.invoke(&instance, "showEditCard", &[]).unwrap();
+        let show_edit_card = jvm
+            .invoke(&instance, "showEditCard", InvocationArg::empty())
+            .unwrap();
         let show_edit_card = jvm.to_rust(show_edit_card).unwrap();
-        let show_popup = jvm.invoke(&instance, "showPopup", &[]).unwrap();
+        let show_popup = jvm
+            .invoke(&instance, "showPopup", InvocationArg::empty())
+            .unwrap();
         let show_popup = jvm.to_rust(show_popup).unwrap();
         AnnouncementParameters {
             image,
@@ -345,33 +358,43 @@ impl OnlineAnnouncement {
     /// 需要处理的错误有：[`MiraiRsErrorEnum::PermissionDenied`], [`MiraiRsErrorEnum::IllegalState`].
     pub fn delete(&self) -> Result<bool, MiraiRsError> {
         let jvm = Jvm::attach_thread().unwrap();
-        let r#bool = jvm.invoke(&self.instance, "delete", &[])?;
+        let r#bool = jvm.invoke(&self.instance, "delete", InvocationArg::empty())?;
         Ok(jvm.to_rust(r#bool).unwrap())
     }
     /// 所有人都已阅读。如果 [`AnnouncementParameters`] 的 `require_confirmation` 为 `true` 则为所有人都已确认。
     pub fn get_all_confirmed(&self) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
-        let r#bool = jvm.invoke(&self.instance, "getAllConfirmed", &[]).unwrap();
+        let r#bool = jvm
+            .invoke(&self.instance, "getAllConfirmed", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(r#bool).unwrap()
     }
     /// 已阅读成员的数量。如果 [`AnnouncementParameters`] 的 `require_confirmation` 为 `true` 则为已确认成员的数量。
     pub fn get_confirmed_members_count(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
         let r#i32 = jvm
-            .invoke(&self.instance, "getConfirmedMembersCount", &[])
+            .invoke(
+                &self.instance,
+                "getConfirmedMembersCount",
+                InvocationArg::empty(),
+            )
             .unwrap();
         jvm.to_rust(r#i32).unwrap()
     }
     /// 唯一识别属性。
     pub fn get_fid(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let fid = jvm.invoke(&self.instance, "getFid", &[]).unwrap();
+        let fid = jvm
+            .invoke(&self.instance, "getFid", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(fid).unwrap()
     }
     /// 公告所属群。
     pub fn get_group(&self) -> Group {
         let jvm = Jvm::attach_thread().unwrap();
-        let group = jvm.invoke(&self.instance, "getGroup", &[]).unwrap();
+        let group = jvm
+            .invoke(&self.instance, "getGroup", InvocationArg::empty())
+            .unwrap();
         Group::from_instance(group)
     }
     /// 公告所在群所属的 [`Bot`].
@@ -386,14 +409,16 @@ impl OnlineAnnouncement {
     pub fn get_publication_time(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
         let time = jvm
-            .invoke(&self.instance, "getPublicationTime", &[])
+            .invoke(&self.instance, "getPublicationTime", InvocationArg::empty())
             .unwrap();
         jvm.to_rust(time).unwrap()
     }
     /// [公告发送者][NormalMember]。该成员可能已经离开群，此时返回 `None`.
     pub fn get_sender(&self) -> Option<NormalMember> {
         let jvm = Jvm::attach_thread().unwrap();
-        let sender = jvm.invoke(&self.instance, "getSender", &[]).unwrap();
+        let sender = jvm
+            .invoke(&self.instance, "getSender", InvocationArg::empty())
+            .unwrap();
         if !instance_is_null(&sender) {
             Some(NormalMember::from_instance(sender))
         } else {
@@ -403,7 +428,9 @@ impl OnlineAnnouncement {
     /// [公告发送者][NormalMember] id.
     pub fn get_sender_id(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
-        let id = jvm.invoke(&self.instance, "getSenderId", &[]).unwrap();
+        let id = jvm
+            .invoke(&self.instance, "getSenderId", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(id).unwrap()
     }
     /// 获取已确认或未确认（指定 `confirmed`）的群成员。
@@ -416,7 +443,9 @@ impl OnlineAnnouncement {
             .into_primitive()
             .unwrap();
         let members = jvm.invoke(&self.instance, "members", &[confirmed])?;
-        let iter = jvm.invoke(&members, "iterator", &[]).unwrap();
+        let iter = jvm
+            .invoke(&members, "iterator", InvocationArg::empty())
+            .unwrap();
         Ok(java_iter_to_rust_vec(&jvm, iter))
     }
     /// 提醒未确认的群成员。
@@ -424,7 +453,7 @@ impl OnlineAnnouncement {
     /// 需要处理的错误有：[`MiraiRsErrorEnum::PermissionDenied`], [`MiraiRsErrorEnum::IllegalState`].
     pub fn remind(&self) -> Result<(), MiraiRsError> {
         let jvm = Jvm::attach_thread().unwrap();
-        let _ = jvm.invoke(&self.instance, "remind", &[])?;
+        let _ = jvm.invoke(&self.instance, "remind", InvocationArg::empty())?;
         Ok(())
     }
 }
@@ -477,27 +506,37 @@ impl AnnouncementImage {
     }
     pub fn get_height(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke_static("", "getHeight", &[]).unwrap();
+        let instance = jvm
+            .invoke_static("", "getHeight", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(instance).unwrap()
     }
     pub fn get_width(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke_static("", "getWidth", &[]).unwrap();
+        let instance = jvm
+            .invoke_static("", "getWidth", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(instance).unwrap()
     }
     pub fn get_id(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke_static("", "getId", &[]).unwrap();
+        let instance = jvm
+            .invoke_static("", "getId", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(instance).unwrap()
     }
     pub fn get_url(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke_static("", "getUrl", &[]).unwrap();
+        let instance = jvm
+            .invoke_static("", "getUrl", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(instance).unwrap()
     }
     pub fn to_string(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke_static("", "toString", &[]).unwrap();
+        let instance = jvm
+            .invoke_static("", "toString", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(instance).unwrap()
     }
 }
@@ -511,7 +550,10 @@ pub struct Announcements {
 impl Announcements {
     pub fn as_stream(&self) -> JavaStream<OnlineAnnouncement> {
         let jvm = Jvm::attach_thread().unwrap();
-        JavaStream::from_instance(jvm.invoke(&self.instance, "asStream", &[]).unwrap())
+        JavaStream::from_instance(
+            jvm.invoke(&self.instance, "asStream", InvocationArg::empty())
+                .unwrap(),
+        )
     }
     pub fn delete(&self, fid: &str) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
@@ -526,8 +568,12 @@ impl Announcements {
     }
     pub fn members(&self) -> Vec<NormalMember> {
         let jvm = Jvm::attach_thread().unwrap();
-        let list = jvm.invoke(&self.instance, "members", &[]).unwrap();
-        let iter = jvm.invoke(&list, "iterator", &[]).unwrap();
+        let list = jvm
+            .invoke(&self.instance, "members", InvocationArg::empty())
+            .unwrap();
+        let iter = jvm
+            .invoke(&list, "iterator", InvocationArg::empty())
+            .unwrap();
         java_iter_to_rust_vec(&jvm, iter)
     }
     pub fn publish(&self, announcement: Announcement) -> OnlineAnnouncement {
@@ -664,7 +710,9 @@ impl ActiveRankRecord {
     }
     pub fn get_member(&self) -> NormalMember {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getMember", &[]).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "getMember", InvocationArg::empty())
+            .unwrap();
         // 笔记： rust 中此类代码的行为：完全限定的方法调用。
         // 同时指定了特型和类型。
         // 如果是 `FromInstance` 的话，应该是调用了默认的实现？
@@ -679,7 +727,7 @@ impl ActiveRankRecord {
                 .to_rust(
                     Jvm::attach_thread()
                         .unwrap()
-                        .invoke(&self.instance, "getMemberId", &[])
+                        .invoke(&self.instance, "getMemberId", InvocationArg::empty())
                         .unwrap(),
                 )
                 .unwrap()
@@ -694,7 +742,7 @@ impl ActiveRankRecord {
                 .to_rust(
                     Jvm::attach_thread()
                         .unwrap()
-                        .invoke(&self.instance, "getMemberName", &[])
+                        .invoke(&self.instance, "getMemberName", InvocationArg::empty())
                         .unwrap(),
                 )
                 .unwrap()
@@ -709,7 +757,7 @@ impl ActiveRankRecord {
                 .to_rust(
                     Jvm::attach_thread()
                         .unwrap()
-                        .invoke(&self.instance, "getScore", &[])
+                        .invoke(&self.instance, "getScore", InvocationArg::empty())
                         .unwrap(),
                 )
                 .unwrap()
@@ -724,7 +772,7 @@ impl ActiveRankRecord {
                 .to_rust(
                     Jvm::attach_thread()
                         .unwrap()
-                        .invoke(&self.instance, "getTemperature", &[])
+                        .invoke(&self.instance, "getTemperature", InvocationArg::empty())
                         .unwrap(),
                 )
                 .unwrap()
@@ -751,23 +799,36 @@ pub struct MemberMedalInfo {
 impl MemberMedalInfo {
     pub fn get_color(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getColor", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getColor", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn get_medals(&self) -> HashSet<MemberMedalType> {
         let jvm = Jvm::attach_thread().unwrap();
-        let set = jvm.invoke(&self.instance, "getHonors", &[]).unwrap();
-        let iter = jvm.invoke(&set, "iterator", &[]).unwrap();
+        let set = jvm
+            .invoke(&self.instance, "getHonors", InvocationArg::empty())
+            .unwrap();
+        let iter = jvm
+            .invoke(&set, "iterator", InvocationArg::empty())
+            .unwrap();
         java_iter_to_rust_hash_set(&jvm, iter)
     }
     pub fn get_title(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getTitle", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getTitle", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn get_wearing(&self) -> MemberMedalType {
         let jvm = Jvm::attach_thread().unwrap();
-        MemberMedalType::from_instance(jvm.invoke(&self.instance, "getWearing", &[]).unwrap())
+        MemberMedalType::from_instance(
+            jvm.invoke(&self.instance, "getWearing", InvocationArg::empty())
+                .unwrap(),
+        )
     }
 }
 
@@ -790,29 +851,44 @@ impl FromInstanceTrait for MemberActive {
 impl MemberActive {
     pub fn get_honors(&self) -> HashSet<GroupHonorType> {
         let jvm = Jvm::attach_thread().unwrap();
-        let set = jvm.invoke(&self.instance, "getHonors", &[]).unwrap();
-        let iter = jvm.invoke(&set, "iterator", &[]).unwrap();
+        let set = jvm
+            .invoke(&self.instance, "getHonors", InvocationArg::empty())
+            .unwrap();
+        let iter = jvm
+            .invoke(&set, "iterator", InvocationArg::empty())
+            .unwrap();
         java_iter_to_rust_hash_set(&jvm, iter)
     }
     pub fn get_point(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getPoint", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getPoint", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn get_rank(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getRank", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getRank", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn get_temperature(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getTemperature", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getTemperature", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn query_medal(&self) -> MemberMedalInfo {
         let jvm = Jvm::attach_thread().unwrap();
         MemberMedalInfo {
-            instance: jvm.invoke(&self.instance, "queryMedal", &[]).unwrap(),
+            instance: jvm
+                .invoke(&self.instance, "queryMedal", InvocationArg::empty())
+                .unwrap(),
         }
     }
 }
@@ -822,7 +898,7 @@ impl GroupActive {
         MiraiMap {
             instance: Jvm::attach_thread()
                 .unwrap()
-                .invoke(&self.instance, "getRankTitles", &[])
+                .invoke(&self.instance, "getRankTitles", InvocationArg::empty())
                 .unwrap(),
             _t: None,
         }
@@ -831,7 +907,11 @@ impl GroupActive {
         MiraiMap {
             instance: Jvm::attach_thread()
                 .unwrap()
-                .invoke(&self.instance, "getTemperatureTitles", &[])
+                .invoke(
+                    &self.instance,
+                    "getTemperatureTitles",
+                    InvocationArg::empty(),
+                )
                 .unwrap(),
             _t: None,
         }
@@ -842,7 +922,7 @@ impl GroupActive {
             .to_rust(
                 Jvm::attach_thread()
                     .unwrap()
-                    .invoke(&self.instance, "isHonorVisible", &[])
+                    .invoke(&self.instance, "isHonorVisible", InvocationArg::empty())
                     .unwrap(),
             )
             .unwrap()
@@ -853,7 +933,11 @@ impl GroupActive {
             .to_rust(
                 Jvm::attach_thread()
                     .unwrap()
-                    .invoke(&self.instance, "isTemperatureVisible", &[])
+                    .invoke(
+                        &self.instance,
+                        "isTemperatureVisible",
+                        InvocationArg::empty(),
+                    )
                     .unwrap(),
             )
             .unwrap()
@@ -864,7 +948,7 @@ impl GroupActive {
             .to_rust(
                 Jvm::attach_thread()
                     .unwrap()
-                    .invoke(&self.instance, "isTitleVisible", &[])
+                    .invoke(&self.instance, "isTitleVisible", InvocationArg::empty())
                     .unwrap(),
             )
             .unwrap()
@@ -873,7 +957,7 @@ impl GroupActive {
         MiraiList::from_instance(
             Jvm::attach_thread()
                 .unwrap()
-                .invoke(&self.instance, "queryActiveRank", &[])
+                .invoke(&self.instance, "queryActiveRank", InvocationArg::empty())
                 .unwrap(),
         )
     }
@@ -881,7 +965,7 @@ impl GroupActive {
         ActiveChart {
             instance: Jvm::attach_thread()
                 .unwrap()
-                .invoke(&self.instance, "queryChart", &[])
+                .invoke(&self.instance, "queryChart", InvocationArg::empty())
                 .unwrap(),
         }
     }
@@ -891,7 +975,7 @@ impl GroupActive {
         ActiveHonorList {
             instance: jvm
                 .cast(
-                    &jvm.invoke(&self.instance, "queryHonorHistory", &[])
+                    &jvm.invoke(&self.instance, "queryHonorHistory", InvocationArg::empty())
                         .unwrap(),
                     "ActiveHonorList",
                 )
@@ -901,7 +985,7 @@ impl GroupActive {
     pub fn refresh(&self) {
         Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "refresh", &[])
+            .invoke(&self.instance, "refresh", InvocationArg::empty())
             .unwrap();
     }
     pub fn set_honor_visible(&self, visible: bool) {
@@ -982,10 +1066,15 @@ impl GroupActive {
 impl FromInstanceTrait for Group {
     fn from_instance(instance: Instance) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
-        let bot = jvm.invoke(&instance, "getBot", &[]).unwrap();
+        let bot = jvm
+            .invoke(&instance, "getBot", InvocationArg::empty())
+            .unwrap();
         let bot = Bot::from_instance(bot);
         let id = jvm
-            .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
+            .to_rust(
+                jvm.invoke(&instance, "getId", InvocationArg::empty())
+                    .unwrap(),
+            )
             .unwrap();
         Group { bot, instance, id }
     }
@@ -1075,7 +1164,7 @@ impl Group {
     pub fn get_active(&self) -> GroupActive {
         let active_instance = Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "getActive", &[])
+            .invoke(&self.instance, "getActive", InvocationArg::empty())
             .unwrap();
         GroupActive {
             instance: active_instance,
@@ -1085,7 +1174,7 @@ impl Group {
         Announcements {
             instance: Jvm::attach_thread()
                 .unwrap()
-                .invoke(&self.instance, "getAnnouncements", &[])
+                .invoke(&self.instance, "getAnnouncements", InvocationArg::empty())
                 .unwrap(),
         }
     }
@@ -1097,7 +1186,7 @@ impl Group {
             .unwrap()
             .chain(&self.instance)
             .unwrap()
-            .invoke("getBotMuteRemaining", &[])
+            .invoke("getBotMuteRemaining", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -1105,15 +1194,21 @@ impl Group {
     pub fn get_bot_permission(&self) -> MemberPermission {
         let jvm = Jvm::attach_thread().unwrap();
         let prem = jvm
-            .invoke(&self.instance, "getMemberPermission", &[])
+            .invoke(
+                &self.instance,
+                "getMemberPermission",
+                InvocationArg::empty(),
+            )
             .unwrap();
-        let prem = jvm.invoke(&prem, "getLevel", &[]).unwrap();
+        let prem = jvm
+            .invoke(&prem, "getLevel", InvocationArg::empty())
+            .unwrap();
         MemberPermission::from(jvm.to_rust::<i32>(prem).unwrap())
     }
     pub fn get_members(self) -> ContactList<NormalMember> {
         let instance = Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "getMembers", &[])
+            .invoke(&self.instance, "getMembers", InvocationArg::empty())
             .unwrap();
         ContactList {
             instance,
@@ -1126,7 +1221,7 @@ impl Group {
             .to_rust(
                 Jvm::attach_thread()
                     .unwrap()
-                    .invoke(&self.instance, "getName", &[])
+                    .invoke(&self.instance, "getName", InvocationArg::empty())
                     .unwrap(),
             )
             .unwrap()
@@ -1138,14 +1233,17 @@ impl Group {
         GroupSettings {
             instance: Jvm::attach_thread()
                 .unwrap()
-                .invoke(&self.instance, "getSettings", &[])
+                .invoke(&self.instance, "getSettings", InvocationArg::empty())
                 .unwrap(),
         }
     }
     pub fn quit(&self) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "quit", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "quit", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn set_essence_message(&self, source: MessageSource) -> bool {
         let jvm = Jvm::attach_thread().unwrap();

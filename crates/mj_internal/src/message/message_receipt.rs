@@ -34,19 +34,23 @@ where
             .unwrap()
             .chain(&self.instance)
             .unwrap()
-            .invoke("isToGroup", &[])
+            .invoke("isToGroup", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
     }
     pub fn quote(&self) -> QuoteReply {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "quote", &[]).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "quote", InvocationArg::empty())
+            .unwrap();
         QuoteReply::from_instance(instance)
     }
     pub fn quote_reply(&self, message: impl MessageTrait) -> QuoteReply {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "quote", &[]).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "quote", InvocationArg::empty())
+            .unwrap();
         QuoteReply::from_instance(instance)
     }
     pub fn quote_reply_string(&self, message: String) -> QuoteReply {
@@ -58,7 +62,7 @@ where
     pub fn recall(&self) {
         Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "recall", &[])
+            .invoke(&self.instance, "recall", InvocationArg::empty())
             .unwrap();
     }
     pub fn recall_in(&self, millis: i64) -> Result<(), MiraiRsError> {

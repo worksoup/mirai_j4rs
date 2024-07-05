@@ -7,7 +7,7 @@ use mj_base::{
     env::{FromInstanceTrait, GetInstanceTrait},
     utils::instance_is_null,
 };
-use mj_closures::{kt_func_1::KtFunc1Raw, kt_func_2::KtFunc2Raw};
+use mj_closure::{kt_func_1::KtFunc1Raw, kt_func_2::KtFunc2Raw};
 use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
 
 use crate::{
@@ -31,7 +31,11 @@ impl ContactListCache {
             .to_rust(
                 Jvm::attach_thread()
                     .unwrap()
-                    .invoke(&self.instance, "getSaveIntervalMillis", &[])
+                    .invoke(
+                        &self.instance,
+                        "getSaveIntervalMillis",
+                        InvocationArg::empty(),
+                    )
                     .unwrap(),
             )
             .unwrap();
@@ -55,7 +59,11 @@ impl ContactListCache {
             .to_rust(
                 Jvm::attach_thread()
                     .unwrap()
-                    .invoke(&self.instance, "getFriendListCacheEnabled", &[])
+                    .invoke(
+                        &self.instance,
+                        "getFriendListCacheEnabled",
+                        InvocationArg::empty(),
+                    )
                     .unwrap(),
             )
             .unwrap();
@@ -79,7 +87,11 @@ impl ContactListCache {
             .to_rust(
                 Jvm::attach_thread()
                     .unwrap()
-                    .invoke(&self.instance, "getGroupMemberListCacheEnabled", &[])
+                    .invoke(
+                        &self.instance,
+                        "getGroupMemberListCacheEnabled",
+                        InvocationArg::empty(),
+                    )
                     .unwrap(),
             )
             .unwrap();
@@ -117,7 +129,11 @@ impl BotConfiguration {
     pub fn copy_configuration_from(bot: &Bot) -> Self {
         let instance = Jvm::attach_thread()
             .unwrap()
-            .invoke(&bot.get_configuration().get_instance(), "copy", &[])
+            .invoke(
+                &bot.get_configuration().get_instance(),
+                "copy",
+                InvocationArg::empty(),
+            )
             .unwrap();
         BotConfiguration {
             instance,
@@ -132,7 +148,7 @@ impl Default for BotConfiguration {
             .invoke_static(
                 <Self as GetClassTypeTrait>::get_type_name().as_str(),
                 "getDefault",
-                &[],
+                InvocationArg::empty(),
             )
             .unwrap();
         BotConfiguration {
@@ -148,7 +164,7 @@ impl BotConfiguration {
             .unwrap()
             .chain(&self.instance)
             .unwrap()
-            .invoke("getAutoReconnectOnForceOffline", &[])
+            .invoke("getAutoReconnectOnForceOffline", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap();
@@ -157,7 +173,11 @@ impl BotConfiguration {
         let bot_logger_supplier = |bot: &Bot| -> MiraiLogger {
             let tmp = Jvm::attach_thread()
                 .unwrap()
-                .invoke(&self.instance, "getBotLoggerSupplier", &[])
+                .invoke(
+                    &self.instance,
+                    "getBotLoggerSupplier",
+                    InvocationArg::empty(),
+                )
                 .unwrap();
             MiraiLogger(
                 Jvm::attach_thread()
@@ -177,9 +197,9 @@ impl BotConfiguration {
             .unwrap()
             .chain(&self.instance)
             .unwrap()
-            .invoke("getCacheDir", &[])
+            .invoke("getCacheDir", InvocationArg::empty())
             .unwrap()
-            .invoke("toString", &[])
+            .invoke("toString", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap();
@@ -189,14 +209,18 @@ impl BotConfiguration {
         return Some(ContactListCache::from_instance(
             Jvm::attach_thread()
                 .unwrap()
-                .invoke(&self.instance, "getContactListCache", &[])
+                .invoke(
+                    &self.instance,
+                    "getContactListCache",
+                    InvocationArg::empty(),
+                )
                 .unwrap(),
         ));
     }
     pub fn get_device_info(&self) -> Option<impl Fn(Bot) -> DeviceInfo + '_> {
         let tmp = Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "getDeviceInfo", &[])
+            .invoke(&self.instance, "getDeviceInfo", InvocationArg::empty())
             .unwrap();
         let bot_logger_supplier = move |bot: Bot| -> DeviceInfo {
             DeviceInfo(
@@ -218,7 +242,11 @@ impl BotConfiguration {
             .to_rust(
                 Jvm::attach_thread()
                     .unwrap()
-                    .invoke(&self.instance, "getHeartbeatPeriodMillis", &[])
+                    .invoke(
+                        &self.instance,
+                        "getHeartbeatPeriodMillis",
+                        InvocationArg::empty(),
+                    )
                     .unwrap(),
             )
             .unwrap();
@@ -229,7 +257,11 @@ impl BotConfiguration {
             .to_rust(
                 Jvm::attach_thread()
                     .unwrap()
-                    .invoke(&self.instance, "getHeartbeatStrategy", &[])
+                    .invoke(
+                        &self.instance,
+                        "getHeartbeatStrategy",
+                        InvocationArg::empty(),
+                    )
                     .unwrap(),
             )
             .unwrap();
@@ -251,7 +283,11 @@ impl BotConfiguration {
             .to_rust(
                 Jvm::attach_thread()
                     .unwrap()
-                    .invoke(&self.instance, "getHeartbeatTimeoutMillis", &[])
+                    .invoke(
+                        &self.instance,
+                        "getHeartbeatTimeoutMillis",
+                        InvocationArg::empty(),
+                    )
                     .unwrap(),
             )
             .unwrap();
@@ -262,7 +298,11 @@ impl BotConfiguration {
             .to_rust(
                 Jvm::attach_thread()
                     .unwrap()
-                    .invoke(&self.instance, "getHighwayUploadCoroutineCount", &[])
+                    .invoke(
+                        &self.instance,
+                        "getHighwayUploadCoroutineCount",
+                        InvocationArg::empty(),
+                    )
                     .unwrap(),
             )
             .unwrap();
@@ -272,7 +312,7 @@ impl BotConfiguration {
             .unwrap()
             .chain(&self.instance)
             .unwrap()
-            .invoke("getLoginCacheEnabled", &[])
+            .invoke("getLoginCacheEnabled", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -280,7 +320,7 @@ impl BotConfiguration {
     pub fn get_login_solver(&self) -> Option<LoginSolver> {
         let instance = Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "getLoginSolver", &[])
+            .invoke(&self.instance, "getLoginSolver", InvocationArg::empty())
             .unwrap();
         if !instance_is_null(&instance) {
             Some(LoginSolver::from_instance(instance))
@@ -292,7 +332,11 @@ impl BotConfiguration {
         return Some(
             Jvm::attach_thread()
                 .unwrap()
-                .invoke(&self.instance, "getNetworkLoggerSupplier", &[])
+                .invoke(
+                    &self.instance,
+                    "getNetworkLoggerSupplier",
+                    InvocationArg::empty(),
+                )
                 .unwrap(),
         );
     }
@@ -300,7 +344,11 @@ impl BotConfiguration {
         return Some(
             Jvm::attach_thread()
                 .unwrap()
-                .invoke(&self.instance, "getParentCoroutineContext", &[])
+                .invoke(
+                    &self.instance,
+                    "getParentCoroutineContext",
+                    InvocationArg::empty(),
+                )
                 .unwrap(),
         );
     }
@@ -310,7 +358,7 @@ impl BotConfiguration {
             .to_rust(
                 Jvm::attach_thread()
                     .unwrap()
-                    .invoke(&self.instance, "getProtocol", &[])
+                    .invoke(&self.instance, "getProtocol", InvocationArg::empty())
                     .unwrap(),
             )
             .unwrap();
@@ -322,7 +370,11 @@ impl BotConfiguration {
             .to_rust(
                 Jvm::attach_thread()
                     .unwrap()
-                    .invoke(&self.instance, "getReconnectionRetryTimes", &[])
+                    .invoke(
+                        &self.instance,
+                        "getReconnectionRetryTimes",
+                        InvocationArg::empty(),
+                    )
                     .unwrap(),
             )
             .unwrap();
@@ -333,7 +385,11 @@ impl BotConfiguration {
             .to_rust(
                 Jvm::attach_thread()
                     .unwrap()
-                    .invoke(&self.instance, "getStatHeartbeatPeriodMillis", &[])
+                    .invoke(
+                        &self.instance,
+                        "getStatHeartbeatPeriodMillis",
+                        InvocationArg::empty(),
+                    )
                     .unwrap(),
             )
             .unwrap();
@@ -343,9 +399,9 @@ impl BotConfiguration {
             .unwrap()
             .chain(&self.instance)
             .unwrap()
-            .invoke("getWorkingDir", &[])
+            .invoke("getWorkingDir", InvocationArg::empty())
             .unwrap()
-            .invoke("toString", &[])
+            .invoke("toString", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap();
@@ -360,7 +416,7 @@ impl BotConfiguration {
             .unwrap()
             .chain(&self.instance)
             .unwrap()
-            .invoke("isConvertLineSeparator", &[])
+            .invoke("isConvertLineSeparator", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap();
@@ -370,7 +426,7 @@ impl BotConfiguration {
             .unwrap()
             .chain(&self.instance)
             .unwrap()
-            .invoke("isShowingVerboseEventLog", &[])
+            .invoke("isShowingVerboseEventLog", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap();
@@ -435,7 +491,7 @@ impl BotConfiguration {
     pub fn set_device_info(&self) {
         Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "setDeviceInfo", &[])
+            .invoke(&self.instance, "setDeviceInfo", InvocationArg::empty())
             .unwrap();
         todo!("set_device_info");
     }
@@ -465,7 +521,9 @@ impl BotConfiguration {
                             &Jvm::attach_thread()
                                 .unwrap()
                                 .static_class(
-                                    (<Self as GetClassTypeTrait>::get_type_name().as_str().to_string()
+                                    (<Self as GetClassTypeTrait>::get_type_name()
+                                        .as_str()
+                                        .to_string()
                                         + "$HeartbeatStrategy")
                                         .as_str(),
                                 )
@@ -539,7 +597,11 @@ impl BotConfiguration {
     pub fn set_network_logger_supplier(&self) {
         Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "setNetworkLoggerSupplier", &[])
+            .invoke(
+                &self.instance,
+                "setNetworkLoggerSupplier",
+                InvocationArg::empty(),
+            )
             .unwrap();
         todo!("set_network_logger_supplier");
     }
@@ -614,7 +676,11 @@ impl BotConfiguration {
     pub fn auto_reconnect_on_force_offline(&self) {
         Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "autoReconnectOnForceOffline", &[])
+            .invoke(
+                &self.instance,
+                "autoReconnectOnForceOffline",
+                InvocationArg::empty(),
+            )
             .unwrap();
     }
     /// 禁止保存 account.secrets.
@@ -626,7 +692,11 @@ impl BotConfiguration {
     pub fn disable_account_secretes(&self) {
         Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "disableAccountSecretes", &[])
+            .invoke(
+                &self.instance,
+                "disableAccountSecretes",
+                InvocationArg::empty(),
+            )
             .unwrap();
     }
     /// 禁用好友列表和群成员列表的缓存。
@@ -634,7 +704,11 @@ impl BotConfiguration {
     pub fn disable_contact_cache(&self) {
         Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "disableContactCache", &[])
+            .invoke(
+                &self.instance,
+                "disableContactCache",
+                InvocationArg::empty(),
+            )
             .unwrap();
     }
     /// 启用好友列表和群成员列表的缓存。
@@ -642,7 +716,7 @@ impl BotConfiguration {
     pub fn enable_contact_cache(&self) {
         Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "enableContactCache", &[])
+            .invoke(&self.instance, "enableContactCache", InvocationArg::empty())
             .unwrap();
     }
     /// 使用文件存储设备信息。
@@ -663,7 +737,11 @@ impl BotConfiguration {
         } else {
             Jvm::attach_thread()
                 .unwrap()
-                .invoke(&self.instance, "fileBasedDeviceInfo", &[])
+                .invoke(
+                    &self.instance,
+                    "fileBasedDeviceInfo",
+                    InvocationArg::empty(),
+                )
                 .unwrap();
         }
     }
@@ -671,14 +749,14 @@ impl BotConfiguration {
     pub fn no_bot_log(&self) {
         Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "noBotLog", &[])
+            .invoke(&self.instance, "noBotLog", InvocationArg::empty())
             .unwrap();
     }
     /// 不显示网络日志。不推荐。
     pub fn no_network_log(&self) {
         Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "noNetworkLog", &[])
+            .invoke(&self.instance, "noNetworkLog", InvocationArg::empty())
             .unwrap();
     }
     /// 使用随机设备信息。
@@ -686,7 +764,7 @@ impl BotConfiguration {
     pub fn random_device_info(&self) {
         Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "randomDeviceInfo", &[])
+            .invoke(&self.instance, "randomDeviceInfo", InvocationArg::empty())
             .unwrap();
     }
     fn redirect_log_to_directory(
@@ -826,7 +904,7 @@ impl BotConfiguration {
     // pub fn noNetworkLog(&self) {
     //     if let Some(bot_configuration) = &self.bot_configuration {
     //          Jvm::attach_thread().unwrap()
-    //             .invoke(bot_configuration, "disableAccountSecretes", &[])
+    //             .invoke(bot_configuration, "disableAccountSecretes", InvocationArg::empty())
     //             .unwrap();
     //     }
     // }

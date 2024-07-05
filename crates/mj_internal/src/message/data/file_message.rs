@@ -32,24 +32,36 @@ impl FileMessage {
     /// 获取文件名。
     pub fn get_name(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getName", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getName", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     /// 获取文件大小。单位为字节。
     pub fn get_size(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getSize", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getSize", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn get_file_id(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getId", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getId", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn get_internal_id(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getInternalId", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getInternalId", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn new(file_id: String, internal_id: i32, name: String, size: i64) -> Self {
         let jvm = Jvm::attach_thread().unwrap();

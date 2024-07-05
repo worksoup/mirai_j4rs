@@ -1,4 +1,4 @@
-use j4rs::Jvm;
+use j4rs::{InvocationArg, Jvm};
 
 use mj_base::env::FromInstanceTrait;
 
@@ -13,7 +13,9 @@ where
 {
     fn get_bot(&self) -> Bot {
         let jvm = Jvm::attach_thread().unwrap();
-        let bot = jvm.invoke(&self.as_instance(), "getBot", &[]).unwrap();
+        let bot = jvm
+            .invoke(&self.as_instance(), "getBot", InvocationArg::empty())
+            .unwrap();
         Bot::from_instance(bot)
     }
 }
@@ -23,7 +25,9 @@ pub trait BotPassiveEventTrait: BotEventTrait {}
 pub trait BaseGroupMemberInfoChangeEventTrait: BotEventTrait {
     fn get_group_id(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.as_instance(), "getGroupId", &[]).unwrap();
+        let instance = jvm
+            .invoke(&self.as_instance(), "getGroupId", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(instance).unwrap()
     }
 }

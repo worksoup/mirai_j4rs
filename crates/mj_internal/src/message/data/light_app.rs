@@ -1,4 +1,4 @@
-use j4rs::{Instance, Jvm};
+use j4rs::{Instance, InvocationArg, Jvm};
 
 use mj_macro::mj_all;
 
@@ -15,8 +15,11 @@ pub struct LightApp {
 impl LightApp {
     pub fn get_content(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getContent", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getContent", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
 }
 

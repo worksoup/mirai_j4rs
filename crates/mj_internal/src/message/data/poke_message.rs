@@ -1,6 +1,6 @@
 use std::hint::unreachable_unchecked;
 
-use j4rs::{Instance, Jvm};
+use j4rs::{Instance, InvocationArg, Jvm};
 
 use mj_base::env::{FromInstanceTrait, GetClassTypeTrait};
 use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
@@ -102,10 +102,16 @@ impl FromInstanceTrait for PokeMessage {
     fn from_instance(instance: Instance) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let t: (i32, i32) = (
-            jvm.to_rust(jvm.invoke(&instance, "getPokeType", &[]).unwrap())
-                .unwrap(),
-            jvm.to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
-                .unwrap(),
+            jvm.to_rust(
+                jvm.invoke(&instance, "getPokeType", InvocationArg::empty())
+                    .unwrap(),
+            )
+            .unwrap(),
+            jvm.to_rust(
+                jvm.invoke(&instance, "getId", InvocationArg::empty())
+                    .unwrap(),
+            )
+            .unwrap(),
         );
         let r#enum = match t {
             (a, -1) => match a {

@@ -79,7 +79,10 @@ impl FromInstanceTrait for PlainText {
         let jvm = Jvm::attach_thread().unwrap();
         PlainText {
             content: jvm
-                .to_rust(jvm.invoke(&instance, "getContent", &[]).unwrap())
+                .to_rust(
+                    jvm.invoke(&instance, "getContent", InvocationArg::empty())
+                        .unwrap(),
+                )
                 .unwrap(),
             instance,
         }

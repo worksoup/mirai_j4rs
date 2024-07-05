@@ -42,7 +42,7 @@ impl GetInstanceTrait for BotAuthorization {
                 .invoke_static(
                     <Self as GetClassTypeTrait>::get_type_name().as_str(),
                     "byQRCode",
-                    &[],
+                    InvocationArg::empty(),
                 )
                 .unwrap(),
         }

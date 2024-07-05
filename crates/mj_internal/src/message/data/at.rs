@@ -86,7 +86,7 @@ impl FromInstanceTrait for At {
         let jvm = Jvm::attach_thread().unwrap();
         Self {
             id: jvm
-                .to_rust(jvm.invoke(&instance, "getTarget", &[]).unwrap())
+                .to_rust(jvm.invoke(&instance, "getTarget", InvocationArg::empty()).unwrap())
                 .unwrap(),
             instance,
         }

@@ -7,7 +7,7 @@ use mj_base::{
     data_wrapper::DataWrapper,
     env::{FromInstanceTrait, GetInstanceTrait},
 };
-use mj_closures::{
+use mj_closure::{
     kt_func_0::KtFunc0, kt_func_0::KtFunc0Raw, kt_func_1::KtFunc1, kt_func_1::KtFunc1Raw,
     kt_func_2::KtFunc2, kt_func_2::KtFunc2Raw,
 };
@@ -212,7 +212,8 @@ impl QrCodeLoginListener {
         } else {
             let jvm = Jvm::attach_thread().unwrap();
             let instance = self.instance.as_ref().unwrap();
-            jvm.invoke(instance, "onIntervalLoop", &[]).unwrap();
+            jvm.invoke(instance, "onIntervalLoop", InvocationArg::empty())
+                .unwrap();
         }
     }
     pub fn on_completed(&self) {
@@ -221,7 +222,8 @@ impl QrCodeLoginListener {
         } else {
             let jvm = Jvm::attach_thread().unwrap();
             let instance = self.instance.as_ref().unwrap();
-            jvm.invoke(instance, "onCompleted", &[]).unwrap();
+            jvm.invoke(instance, "onCompleted", InvocationArg::empty())
+                .unwrap();
         }
     }
 }
@@ -271,13 +273,19 @@ pub struct SmsRequests {
 impl SmsRequests {
     pub fn get_country_code(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getUrl", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getUrl", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn get_phone_number(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getUrl", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getUrl", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn request_sms(&self) {
         let jvm = Jvm::attach_thread().unwrap();
@@ -301,12 +309,17 @@ pub struct FallbackRequests {
 impl FallbackRequests {
     pub fn get_url(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getUrl", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getUrl", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn solved(&self) -> DeviceVerificationResult {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "solved", &[]).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "solved", InvocationArg::empty())
+            .unwrap();
         DeviceVerificationResult { instance }
     }
 }
@@ -318,17 +331,24 @@ pub struct DeviceVerificationRequests {
 impl DeviceVerificationRequests {
     pub fn get_fallback(&self) -> FallbackRequests {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getFallback", &[]).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "getFallback", InvocationArg::empty())
+            .unwrap();
         FallbackRequests { instance }
     }
     pub fn get_prefer_sms(&self) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getPreferSms", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getPreferSms", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn get_sms(&self) -> SmsRequests {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getSms", &[]).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "getSms", InvocationArg::empty())
+            .unwrap();
         SmsRequests { instance }
     }
 }

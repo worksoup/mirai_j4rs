@@ -42,28 +42,38 @@ impl SuperFace {
     }
     pub fn get_face(&self) -> Face {
         let jvm = Jvm::attach_thread().unwrap();
-        let face_id = jvm.invoke(&self.instance, "getFace", &[]).unwrap();
+        let face_id = jvm
+            .invoke(&self.instance, "getFace", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust::<i32>(face_id).unwrap().into()
     }
     pub fn get_face_id(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
-        let face_id = jvm.invoke(&self.instance, "getFace", &[]).unwrap();
+        let face_id = jvm
+            .invoke(&self.instance, "getFace", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(face_id).unwrap()
     }
     pub fn get_id(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let face_id = jvm.invoke(&self.instance, "getId", &[]).unwrap();
+        let face_id = jvm
+            .invoke(&self.instance, "getId", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(face_id).unwrap()
     }
     pub fn get_key(&self) -> () {}
     pub fn get_name(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let face_id = jvm.invoke(&self.instance, "getName", &[]).unwrap();
+        let face_id = jvm
+            .invoke(&self.instance, "getName", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(face_id).unwrap()
     }
     pub fn get_type(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
-        let face_id = jvm.invoke(&self.instance, "getType", &[]).unwrap();
+        let face_id = jvm
+            .invoke(&self.instance, "getType", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(face_id).unwrap()
     }
 }
@@ -87,7 +97,11 @@ impl TryFrom<Face> for SuperFace {
         let jvm = Jvm::attach_thread().unwrap();
         let face = InvocationArg::try_from(face.get_instance()).unwrap();
         let instance = jvm
-            .invoke_static(<Self as GetClassTypeTrait>::get_type_name().as_str(), "fromOrNull", &[face])
+            .invoke_static(
+                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                "fromOrNull",
+                &[face],
+            )
             .unwrap();
         if !instance_is_null(&instance) {
             Ok(SuperFace::from_instance(instance))

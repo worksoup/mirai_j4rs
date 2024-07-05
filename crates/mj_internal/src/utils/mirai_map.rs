@@ -1,5 +1,5 @@
 use crate::contact::ActiveRankRecord;
-use j4rs::{Instance, Jvm};
+use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::{FromInstanceTrait, GetInstanceTrait};
 use std::collections::HashMap;
 
@@ -32,20 +32,28 @@ impl<K, V> MiraiMap<K, V> {
         let java_cast =
             |instance: &Instance, obj: &str| -> Instance { jvm.cast(&instance, obj).unwrap() };
         let mut map = HashMap::<K, V>::new();
-        let entry_set = jvm.invoke(&self.instance, "entrySet", &[]).unwrap();
-        let it = jvm.invoke(&entry_set, "iterator", &[]).unwrap();
+        let entry_set = jvm
+            .invoke(&self.instance, "entrySet", InvocationArg::empty())
+            .unwrap();
+        let it = jvm
+            .invoke(&entry_set, "iterator", InvocationArg::empty())
+            .unwrap();
         while jvm
             .chain(&it)
             .unwrap()
-            .invoke("hasNext", &[])
+            .invoke("hasNext", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
         {
-            let entry = jvm.invoke(&it, "next", &[]).unwrap();
+            let entry = jvm.invoke(&it, "next", InvocationArg::empty()).unwrap();
             let entry = java_cast(&entry, "java.util.Map$Entry");
-            let k = jvm.invoke(&entry, "getKey", &[]).unwrap();
-            let v = jvm.invoke(&entry, "getValue", &[]).unwrap();
+            let k = jvm
+                .invoke(&entry, "getKey", InvocationArg::empty())
+                .unwrap();
+            let v = jvm
+                .invoke(&entry, "getValue", InvocationArg::empty())
+                .unwrap();
 
             let ins = cast(&k, &v, &jvm, &java_cast);
 
@@ -101,7 +109,7 @@ impl MiraiMap<String, String> {
              cast: &dyn Fn(&Instance, &str) -> Instance|
              -> (String, String) {
                 let k: String = jvm
-                    .to_rust(jvm.invoke(&k, "toString", &[]).unwrap())
+                    .to_rust(jvm.invoke(&k, "toString", InvocationArg::empty()).unwrap())
                     .unwrap();
                 let v: String = jvm.to_rust(cast(&v, "java.lang.String")).unwrap();
                 (k, v)

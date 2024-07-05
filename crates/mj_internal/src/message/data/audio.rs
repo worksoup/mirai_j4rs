@@ -65,13 +65,13 @@ impl OnlineAudio {
     pub fn get_length(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = self.get_instance();
-        let instance = jvm.invoke(&instance, "getLength", &[]).unwrap();
+        let instance = jvm.invoke(&instance, "getLength", InvocationArg::empty()).unwrap();
         jvm.to_rust(instance).unwrap()
     }
     pub fn get_url_for_download(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = self.get_instance();
-        let instance = jvm.invoke(&instance, "getUrlForDownload", &[]).unwrap();
+        let instance = jvm.invoke(&instance, "getUrlForDownload", InvocationArg::empty()).unwrap();
         jvm.to_rust(instance).unwrap()
     }
 }

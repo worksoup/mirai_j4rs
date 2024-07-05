@@ -79,10 +79,13 @@ pub fn instance_is_null(instance: &Instance) -> bool {
 pub fn java_iter_to_rust_vec<T: FromInstanceTrait>(jvm: &Jvm, iter: Instance) -> Vec<T> {
     let mut res = Vec::new();
     while jvm
-        .to_rust(jvm.invoke(&iter, "hasNext", &[]).unwrap())
+        .to_rust(
+            jvm.invoke(&iter, "hasNext", InvocationArg::empty())
+                .unwrap(),
+        )
         .unwrap()
     {
-        let next = jvm.invoke(&iter, "next", &[]).unwrap();
+        let next = jvm.invoke(&iter, "next", InvocationArg::empty()).unwrap();
         res.push(T::from_instance(next));
     }
     res
@@ -95,10 +98,13 @@ pub fn java_iter_to_rust_hash_set<T: FromInstanceTrait + Hash + Eq>(
 ) -> HashSet<T> {
     let mut res = HashSet::new();
     while jvm
-        .to_rust(jvm.invoke(&iter, "hasNext", &[]).unwrap())
+        .to_rust(
+            jvm.invoke(&iter, "hasNext", InvocationArg::empty())
+                .unwrap(),
+        )
         .unwrap()
     {
-        let next = jvm.invoke(&iter, "next", &[]).unwrap();
+        let next = jvm.invoke(&iter, "next", InvocationArg::empty()).unwrap();
         res.insert(T::from_instance(next));
     }
     res

@@ -35,7 +35,11 @@ where
     fn get_bot(&self) -> crate::contact::bot::Bot {
         let instance = Jvm::attach_thread()
             .unwrap()
-            .invoke(&GetInstanceTrait::get_instance(self), "getBot", &[])
+            .invoke(
+                &GetInstanceTrait::get_instance(self),
+                "getBot",
+                InvocationArg::empty(),
+            )
             .unwrap();
         crate::contact::bot::Bot::from_instance(instance)
     }
@@ -46,7 +50,7 @@ where
             .to_rust(
                 Jvm::attach_thread()
                     .unwrap()
-                    .invoke(&self.get_instance(), "getId", &[])
+                    .invoke(&self.get_instance(), "getId", InvocationArg::empty())
                     .unwrap(),
             )
             .unwrap()
@@ -165,7 +169,9 @@ where
                 (MIRAI_PREFIX.to_string() + "contact.FileSupported").as_str(),
             )
             .unwrap();
-        let instance = jvm.invoke(&instance, "getFiles", &[]).unwrap();
+        let instance = jvm
+            .invoke(&instance, "getFiles", InvocationArg::empty())
+            .unwrap();
         RemoteFiles::from_instance(instance)
     }
 }
@@ -193,7 +199,9 @@ where
 pub trait NudgeSupportedTrait: UserOrBotTrait {
     fn nudge(&self) -> Nudge<Self> {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.get_instance(), "nudge", &[]).unwrap();
+        let instance = jvm
+            .invoke(&self.get_instance(), "nudge", InvocationArg::empty())
+            .unwrap();
         Nudge::from_instance(instance)
     }
 }
@@ -210,34 +218,44 @@ where
 {
     fn get_group(&self) -> Group {
         let jvm = Jvm::attach_thread().unwrap();
-        let group = jvm.invoke(&self.get_instance(), "getGroup", &[]).unwrap();
+        let group = jvm
+            .invoke(&self.get_instance(), "getGroup", InvocationArg::empty())
+            .unwrap();
         Group::from_instance(group)
     }
     fn get_active(&self) -> MemberActive {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.get_instance(), "getActive", &[]).unwrap();
+        let instance = jvm
+            .invoke(&self.get_instance(), "getActive", InvocationArg::empty())
+            .unwrap();
         MemberActive::from_instance(instance)
     }
     fn get_name_card(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         let name_card = jvm
-            .invoke(&self.get_instance(), "getNameCard", &[])
+            .invoke(&self.get_instance(), "getNameCard", InvocationArg::empty())
             .unwrap();
         jvm.to_rust(name_card).unwrap()
     }
     fn get_permission(&self) -> MemberPermission {
         let jvm = Jvm::attach_thread().unwrap();
         let perm = jvm
-            .invoke(&self.get_instance(), "getPermission", &[])
+            .invoke(
+                &self.get_instance(),
+                "getPermission",
+                InvocationArg::empty(),
+            )
             .unwrap();
-        let perm = jvm.invoke(&perm, "getLevel", &[]).unwrap();
+        let perm = jvm
+            .invoke(&perm, "getLevel", InvocationArg::empty())
+            .unwrap();
         let perm: i32 = jvm.to_rust(perm).unwrap();
         MemberPermission::from(perm)
     }
     fn get_rank_title(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.to_rust(
-            jvm.invoke(&self.get_instance(), "getRankTitle", &[])
+            jvm.invoke(&self.get_instance(), "getRankTitle", InvocationArg::empty())
                 .unwrap(),
         )
         .unwrap()
@@ -245,16 +263,24 @@ where
     fn get_special_title(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.to_rust(
-            jvm.invoke(&self.get_instance(), "getSpecialTitle", &[])
-                .unwrap(),
+            jvm.invoke(
+                &self.get_instance(),
+                "getSpecialTitle",
+                InvocationArg::empty(),
+            )
+            .unwrap(),
         )
         .unwrap()
     }
     fn get_temperature_title(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.to_rust(
-            jvm.invoke(&self.get_instance(), "getTemperatureTitle", &[])
-                .unwrap(),
+            jvm.invoke(
+                &self.get_instance(),
+                "getTemperatureTitle",
+                InvocationArg::empty(),
+            )
+            .unwrap(),
         )
         .unwrap()
     }
@@ -284,7 +310,9 @@ pub trait AnnouncementTrait: GetInstanceTrait {
     /// 内容。
     fn get_content(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let content = jvm.invoke(&self.get_instance(), "getContent", &[]).unwrap();
+        let content = jvm
+            .invoke(&self.get_instance(), "getContent", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(content).unwrap()
     }
     /// 公告的附加属性。
@@ -293,7 +321,11 @@ pub trait AnnouncementTrait: GetInstanceTrait {
     fn get_parameters(&self) -> AnnouncementParameters {
         let jvm = Jvm::attach_thread().unwrap();
         let paras = jvm
-            .invoke(&self.get_instance(), "getParameters", &[])
+            .invoke(
+                &self.get_instance(),
+                "getParameters",
+                InvocationArg::empty(),
+            )
             .unwrap();
         AnnouncementParameters::from_instance(paras)
     }

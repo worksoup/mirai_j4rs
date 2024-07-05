@@ -21,10 +21,15 @@ pub struct Friend {
 impl FromInstanceTrait for Friend {
     fn from_instance(instance: Instance) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
-        let bot = jvm.invoke(&instance, "getBot", &[]).unwrap();
+        let bot = jvm
+            .invoke(&instance, "getBot", InvocationArg::empty())
+            .unwrap();
         let bot = Bot::from_instance(bot);
         let id = jvm
-            .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
+            .to_rust(
+                jvm.invoke(&instance, "getId", InvocationArg::empty())
+                    .unwrap(),
+            )
             .unwrap();
         Friend { bot, instance, id }
     }
@@ -36,7 +41,7 @@ impl Friend {
         let id = bot.get_id();
         let instance = Jvm::attach_thread()
             .unwrap()
-            .invoke(bot.as_instance(), "getAsFriend", &[])
+            .invoke(bot.as_instance(), "getAsFriend", InvocationArg::empty())
             .unwrap();
         Friend {
             bot: bot.clone(),
@@ -46,17 +51,24 @@ impl Friend {
     }
     pub fn delete(&self) {
         let jvm = Jvm::attach_thread().unwrap();
-        let _ = jvm.invoke(&self.instance, "delete", &[]).unwrap();
+        let _ = jvm
+            .invoke(&self.instance, "delete", InvocationArg::empty())
+            .unwrap();
     }
     pub fn get_friend_group(&self) -> FriendGroup {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getFriendGroup", &[]).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "getFriendGroup", InvocationArg::empty())
+            .unwrap();
         FriendGroup { instance }
     }
     pub fn get_remark(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getRemark", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getRemark", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn set_remark(&self, remark: &str) {
         let jvm = Jvm::attach_thread().unwrap();

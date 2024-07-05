@@ -15,13 +15,17 @@ pub trait NudgeTrait<UserOrBot: UserOrBotTrait>:
 {
     fn get_target(&self) -> UserOrBot {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(self.as_instance(), "getTarget", &[]).unwrap();
+        let instance = jvm
+            .invoke(self.as_instance(), "getTarget", InvocationArg::empty())
+            .unwrap();
         UserOrBot::from_instance(instance)
     }
     // TODO: 该函数不符合 Mirai 定义的位置。到时候用 rust 标准库里的特征看看能不能实现一下。
     fn to_string(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(self.as_instance(), "toString", &[]).unwrap();
+        let instance = jvm
+            .invoke(self.as_instance(), "toString", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(instance).unwrap()
     }
     // TODO: 该函数不符合 Mirai 定义的位置。

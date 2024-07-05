@@ -36,10 +36,15 @@ impl AssertMemberPermissionTrait for NormalMember {
 impl FromInstanceTrait for NormalMember {
     fn from_instance(instance: Instance) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
-        let bot = jvm.invoke(&instance, "getBot", &[]).unwrap();
+        let bot = jvm
+            .invoke(&instance, "getBot", InvocationArg::empty())
+            .unwrap();
         let bot = Bot::from_instance(bot);
         let id = jvm
-            .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
+            .to_rust(
+                jvm.invoke(&instance, "getId", InvocationArg::empty())
+                    .unwrap(),
+            )
             .unwrap();
         NormalMember { bot, instance, id }
     }
@@ -49,9 +54,14 @@ impl FromInstanceTrait for NormalMember {
 impl NormalMember {
     pub fn owner_of(group: &Group) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(group.as_instance(), "getOwner", &[]).unwrap();
+        let instance = jvm
+            .invoke(group.as_instance(), "getOwner", InvocationArg::empty())
+            .unwrap();
         let id = jvm
-            .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
+            .to_rust(
+                jvm.invoke(&instance, "getId", InvocationArg::empty())
+                    .unwrap(),
+            )
             .unwrap();
         NormalMember {
             bot: group.get_bot(),
@@ -63,14 +73,18 @@ impl NormalMember {
         let bot = group.get_bot();
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
-            .invoke(group.as_instance(), "getBotAsMember", &[])
+            .invoke(
+                group.as_instance(),
+                "getBotAsMember",
+                InvocationArg::empty(),
+            )
             .unwrap();
         let id = Jvm::attach_thread()
             .unwrap()
             .to_rust(
                 Jvm::attach_thread()
                     .unwrap()
-                    .invoke(bot.as_instance(), "getId", &[])
+                    .invoke(bot.as_instance(), "getId", InvocationArg::empty())
                     .unwrap(),
             )
             .unwrap();
@@ -101,7 +115,11 @@ impl NormalMember {
     pub fn get_mute_time_remaining(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
         let time = jvm
-            .invoke(&self.instance, "getMuteTimeRemaining", &[])
+            .invoke(
+                &self.instance,
+                "getMuteTimeRemaining",
+                InvocationArg::empty(),
+            )
             .unwrap();
         jvm.to_rust(time).unwrap()
     }
@@ -110,19 +128,27 @@ impl NormalMember {
     }
     pub fn get_join_timestamp(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
-        let time = jvm.invoke(&self.instance, "getJoinTimestamp", &[]).unwrap();
+        let time = jvm
+            .invoke(&self.instance, "getJoinTimestamp", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(time).unwrap()
     }
     pub fn get_last_speak_timestamp(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
         let time = jvm
-            .invoke(&self.instance, "getLastSpeakTimestamp", &[])
+            .invoke(
+                &self.instance,
+                "getLastSpeakTimestamp",
+                InvocationArg::empty(),
+            )
             .unwrap();
         jvm.to_rust(time).unwrap()
     }
     pub fn unmute(&self) {
         let jvm = Jvm::attach_thread().unwrap();
-        let _ = jvm.invoke(&self.instance, "unmute", &[]).unwrap();
+        let _ = jvm
+            .invoke(&self.instance, "unmute", InvocationArg::empty())
+            .unwrap();
     }
     pub fn kick(&self, message: &str, block: bool) {
         let jvm = Jvm::attach_thread().unwrap();

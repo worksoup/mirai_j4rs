@@ -1,6 +1,6 @@
 use std::{marker::PhantomData, mem::transmute};
 
-use j4rs::{prelude::*, Instance, Jvm};
+use j4rs::{prelude::*, Instance, InvocationArg, Jvm};
 use j4rs_derive::*;
 
 use mj_base::{
@@ -76,7 +76,9 @@ impl<'a, R: GetInstanceTrait + FromInstanceTrait> KtFunc0<'a, R> {
     }
     pub fn invoke(&self) -> R {
         let jvm = Jvm::attach_thread().unwrap();
-        let result = jvm.invoke(&self.instance, "invoke", &[]).unwrap();
+        let result = jvm
+            .invoke(&self.instance, "invoke", InvocationArg::empty())
+            .unwrap();
         R::from_instance(result)
     }
     pub fn drop_and_to_raw(self) -> KtFunc0Raw {

@@ -96,7 +96,7 @@ where
             .to_rust(
                 Jvm::attach_thread()
                     .unwrap()
-                    .invoke(&self.instance, "getSize", &[])
+                    .invoke(&self.instance, "getSize", InvocationArg::empty())
                     .unwrap(),
             )
             .unwrap()
@@ -107,7 +107,7 @@ where
             .to_rust(
                 Jvm::attach_thread()
                     .unwrap()
-                    .invoke(&self.instance, "isEmpty", &[])
+                    .invoke(&self.instance, "isEmpty", InvocationArg::empty())
                     .unwrap(),
             )
             .unwrap()
@@ -118,7 +118,7 @@ where
             .to_rust(
                 Jvm::attach_thread()
                     .unwrap()
-                    .invoke(&self.instance, "toString", &[])
+                    .invoke(&self.instance, "toString", InvocationArg::empty())
                     .unwrap(),
             )
             .unwrap()
@@ -131,14 +131,20 @@ impl<T: ContactTrait + FromInstanceTrait> MiraiRsCollectionTrait for ContactList
 
     fn get_size(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getSize", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getSize", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
 
     fn is_empty(&self) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "isEmpty", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "isEmpty", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
 
     fn contains(&self, element: &Self::Element) -> bool {

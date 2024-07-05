@@ -1,4 +1,4 @@
-use j4rs::{Instance, Jvm};
+use j4rs::{Instance, InvocationArg, Jvm};
 
 use mj_macro::mj_all;
 
@@ -16,7 +16,7 @@ impl AtAll {
     pub fn new() -> AtAll {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
-            .invoke_static("rt.lea.LumiaUtils", "getAtAll", &[])
+            .invoke_static("rt.lea.LumiaUtils", "getAtAll", InvocationArg::empty())
             .unwrap();
         AtAll { instance }
     }

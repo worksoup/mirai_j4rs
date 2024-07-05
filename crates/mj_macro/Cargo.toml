@@ -13,4 +13,4 @@ syn = "*"
 quote = "*"
 proc-macro2 = "*"
 mj_base = { path = "../mj_base" }
-j4rs = "0.17"
+j4rs = { workspace = true }

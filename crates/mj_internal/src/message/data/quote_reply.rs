@@ -28,7 +28,9 @@ impl MessageHashCodeTrait for QuoteReply {}
 impl QuoteReply {
     pub fn get_source(&self) -> MessageSource {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getSource", &[]).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "getSource", InvocationArg::empty())
+            .unwrap();
         MessageSource::from_instance(instance)
     }
 }

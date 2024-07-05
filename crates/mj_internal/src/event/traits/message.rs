@@ -1,4 +1,4 @@
-use j4rs::Jvm;
+use j4rs::{InvocationArg, Jvm};
 
 use mj_base::env::FromInstanceTrait;
 
@@ -12,23 +12,29 @@ where
 {
     fn get_bot(&self) -> Bot {
         let jvm = Jvm::attach_thread().unwrap();
-        let bot = jvm.invoke(&self.as_instance(), "getBot", &[]).unwrap();
+        let bot = jvm
+            .invoke(&self.as_instance(), "getBot", InvocationArg::empty())
+            .unwrap();
         Bot::from_instance(bot)
     }
     fn get_message(&self) -> MessageChain {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.as_instance(), "getMessage", &[]).unwrap();
+        let instance = jvm
+            .invoke(&self.as_instance(), "getMessage", InvocationArg::empty())
+            .unwrap();
         MessageChain::from_instance(instance)
     }
     fn get_sender(&self) -> Sender {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.as_instance(), "getSender", &[]).unwrap();
+        let instance = jvm
+            .invoke(&self.as_instance(), "getSender", InvocationArg::empty())
+            .unwrap();
         Sender::from_instance(instance)
     }
     fn get_sender_name(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.to_rust(
-            jvm.invoke(&self.as_instance(), "getSenderName", &[])
+            jvm.invoke(&self.as_instance(), "getSenderName", InvocationArg::empty())
                 .unwrap(),
         )
         .unwrap()
@@ -38,13 +44,18 @@ where
     }
     fn get_subject(&self) -> Subject {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.as_instance(), "getSubject", &[]).unwrap();
+        let instance = jvm
+            .invoke(&self.as_instance(), "getSubject", InvocationArg::empty())
+            .unwrap();
         Subject::from_instance(instance)
     }
     fn get_time(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.as_instance(), "getTime", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.as_instance(), "getTime", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
 }
 

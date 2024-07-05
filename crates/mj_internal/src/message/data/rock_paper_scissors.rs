@@ -57,7 +57,11 @@ impl RockPaperScissors {
     pub fn random() -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
-            .invoke_static(<Self as GetClassTypeTrait>::get_type_name().as_str(), "random", &[])
+            .invoke_static(
+                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                "random",
+                InvocationArg::empty(),
+            )
             .unwrap();
         Self { instance }
     }

@@ -19,7 +19,11 @@ where
             .to_rust(
                 Jvm::attach_thread()
                     .unwrap()
-                    .invoke(&self.get_instance(), "contentToString", &[])
+                    .invoke(
+                        &self.get_instance(),
+                        "contentToString",
+                        InvocationArg::empty(),
+                    )
                     .unwrap(),
             )
             .unwrap()
@@ -31,7 +35,7 @@ where
             .to_rust(
                 Jvm::attach_thread()
                     .unwrap()
-                    .invoke(&self.get_instance(), "toString", &[])
+                    .invoke(&self.get_instance(), "toString", InvocationArg::empty())
                     .unwrap(),
             )
             .unwrap()
@@ -74,7 +78,11 @@ pub trait CodableMessageTrait: MessageTrait {
             .to_rust(
                 Jvm::attach_thread()
                     .unwrap()
-                    .invoke(&self.get_instance(), "serializeToMiraiCode", &[])
+                    .invoke(
+                        &self.get_instance(),
+                        "serializeToMiraiCode",
+                        InvocationArg::empty(),
+                    )
                     .unwrap(),
             )
             .unwrap()
@@ -85,7 +93,7 @@ pub trait CodableMessageTrait: MessageTrait {
     //     jvm.to_rust(
     //         Jvm::attach_thread()
     //             .unwrap()
-    //             .invoke(&self.get_instance(), "appendMiraiCodeTo", &[])
+    //             .invoke(&self.get_instance(), "appendMiraiCodeTo", InvocationArg::empty())
     //             .unwrap(),
     //     )
     //     .unwrap()
@@ -173,7 +181,7 @@ where
     fn get_service_id(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
         let id = jvm
-            .invoke(&self.get_instance(), "getServiceId", &[])
+            .invoke(&self.get_instance(), "getServiceId", InvocationArg::empty())
             .unwrap();
         jvm.to_rust(id).unwrap()
     }
@@ -199,7 +207,7 @@ where
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(&self.get_instance())
             .unwrap()
-            .invoke("getId", &[])
+            .invoke("getId", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -211,7 +219,7 @@ where
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(&self.get_instance())
             .unwrap()
-            .invoke("getName", &[])
+            .invoke("getName", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -242,28 +250,36 @@ pub trait AudioTrait: MessageContentTrait + ConstrainSingleTrait {
     fn get_extra_data(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = self.get_instance();
-        let instance = jvm.invoke(&instance, "getExtraData", &[]).unwrap();
+        let instance = jvm
+            .invoke(&instance, "getExtraData", InvocationArg::empty())
+            .unwrap();
         let instance = primitive_byte_array_to_string(&jvm, instance);
         jvm.to_rust(instance).unwrap()
     }
     fn get_file_md5(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = self.get_instance();
-        let instance = jvm.invoke(&instance, "getFileMd5", &[]).unwrap();
+        let instance = jvm
+            .invoke(&instance, "getFileMd5", InvocationArg::empty())
+            .unwrap();
         let instance = primitive_byte_array_to_string(&jvm, instance);
         jvm.to_rust(instance).unwrap()
     }
     fn get_file_size(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = self.get_instance();
-        let instance = jvm.invoke(&instance, "getFileSize", &[]).unwrap();
+        let instance = jvm
+            .invoke(&instance, "getFileSize", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(instance).unwrap()
     }
     fn get_file_name(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = self.get_instance();
         // 这里就是 Filename 而非 FileName.
-        let instance = jvm.invoke(&instance, "getFilename", &[]).unwrap();
+        let instance = jvm
+            .invoke(&instance, "getFilename", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(instance).unwrap()
     }
 }
@@ -273,7 +289,7 @@ pub trait MessageHashCodeTrait: GetInstanceTrait {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(&self.get_instance())
             .unwrap()
-            .invoke("hashCode", &[])
+            .invoke("hashCode", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()

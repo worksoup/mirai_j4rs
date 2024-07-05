@@ -5,7 +5,7 @@ use mj_base::env::GetClassTypeTrait;
 use crate::utils::other::enums::MiraiProtocol;
 
 pub mod enums {
-    use j4rs::{Instance, Jvm};
+    use j4rs::{Instance, InvocationArg, Jvm};
     use num_enum::IntoPrimitive;
 
     use mj_base::env::{FromInstanceTrait, GetInstanceTrait};
@@ -64,14 +64,22 @@ pub mod enums {
         pub fn is_nudge_supported(&self) -> bool {
             let jvm = Jvm::attach_thread().unwrap();
             let b = jvm
-                .invoke(&self.get_instance(), "isNudgeSupported", &[])
+                .invoke(
+                    &self.get_instance(),
+                    "isNudgeSupported",
+                    InvocationArg::empty(),
+                )
                 .unwrap();
             jvm.to_rust(b).unwrap()
         }
         pub fn is_qr_login_supported(&self) -> bool {
             let jvm = Jvm::attach_thread().unwrap();
             let b = jvm
-                .invoke(&self.get_instance(), "isQRLoginSupported", &[])
+                .invoke(
+                    &self.get_instance(),
+                    "isQRLoginSupported",
+                    InvocationArg::empty(),
+                )
                 .unwrap();
             jvm.to_rust(b).unwrap()
         }
@@ -122,9 +130,12 @@ pub mod enums {
     impl FromInstanceTrait for MemberMedalType {
         fn from_instance(instance: Instance) -> Self {
             let jvm = Jvm::attach_thread().unwrap();
-            jvm.to_rust::<i32>(jvm.invoke(&instance, "getMask", &[]).unwrap())
-                .unwrap()
-                .into()
+            jvm.to_rust::<i32>(
+                jvm.invoke(&instance, "getMask", InvocationArg::empty())
+                    .unwrap(),
+            )
+            .unwrap()
+            .into()
         }
     }
 
@@ -163,7 +174,10 @@ pub mod enums {
         fn from_instance(instance: Instance) -> Self {
             let jvm = Jvm::attach_thread().unwrap();
             let id: i32 = jvm
-                .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
+                .to_rust(
+                    jvm.invoke(&instance, "getId", InvocationArg::empty())
+                        .unwrap(),
+                )
                 .unwrap();
             id.into()
         }

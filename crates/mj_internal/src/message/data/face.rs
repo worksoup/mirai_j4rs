@@ -25,10 +25,16 @@ impl FromInstanceTrait for Face {
         let jvm = Jvm::attach_thread().unwrap();
         Face {
             name: jvm
-                .to_rust(jvm.invoke(&instance, "getName", &[]).unwrap())
+                .to_rust(
+                    jvm.invoke(&instance, "getName", InvocationArg::empty())
+                        .unwrap(),
+                )
                 .unwrap(),
             id: jvm
-                .to_rust(jvm.invoke(&instance, "getId", &[]).unwrap())
+                .to_rust(
+                    jvm.invoke(&instance, "getId", InvocationArg::empty())
+                        .unwrap(),
+                )
                 .unwrap(),
             instance,
         }

@@ -60,8 +60,12 @@ where
     fn from_instance(instance: Instance) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm.cast(&instance, "kotlin.Pair").unwrap();
-        let val1 = jvm.invoke(&instance, "getFirst", &[]).unwrap();
-        let val2 = jvm.invoke(&instance, "getSecond", &[]).unwrap();
+        let val1 = jvm
+            .invoke(&instance, "getFirst", InvocationArg::empty())
+            .unwrap();
+        let val2 = jvm
+            .invoke(&instance, "getSecond", InvocationArg::empty())
+            .unwrap();
         let val1 = P1::from_instance(val1);
         let val2 = P2::from_instance(val2);
         Self { data: (val1, val2) }
@@ -104,8 +108,12 @@ impl FromInstanceTrait for DataWrapper<()> {
 impl GetInstanceTrait for DataWrapper<()> {
     fn get_instance(&self) -> Instance {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.invoke_static("javax.lang.model.util.Types", "getNullType", &[])
-            .unwrap()
+        jvm.invoke_static(
+            "javax.lang.model.util.Types",
+            "getNullType",
+            InvocationArg::empty(),
+        )
+        .unwrap()
     }
 }
 

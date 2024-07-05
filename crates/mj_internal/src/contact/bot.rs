@@ -43,7 +43,7 @@ impl FromInstanceTrait for Bot {
             .unwrap()
             .chain(&instance)
             .unwrap()
-            .invoke("getId", &[])
+            .invoke("getId", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap();
@@ -62,10 +62,12 @@ impl Bot {
             .invoke_static(
                 (<Self as GetClassTypeTrait>::get_type_name().to_string() + "$Companion").as_str(),
                 "getInstances",
-                &[],
+                InvocationArg::empty(),
             )
             .unwrap();
-        let iter = jvm.invoke(&instance, "iterator", &[]).unwrap();
+        let iter = jvm
+            .invoke(&instance, "iterator", InvocationArg::empty())
+            .unwrap();
         java_iter_to_rust_vec(&jvm, iter)
     }
 
@@ -94,14 +96,14 @@ impl Bot {
     pub fn close(self) {
         Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "close", &[])
+            .invoke(&self.instance, "close", InvocationArg::empty())
             .unwrap();
     }
     pub fn close_and_join(self, err: MiraiRsError) {
         // TODO
         Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "closeAndJoin", &[])
+            .invoke(&self.instance, "closeAndJoin", InvocationArg::empty())
             .unwrap();
     }
     pub fn get_as_friend(&self) -> Friend {
@@ -110,14 +112,14 @@ impl Bot {
     pub fn get_as_stranger(&self) -> Stranger {
         let instance = Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "getAsStranger", &[])
+            .invoke(&self.instance, "getAsStranger", InvocationArg::empty())
             .unwrap();
         Stranger::from_instance(instance)
     }
     pub fn get_configuration(&self) -> BotConfiguration {
         let bot_configuration = Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "getConfiguration", &[])
+            .invoke(&self.instance, "getConfiguration", InvocationArg::empty())
             .unwrap();
         BotConfiguration::from_instance(bot_configuration)
     }
@@ -125,7 +127,7 @@ impl Bot {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "getEventChannel", &[])
+            .invoke(&self.instance, "getEventChannel", InvocationArg::empty())
             .unwrap();
         EventChannel { jvm, instance }
     }
@@ -149,14 +151,16 @@ impl Bot {
     }
     pub fn get_friend_groups(&self) -> FriendGroups {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getFriendGroups", &[]).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "getFriendGroups", InvocationArg::empty())
+            .unwrap();
         FriendGroups::from_instance(instance)
     }
     pub fn get_friends(&self) -> ContactList<Friend> {
         ContactList::from_instance(
             Jvm::attach_thread()
                 .unwrap()
-                .invoke(&self.instance, "getFriends", &[])
+                .invoke(&self.instance, "getFriends", InvocationArg::empty())
                 .unwrap(),
         )
     }
@@ -166,7 +170,7 @@ impl Bot {
     pub fn get_groups(&self) -> ContactList<Group> {
         let instance = Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "getGroups", &[])
+            .invoke(&self.instance, "getGroups", InvocationArg::empty())
             .unwrap();
         ContactList::from_instance(instance)
     }
@@ -176,7 +180,7 @@ impl Bot {
     pub fn get_other_clients(&self) -> ContactList<OtherClient> {
         let instance = Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "getOtherClients", &[])
+            .invoke(&self.instance, "getOtherClients", InvocationArg::empty())
             .unwrap();
         ContactList::from_instance(instance)
     }
@@ -201,7 +205,7 @@ impl Bot {
     pub fn get_strangers(&self) -> ContactList<Stranger> {
         let instance = Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "getStrangers", &[])
+            .invoke(&self.instance, "getStrangers", InvocationArg::empty())
             .unwrap();
         ContactList::from_instance(instance)
     }
@@ -210,7 +214,7 @@ impl Bot {
             .unwrap()
             .chain(&self.instance)
             .unwrap()
-            .invoke("isOnline", &[])
+            .invoke("isOnline", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap()
@@ -218,13 +222,13 @@ impl Bot {
     pub fn join(&self) {
         Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "join", &[])
+            .invoke(&self.instance, "join", InvocationArg::empty())
             .unwrap();
     }
     pub fn login(&self) {
         Jvm::attach_thread()
             .unwrap()
-            .invoke(&self.instance, "login", &Vec::new())
+            .invoke(&self.instance, "login", InvocationArg::empty())
             .unwrap();
     }
 }

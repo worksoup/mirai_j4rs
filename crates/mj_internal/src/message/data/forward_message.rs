@@ -93,7 +93,9 @@ impl ForwardMessageBuilder {
 
     pub fn build(&self) -> ForwardMessage {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "build", &[]).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "build", InvocationArg::empty())
+            .unwrap();
         ForwardMessage::from_instance(instance)
     }
 }
@@ -113,29 +115,43 @@ pub struct ForwardMessageNode {
 impl ForwardMessageNode {
     pub fn get_sender_id(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getSenderId", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getSenderId", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn get_time(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getTime", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getTime", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn get_sender_name(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getSenderName", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getSenderName", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn get_message_chain(&self) -> MessageChain {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getMessageChain", &[]).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "getMessageChain", InvocationArg::empty())
+            .unwrap();
         MessageChain::from_instance(instance)
     }
 
     pub fn to_string(&self) {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "toString", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "toString", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
 }
 
@@ -144,25 +160,33 @@ impl MessageHashCodeTrait for ForwardMessageNode {}
 impl ForwardMessage {
     pub fn get_brief(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let brief = jvm.invoke(&self.instance, "getBrief", &[]).unwrap();
+        let brief = jvm
+            .invoke(&self.instance, "getBrief", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(brief).unwrap()
     }
     pub fn get_node_vector(&self) -> Vec<ForwardMessageNode> {
         let jvm = Jvm::attach_thread().unwrap();
         let mut node_vector = Vec::new();
-        let list = jvm.invoke(&self.instance, "getNodeList", &[]).unwrap();
+        let list = jvm
+            .invoke(&self.instance, "getNodeList", InvocationArg::empty())
+            .unwrap();
         while {
-            let has_next = jvm.invoke(&list, "hasNext", &[]).unwrap();
+            let has_next = jvm
+                .invoke(&list, "hasNext", InvocationArg::empty())
+                .unwrap();
             jvm.to_rust(has_next).unwrap()
         } {
-            let next = jvm.invoke(&list, "next", &[]).unwrap();
+            let next = jvm.invoke(&list, "next", InvocationArg::empty()).unwrap();
             node_vector.push(ForwardMessageNode { instance: next })
         }
         node_vector
     }
     pub fn get_preview(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let preview = jvm.invoke(&self.instance, "getPreview", &[]).unwrap();
+        let preview = jvm
+            .invoke(&self.instance, "getPreview", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(preview).unwrap()
     }
     pub fn equals() {
@@ -170,18 +194,27 @@ impl ForwardMessage {
     }
     pub fn get_source(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getSource", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getSource", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn get_summary(&self) {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getSummary", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getSummary", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn get_title(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getTitle", &[]).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getTitle", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
 }
 

@@ -1,6 +1,6 @@
 use j4rs::{InvocationArg, Jvm};
 
-use mj_base::env::{AsInstanceTrait, TryFromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
+use mj_base::env::{AsInstanceTrait, TryFromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, FromInstanceTrait};
 use mj_base::utils::primitive_byte_array_to_string;
 
 use crate::{
@@ -71,7 +71,7 @@ where
             .invoke_static("rt.lea.LumiaUtils", "callPlus", &[msg1, msg2]) // j4rs <= 0.17.1
             .unwrap(); // j4rs <= 0.17.1
                        // let instance = jvm.invoke(&self.get_instance(), "plus", &[msg2]).unwrap(); // j4rs above 0.17.1
-        MessageChain::from_instance(instance).unwrap()
+        MessageChain::from_instance(instance)
     }
 }
 
@@ -119,7 +119,7 @@ where
                 &[InvocationArg::try_from(json).unwrap()],
             )
             .unwrap();
-        MessageChain::from_instance(instance).unwrap()
+        MessageChain::from_instance(instance)
     }
     fn deserialize_from_code<T: ContactTrait>(code: String, contact: T) -> MessageChain {
         let jvm = Jvm::attach_thread().unwrap();
@@ -133,7 +133,7 @@ where
                 ],
             )
             .unwrap();
-        MessageChain::from_instance(instance).unwrap()
+        MessageChain::from_instance(instance)
     }
     fn get(&self /*, key: MessageKey*/) -> SingleMessage {
         todo!("MessageKey")

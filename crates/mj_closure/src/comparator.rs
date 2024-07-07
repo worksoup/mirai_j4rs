@@ -1,7 +1,6 @@
 use std::cmp::Ordering;
 
 use crate::bi_function::BiFunction;
-use crate::function::Function;
 use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::env::TryFromInstanceTrait;

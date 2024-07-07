@@ -1,6 +1,6 @@
-use j4rs::{Instance, InvocationArg, Jvm};
 use j4rs::errors::J4RsError;
-use mj_base::env::{TryFromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
+use j4rs::{Instance, InvocationArg, Jvm};
+use mj_base::env::{FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait};
 use mj_helper_macro::mj_all;
 use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
 
@@ -97,7 +97,7 @@ impl ForwardMessageBuilder {
         let instance = jvm
             .invoke(&self.instance, "build", InvocationArg::empty())
             .unwrap();
-        ForwardMessage::from_instance(instance).unwrap()
+        ForwardMessage::from_instance(instance)
     }
 }
 
@@ -143,7 +143,7 @@ impl ForwardMessageNode {
         let instance = jvm
             .invoke(&self.instance, "getMessageChain", InvocationArg::empty())
             .unwrap();
-        MessageChain::from_instance(instance).unwrap()
+        MessageChain::from_instance(instance)
     }
 
     pub fn to_string(&self) {

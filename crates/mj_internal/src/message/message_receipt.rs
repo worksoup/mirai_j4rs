@@ -1,6 +1,6 @@
 use j4rs::{Instance, InvocationArg, Jvm};
 
-use mj_base::env::TryFromInstanceTrait as _;
+use mj_base::env::{FromInstanceTrait, TryFromInstanceTrait as _};
 
 use crate::{
     contact::ContactTrait,
@@ -44,20 +44,20 @@ where
         let instance = jvm
             .invoke(&self.instance, "quote", InvocationArg::empty())
             .unwrap();
-        QuoteReply::from_instance(instance).unwrap()
+        QuoteReply::from_instance(instance)
     }
     pub fn quote_reply(&self, message: impl MessageTrait) -> QuoteReply {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke(&self.instance, "quote", InvocationArg::empty())
             .unwrap();
-        QuoteReply::from_instance(instance).unwrap()
+        QuoteReply::from_instance(instance)
     }
     pub fn quote_reply_string(&self, message: String) -> QuoteReply {
         let jvm = Jvm::attach_thread().unwrap();
         let message = InvocationArg::try_from(message).unwrap();
         let instance = jvm.invoke(&self.instance, "quote", &[message]).unwrap();
-        QuoteReply::from_instance(instance).unwrap()
+        QuoteReply::from_instance(instance)
     }
     pub fn recall(&self) {
         Jvm::attach_thread()

@@ -65,8 +65,8 @@ where
         Function {
             instance,
             internal_closure_raw,
-            _t: PhantomData::default(),
-            _r: PhantomData::default(),
+            _t: PhantomData,
+            _r: PhantomData,
         }
     }
 }

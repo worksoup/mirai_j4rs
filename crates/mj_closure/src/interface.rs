@@ -17,9 +17,8 @@ fn lumia_func_apply_internal<T>(
     let func: *mut dyn Fn(DataWrapper<Instance>) -> Result<T, J4RsError> =
         unsafe { transmute(func_raw) };
     let val = DataWrapper::try_from_instance(arg)
-        .map(|data| unsafe { (*func)(data) })
-        .flatten();
-    Ok(val.map_err(|error| format!("{}", error))?)
+        .and_then(|data| unsafe { (*func)(data) });
+    val.map_err(|error| format!("{}", error))
 }
 #[call_from_java("rt.lea.function.LumiaConsumer.nativeAccept")]
 fn lumia_consumer_accept(consumer_as_i8_16: Instance, arg: Instance) {
@@ -40,7 +39,7 @@ fn lumia_supplier_get(raw_pointer_instance: Instance) -> Result<Instance, String
         .to_rust(raw_pointer_instance)
         .unwrap();
     let func: *mut dyn Fn() -> Result<Instance, J4RsError> = unsafe { transmute(func_raw) };
-    Ok(unsafe { (*func)() }.map_err(|error| format!("{}", error))?)
+    unsafe { (*func)() }.map_err(|error| format!("{}", error))
 }
 
 // #[call_from_java("rt.lea.LumiaKtFunc0.nativeInvoke")]

@@ -54,15 +54,15 @@ where
         let instance = jvm
             .create_instance(
                 "rt.lea.LumiaKtFunc1",
-                &[InvocationArg::try_from(lumia_function).unwrap()],
+                &[InvocationArg::from(lumia_function)],
             )
             .unwrap();
         KtFunc1 {
             instance,
             internal_closure_raw,
-            _t: PhantomData::default(),
-            _r: PhantomData::default(),
-            __a: PhantomData::default(),
+            _t: PhantomData,
+            _r: PhantomData,
+            __a: PhantomData,
         }
     }
     pub fn to_instance(&self) -> Instance {

@@ -1,7 +1,6 @@
 use std::{marker::PhantomData, mem::transmute};
 
 use crate::utils::raw_pointer_to_instance;
-use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::{
     data_wrapper::DataWrapper,
@@ -62,16 +61,16 @@ where
         let instance = jvm
             .create_instance(
                 "rt.lea.LumiaKtFunc2",
-                &[InvocationArg::try_from(kt_func_2).unwrap()],
+                &[InvocationArg::from(kt_func_2)],
             )
             .unwrap();
         KtFunc2 {
             instance,
             internal_closure_raw,
-            _p1: PhantomData::default(),
-            _p2: PhantomData::default(),
-            __a: PhantomData::default(),
-            _r: PhantomData::default(),
+            _p1: PhantomData,
+            _p2: PhantomData,
+            __a: PhantomData,
+            _r: PhantomData,
         }
     }
     pub fn to_instance(&self) -> Instance {

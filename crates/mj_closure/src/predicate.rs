@@ -1,4 +1,3 @@
-use std::cmp::Ordering;
 
 use crate::function::Function;
 use j4rs::errors::J4RsError;

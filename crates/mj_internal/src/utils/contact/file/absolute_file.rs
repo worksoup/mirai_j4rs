@@ -4,6 +4,7 @@ use mj_base::{
     env::{TryFromInstanceTrait, GetInstanceTrait},
     utils::primitive_byte_array_to_string,
 };
+use mj_base::env::FromInstanceTrait;
 use mj_helper_macro::mj_all;
 
 use crate::message::data::FileMessage;
@@ -105,7 +106,7 @@ impl AbsoluteFile {
         let instance = jvm
             .invoke(&self.instance, "refreshed", InvocationArg::empty())
             .unwrap();
-        FileMessage::from_instance(instance).unwrap()
+        FileMessage::from_instance(instance)
     }
 }
 

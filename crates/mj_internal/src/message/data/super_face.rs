@@ -1,8 +1,8 @@
 use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::GetClassTypeTrait;
+use mj_base::env::{FromInstanceTrait, GetClassTypeTrait};
 use mj_base::{
-    env::{TryFromInstanceTrait, GetClassTypeTrait as _, GetInstanceTrait as _},
+    env::{GetClassTypeTrait as _, GetInstanceTrait as _, TryFromInstanceTrait},
     utils::instance_is_null,
 };
 use mj_helper_macro::mj_all;
@@ -104,7 +104,7 @@ impl TryFrom<Face> for SuperFace {
             )
             .unwrap();
         if !instance_is_null(&instance) {
-            SuperFace::from_instance(instance).map_err(|_| {})
+            Ok(SuperFace::from_instance(instance))
         } else {
             Err(())
         }

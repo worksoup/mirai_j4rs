@@ -53,7 +53,7 @@ where
         Supplier {
             instance,
             internal_closure_raw,
-            _r: PhantomData::default(),
+            _r: PhantomData,
         }
     }
 }

@@ -3,7 +3,6 @@ use proc_macro::TokenStream;
 
 use proc_macro2::Span;
 use quote::quote;
-use syn;
 use syn::{Data, DeriveInput, Field, Fields, LitStr, Type};
 
 use mj_base::MIRAI_PREFIX;
@@ -136,7 +135,7 @@ pub fn from_instance_derive(input: TokenStream) -> TokenStream {
     fn fill_phantom_data_fields(fields: &Fields) -> proc_macro2::TokenStream {
         let mut tokens = proc_macro2::TokenStream::new();
         for field in fields {
-            if type_is_phantom_data(&field) {
+            if type_is_phantom_data(field) {
                 let field_name = field.ident.as_ref();
                 if let Some(field_name) = field_name {
                     tokens.extend(quote!(#field_name:std::marker::PhantomData::default(),))
@@ -173,7 +172,7 @@ pub fn from_instance_derive(input: TokenStream) -> TokenStream {
                     false
                 };
                 if has_this_attr {
-                    fall_arm = Some(&variant);
+                    fall_arm = Some(variant);
                 } else {
                     let ty = match &variant.fields {
                         Fields::Unnamed(fields) => {

@@ -13,7 +13,7 @@ mod tests {
     use mj_base::env::GetInstanceTrait;
     use mj_macro::TryFromInstanceDerive;
     use std::cmp::Ordering;
-    use std::fmt::format;
+    
 
     //
     // use crate::{
@@ -85,7 +85,7 @@ mod tests {
         let consumer = Consumer::new(f);
         let test_instance = InvocationArg::try_from(true).unwrap();
         consumer.accept(test_instance).unwrap();
-        let _ = consumer.drop();
+        consumer.drop();
     }
 
     #[test]
@@ -104,7 +104,7 @@ mod tests {
         let test_instance1 = InvocationArg::try_from(22).unwrap_or_else(|err| panic!("{}", err));
         let test_instance2 = InvocationArg::try_from(55).unwrap();
         let x = comparator.compare(test_instance1, test_instance2);
-        let _ = comparator.drop();
+        comparator.drop();
         println!("a = {a}\nThe ordering is `{:?}`.", x);
     }
     #[test]
@@ -136,7 +136,7 @@ mod tests {
         // sleep(std::time::Duration::from_millis(10000));
         let test_value = InvocationArg::try_from(22).unwrap_or_else(|err| panic!("{}", err));
         let x = predicate.test(test_value);
-        let _ = predicate.drop();
+        predicate.drop();
         println!("a = {a}\n And `test_value > 0` is `{:?}`.", x);
     }
 
@@ -232,13 +232,11 @@ mod tests {
             .map(|c| format!("in {c}"))
             .collect::<Vec<_>>()
             .join(", ");
-        let type_params_2 = vec![
-            vec!["Pair<A, B>".to_string()],
+        let type_params_2 = [vec!["Pair<A, B>".to_string()],
             "ABCDEFGHIJKLMNOP"[2..pc]
                 .chars()
                 .map(|c| c.to_string())
-                .collect::<Vec<_>>(),
-        ]
+                .collect::<Vec<_>>()]
         .concat()
         .join(", ");
         let type_params_3 = "ABCDEFGHIJKLMNOP"[0..pc]
@@ -252,10 +250,8 @@ mod tests {
             .map(|(pc, c)| format!("p{pc}:{c}"))
             .collect::<Vec<_>>()
             .join(", ");
-        let type_params_5 = vec![
-            vec!["Pair(p0, p1)".to_string()],
-            (2..pc).map(|c| format!("p{c}")).collect::<Vec<_>>(),
-        ]
+        let type_params_5 = [vec!["Pair(p0, p1)".to_string()],
+            (2..pc).map(|c| format!("p{c}")).collect::<Vec<_>>()]
         .concat()
         .join(", ");
         format!(

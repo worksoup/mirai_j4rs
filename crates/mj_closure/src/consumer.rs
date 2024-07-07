@@ -39,7 +39,8 @@ where
     {
         let call_from_java: Box<dyn Fn(DataWrapper<Instance>) -> Result<(), J4RsError>> = Box::new(
             move |value: DataWrapper<Instance>| -> Result<(), J4RsError> {
-                Ok(f(value.get::<T>()?))
+                f(value.get::<T>()?);
+                Ok(())
             },
         );
         let call_from_java_raw = Box::into_raw(call_from_java);
@@ -55,7 +56,7 @@ where
         Consumer {
             instance,
             internal_closure_raw,
-            _t: PhantomData::default(),
+            _t: PhantomData,
         }
     }
 }

@@ -9,7 +9,7 @@ pub fn primitive_byte_array_to_string(jvm: &Jvm, instance: Instance) -> Instance
     jvm.invoke_static(
         "rt.lea.LumiaUtils",
         "primitiveByteArrayToString",
-        &[InvocationArg::try_from(instance).unwrap()],
+        &[InvocationArg::from(instance)],
     )
     .unwrap()
 }
@@ -18,7 +18,7 @@ pub fn primitive_byte_array_to_string(jvm: &Jvm, instance: Instance) -> Instance
 pub fn is_instance_of(instance: &Instance, class_name: &str) -> bool {
     let jvm = Jvm::attach_thread().unwrap();
     let instance = jvm.clone_instance(instance).unwrap();
-    let instance = InvocationArg::try_from(instance).unwrap();
+    let instance = InvocationArg::from(instance);
     let class_name = InvocationArg::try_from(class_name).unwrap();
     jvm.to_rust(
         jvm.invoke_static("rt.lea.LumiaUtils", "isInstanceOf", &[instance, class_name])
@@ -34,7 +34,7 @@ pub fn java_println(val: &Instance) {
         .invoke(
             &jvm.static_class_field("java.lang.System", "out").unwrap(),
             "println",
-            &[InvocationArg::try_from(jvm.clone_instance(val).unwrap()).unwrap()],
+            &[InvocationArg::from(jvm.clone_instance(val).unwrap())],
         )
         .unwrap();
 }
@@ -46,7 +46,7 @@ pub fn instance_is_null(instance: &Instance) -> bool {
         jvm.invoke_static(
             "java.util.Objects",
             "isNull",
-            &[InvocationArg::try_from(jvm.clone_instance(instance).unwrap()).unwrap()],
+            &[InvocationArg::from(jvm.clone_instance(instance).unwrap())],
         )
         .unwrap(),
     )

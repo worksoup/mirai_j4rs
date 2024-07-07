@@ -1,6 +1,6 @@
 use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{TryFromInstanceTrait, GetInstanceTrait};
+use mj_base::env::{FromInstanceTrait, GetInstanceTrait, TryFromInstanceTrait};
 use mj_helper_macro::mj_all;
 use mj_macro::{AsInstanceDerive, GetInstanceDerive};
 
@@ -108,7 +108,7 @@ impl Iterator for MessageChainIterator {
                 .to_rust()
                 .unwrap();
             println!("消息类型：{class_type}");
-            SingleMessage::from_instance(next).ok()
+            Some(SingleMessage::from_instance(next))
         } else {
             None
         }

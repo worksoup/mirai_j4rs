@@ -1,6 +1,8 @@
 use j4rs::{InvocationArg, Jvm};
 
-use mj_base::env::{AsInstanceTrait, TryFromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, FromInstanceTrait};
+use mj_base::env::{
+    AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait,
+};
 use mj_base::utils::primitive_byte_array_to_string;
 
 use crate::{
@@ -47,14 +49,14 @@ where
 
     fn equals_to_message<T: MessageTrait>(
         &self,
-        message: T,
-        ignore_case: bool,
-        strict: bool,
+        _message: T,
+        _ignore_case: bool,
+        _strict: bool,
     ) -> bool {
         todo!()
     }
 
-    fn equals_to_string<T: MessageTrait>(&self, message: T, ignore_case: bool) -> bool {
+    fn equals_to_string<T: MessageTrait>(&self, _message: T, _ignore_case: bool) -> bool {
         todo!()
     }
 

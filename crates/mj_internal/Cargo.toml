@@ -8,6 +8,7 @@ edition = "2021"
 crate-type = ["cdylib", "lib"] # cdylib 供 jvm_side 使用。
 
 [dependencies]
+mj_helper_macro = { path = "../mj_helper_macro" }
 mj_macro = { path = "../mj_macro" }
 mj_base = { path = "../mj_base" }
 mj_closure = { path = "../mj_closure" }

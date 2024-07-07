@@ -1,6 +1,6 @@
+use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-
-use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
+use mj_base::env::{AsInstanceTrait, TryFromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
 use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
 
 use crate::{
@@ -81,14 +81,17 @@ impl MessageHashCodeTrait for At {
     }
 }
 
-impl FromInstanceTrait for At {
-    fn from_instance(instance: Instance) -> Self {
+impl TryFromInstanceTrait for At {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
         let jvm = Jvm::attach_thread().unwrap();
-        Self {
+        Ok(Self {
             id: jvm
-                .to_rust(jvm.invoke(&instance, "getTarget", InvocationArg::empty()).unwrap())
+                .to_rust(
+                    jvm.invoke(&instance, "getTarget", InvocationArg::empty())
+                        .unwrap(),
+                )
                 .unwrap(),
             instance,
-        }
+        })
     }
 }

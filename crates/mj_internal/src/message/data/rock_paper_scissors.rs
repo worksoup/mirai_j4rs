@@ -1,11 +1,8 @@
 use j4rs::{Instance, InvocationArg, Jvm};
 
 use mj_base::env::GetClassTypeTrait;
-use mj_base::{
-    env::{GetClassTypeTrait as _, GetInstanceTrait as _},
-    utils::instance_is_null,
-};
-use mj_macro::mj_all;
+use mj_base::{env::GetInstanceTrait as _, utils::instance_is_null};
+use mj_helper_macro::mj_all;
 
 use crate::message::message_trait::{
     CodableMessageTrait, ConstrainSingleTrait, MarketFaceTrait, MessageContentTrait,

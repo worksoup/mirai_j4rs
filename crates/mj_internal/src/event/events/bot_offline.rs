@@ -1,6 +1,5 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-
-use mj_macro::mj_event;
+use mj_helper_macro::mj_event;
 
 use crate::event::{BotEventTrait, BotPassiveEventTrait};
 

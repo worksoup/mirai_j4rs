@@ -5,10 +5,11 @@ use mj_base::env::GetClassTypeTrait;
 use crate::utils::other::enums::MiraiProtocol;
 
 pub mod enums {
+    use j4rs::errors::J4RsError;
     use j4rs::{Instance, InvocationArg, Jvm};
     use num_enum::IntoPrimitive;
 
-    use mj_base::env::{FromInstanceTrait, GetInstanceTrait};
+    use mj_base::env::{TryFromInstanceTrait, GetInstanceTrait};
     use mj_macro::java_type;
 
     use crate::utils::other::{protocol_enum_r2j, protocol_str2enum};
@@ -46,17 +47,17 @@ pub mod enums {
     }
 
     impl GetInstanceTrait for MiraiProtocol {
-        fn get_instance(&self) -> Instance {
+        fn get_instance(&self) -> Result<Instance, J4RsError> {
             // let _ = Jvm::attach_thread().unwrap();
-            protocol_enum_r2j(self).unwrap().instance().unwrap()
+            Ok(protocol_enum_r2j(self).unwrap().instance().unwrap())
         }
     }
 
-    impl FromInstanceTrait for MiraiProtocol {
-        fn from_instance(instance: Instance) -> Self {
+    impl TryFromInstanceTrait for MiraiProtocol {
+        fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
             let jvm = Jvm::attach_thread().unwrap();
             let mp: String = jvm.to_rust(instance).unwrap();
-            protocol_str2enum(mp)
+            Ok(protocol_str2enum(mp))
         }
     }
 
@@ -65,7 +66,7 @@ pub mod enums {
             let jvm = Jvm::attach_thread().unwrap();
             let b = jvm
                 .invoke(
-                    &self.get_instance(),
+                    &self.get_instance().unwrap(),
                     "isNudgeSupported",
                     InvocationArg::empty(),
                 )
@@ -76,7 +77,7 @@ pub mod enums {
             let jvm = Jvm::attach_thread().unwrap();
             let b = jvm
                 .invoke(
-                    &self.get_instance(),
+                    &self.get_instance().unwrap(),
                     "isQRLoginSupported",
                     InvocationArg::empty(),
                 )
@@ -127,15 +128,14 @@ pub mod enums {
 
     impl Eq for MemberMedalType {}
 
-    impl FromInstanceTrait for MemberMedalType {
-        fn from_instance(instance: Instance) -> Self {
+    impl TryFromInstanceTrait for MemberMedalType {
+        fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
             let jvm = Jvm::attach_thread().unwrap();
             jvm.to_rust::<i32>(
                 jvm.invoke(&instance, "getMask", InvocationArg::empty())
                     .unwrap(),
             )
-            .unwrap()
-            .into()
+            .map(i32::into)
         }
     }
 
@@ -170,16 +170,14 @@ pub mod enums {
         }
     }
 
-    impl FromInstanceTrait for GroupHonorType {
-        fn from_instance(instance: Instance) -> Self {
+    impl TryFromInstanceTrait for GroupHonorType {
+        fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
             let jvm = Jvm::attach_thread().unwrap();
-            let id: i32 = jvm
-                .to_rust(
-                    jvm.invoke(&instance, "getId", InvocationArg::empty())
-                        .unwrap(),
-                )
-                .unwrap();
-            id.into()
+            jvm.to_rust(
+                jvm.invoke(&instance, "getId", InvocationArg::empty())
+                    .unwrap(),
+            )
+            .map(i32::into)
         }
     }
 

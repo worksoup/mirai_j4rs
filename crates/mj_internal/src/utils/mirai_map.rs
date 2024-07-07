@@ -1,15 +1,15 @@
-use crate::contact::ActiveRankRecord;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstanceTrait, GetInstanceTrait};
+use mj_base::env::{TryFromInstanceTrait, GetInstanceTrait};
 use std::collections::HashMap;
+use j4rs::errors::J4RsError;
 
 pub struct MiraiMap<K, V> {
     pub(crate) instance: Instance,
     pub(crate) _t: Option<HashMap<K, V>>,
 }
-impl<K, V> FromInstanceTrait for MiraiMap<K, V> {
-    fn from_instance(instance: Instance) -> Self {
-        MiraiMap { instance, _t: None }
+impl<K, V> TryFromInstanceTrait for MiraiMap<K, V> {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
+        Ok(MiraiMap { instance, _t: None })
     }
 }
 impl<K, V> MiraiMap<K, V> {
@@ -119,10 +119,10 @@ impl MiraiMap<String, String> {
 }
 
 impl<K, V> GetInstanceTrait for MiraiMap<K, V> {
-    fn get_instance(&self) -> Instance {
-        Jvm::attach_thread()
+    fn get_instance(&self) -> Result<Instance, J4RsError> {
+        Ok(Jvm::attach_thread()
             .unwrap()
             .clone_instance(&self.instance)
-            .unwrap()
+            .unwrap())
     }
 }

@@ -35,7 +35,7 @@ fn impl_get_as(
         }
     }
 }
-fn add_prefix(input: TokenStream) -> LitStr {
+fn _add_prefix(input: TokenStream) -> LitStr {
     let type_name: &syn::LitStr = &syn::parse(input).expect("类型名称请用字符串表示！");
     let type_name = type_name.value();
     LitStr::new(
@@ -69,16 +69,13 @@ pub fn get_instance_derive(input: TokenStream) -> TokenStream {
     let r#impl = impl_get_as(
         &ast.data,
         name,
-        quote!(j4rs::Jvm::attach_thread()
-            .unwrap()
-            .clone_instance(&self.instance)
-            .unwrap()),
+        quote!(j4rs::Jvm::attach_thread()?.clone_instance(&self.instance)),
         quote!(get_instance),
     );
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let gen = quote! {
         impl #impl_generics mj_base::env::GetInstanceTrait for #name #ty_generics #where_clause {
-            fn get_instance(&self) -> j4rs::Instance{
+            fn get_instance(&self) -> Result<j4rs::Instance,j4rs::errors::J4RsError>{
                 #r#impl
             }
         }
@@ -105,9 +102,9 @@ pub fn as_instance_derive(input: TokenStream) -> TokenStream {
     };
     gen.into()
 }
-/// ### `FromInstanceDerive`
+/// ### `TryFromInstanceDerive`
 ///
-/// 为特定的结构体和枚举类型实现 [`FromInstanceTrait`](mj_base::env::FromInstanceTrait).
+/// 为特定的结构体和枚举类型实现 [`TryFromInstanceTrait`](mj_base::env::TryFromInstanceTrait).
 ///
 /// 这些类型需要满足如下条件：
 ///
@@ -119,14 +116,14 @@ pub fn as_instance_derive(input: TokenStream) -> TokenStream {
 ///   struct BType;
 ///   enum Enum{
 ///     A(AType),
-///     #[fall] // 使用 `FromInstanceDerive` 时可选为分支添加 `fall` 属性。
+///     #[fall] // 使用 `TryFromInstanceDerive` 时可选为分支添加 `fall` 属性。
 ///     B(BType),
 ///   }
 ///   ```
 ///
-///   并且如上代码，`AType` 和 `BType` 都必须实现 `FromInstanceTrait`.
+///   并且如上代码，`AType` 和 `BType` 都必须实现 `TryFromInstanceTrait`.
 ///   其中 `fall` 意味着未能成功转换的类型将会落到该分支中。如果没有该属性，未能成功转换时将会造成 `panic!`, 如果存在多个，则最后一个有效。
-#[proc_macro_derive(FromInstanceDerive, attributes(fall))]
+#[proc_macro_derive(TryFromInstanceDerive, attributes(fall))]
 pub fn from_instance_derive(input: TokenStream) -> TokenStream {
     fn type_is_phantom_data(field: &Field) -> bool {
         if let Type::Path(ref ty) = field.ty {
@@ -156,9 +153,9 @@ pub fn from_instance_derive(input: TokenStream) -> TokenStream {
             let tmp = fill_phantom_data_fields(&s.fields);
             quote!(
                 Self{
-                        instance,
-                        #tmp
-                    }
+                    instance,
+                    #tmp
+                }
             )
         }
         Data::Enum(e) => {
@@ -190,9 +187,9 @@ pub fn from_instance_derive(input: TokenStream) -> TokenStream {
                     impl_tokens.extend(quote!(
                         if <#ty as mj_base::env::GetClassTypeTrait>::is_this_type(&instance) {
                             #name::#ident(
-                                #ty::from_instance(
+                                #ty::try_from_instance(
                                     <#ty as mj_base::env::GetClassTypeTrait>::cast_to_this_type(instance)
-                                )
+                                )?
                             )
                         } else
                     ))
@@ -209,7 +206,7 @@ pub fn from_instance_derive(input: TokenStream) -> TokenStream {
                 };
                 let fall_arm_ident = &fall_arm.ident;
                 impl_tokens.extend(quote!(
-                    {#name::#fall_arm_ident(<#fall_arm_ty as mj_base::env::FromInstanceTrait>::from_instance(instance))}
+                    {#name::#fall_arm_ident(<#fall_arm_ty as mj_base::env::TryFromInstanceTrait>::try_from_instance(instance)?)}
                 ));
             } else {
                 impl_tokens.extend(quote!({ panic!("意料之外的类型！") }))
@@ -220,9 +217,9 @@ pub fn from_instance_derive(input: TokenStream) -> TokenStream {
     };
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let gen = quote! {
-        impl #impl_generics mj_base::env::FromInstanceTrait for #name #ty_generics #where_clause {
-            fn from_instance(instance: j4rs::Instance) -> Self{
-                #impl_tokens
+        impl #impl_generics mj_base::env::TryFromInstanceTrait for #name #ty_generics #where_clause {
+            fn try_from_instance(instance: j4rs::Instance) -> Result<Self,j4rs::errors::J4RsError>{
+                Ok(#impl_tokens)
             }
         }
     };
@@ -277,97 +274,6 @@ pub fn java_type(type_name: TokenStream, input: TokenStream) -> TokenStream {
                 mj_base::utils::is_instance_of(&instance, Self::get_type_name().as_str())
             }
         }
-    };
-    gen.into()
-}
-
-/// ### `mj_all`
-///
-/// 同时应用 [`GetInstanceDerive`], [`AsInstanceDerive`], [`FromInstanceDerive`] 和 [`java_type`](macro@java_type).
-///
-/// 接受一个字符串字面值参数传递给 `java_type` 属性。
-#[proc_macro_attribute]
-pub fn mj_all(type_name: TokenStream, input: TokenStream) -> TokenStream {
-    let ast: &DeriveInput = &syn::parse(input).unwrap();
-    let type_name: &syn::LitStr = &syn::parse(type_name).expect("类型名称请用字符串表示！");
-    let gen = quote! {
-        #[derive(mj_macro::AsInstanceDerive, mj_macro::FromInstanceDerive, mj_macro::GetInstanceDerive)]
-        #[mj_macro::java_type(#type_name)]
-        #ast
-    };
-    gen.into()
-}
-/// ### `MiraiEventDerive`
-///
-/// 为结构体和枚举类型实现 `MiraiEventTrait`.
-///
-/// 对结构体或枚举等没有特殊要求。`MiraiEventTrait` 特型会有部分要求，请参看 `mj_internal` 代码。
-#[proc_macro_derive(MiraiEventDerive)]
-pub fn mirai_event_derive(input: TokenStream) -> TokenStream {
-    let ast: &DeriveInput = &syn::parse(input).unwrap();
-    let name = &ast.ident;
-    let generics = &ast.generics;
-    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
-    let gen = quote! {
-        impl #impl_generics crate::event::MiraiEventTrait for #name #ty_generics #where_clause {
-        }
-    };
-    gen.into()
-}
-
-/// ### `mj_event`
-///
-/// 根据结构体名称应用 [`mj_all`](macro@mj_all) 和 [`MiraiEventDerive`]. 类似于此：
-///
-/// ```rust
-/// use mj_macro::mj_event;
-/// #[mj_event]
-/// pub struct FriendAddEvent {
-///     // Fields.
-/// }
-///
-/// // 相当于下述代码：
-/// // 这里的前缀是固定的。
-/// #[mj_macro::mj_all("net.mamoe.mirai.event.events.FriendAddEvent")]
-/// pub struct FriendAddEvent {
-///     // Fields.
-/// }
-/// ```
-///
-/// 也可以接受一个字符串字面值参数传递给 `mj_all` 属性，避免生成默认值。
-#[proc_macro_attribute]
-pub fn mj_event(mj_type: TokenStream, input: TokenStream) -> TokenStream {
-    let ast: &DeriveInput = &syn::parse(input).unwrap();
-    let type_name = if mj_type.is_empty() {
-        let name = &ast.ident;
-        LitStr::new(format!("event.events.{name}").as_str(), Span::mixed_site())
-    } else {
-        syn::parse(mj_type).expect("类型名称请用字符串表示！")
-    };
-    let gen = quote! {
-        #[derive(mj_macro::AsInstanceDerive, mj_macro::FromInstanceDerive, mj_macro::GetInstanceDerive, mj_macro::MiraiEventDerive)]
-        #[mj_macro::java_type(#type_name)]
-        #ast
-    };
-    gen.into()
-}
-
-/// ### `mj_event_without_default_traits`
-///
-/// 与 [`mj_event`](macro@mj_event) 类似，只是没有应用 [`MiraiEventDerive`].
-#[proc_macro_attribute]
-pub fn mj_event_without_default_traits(mj_type: TokenStream, input: TokenStream) -> TokenStream {
-    let ast: &DeriveInput = &syn::parse(input).unwrap();
-    let type_name = if mj_type.is_empty() {
-        let name = &ast.ident;
-        LitStr::new(format!("event.events.{name}").as_str(), Span::mixed_site())
-    } else {
-        syn::parse(mj_type).expect("类型名称请用字符串表示！")
-    };
-    let gen = quote! {
-        #[derive(mj_macro::AsInstanceDerive, mj_macro::FromInstanceDerive, mj_macro::GetInstanceDerive)]
-        #[mj_macro::java_type(#type_name)]
-        #ast
     };
     gen.into()
 }

@@ -1,11 +1,11 @@
+use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-
 use mj_base::env::GetClassTypeTrait;
 use mj_base::{
-    env::{FromInstanceTrait, GetClassTypeTrait as _, GetInstanceTrait as _},
+    env::{TryFromInstanceTrait, GetClassTypeTrait as _, GetInstanceTrait as _},
     utils::instance_is_null,
 };
-use mj_macro::mj_all;
+use mj_helper_macro::mj_all;
 
 use crate::message::{
     data::face::Face,
@@ -104,7 +104,7 @@ impl TryFrom<Face> for SuperFace {
             )
             .unwrap();
         if !instance_is_null(&instance) {
-            Ok(SuperFace::from_instance(instance))
+            SuperFace::from_instance(instance).map_err(|_| {})
         } else {
             Err(())
         }

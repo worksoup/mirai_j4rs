@@ -2,16 +2,15 @@ use j4rs::{Instance, InvocationArg, Jvm};
 use lazy_static::lazy_static;
 use regex::Regex;
 
-use mj_base::env::GetClassTypeTrait;
-use mj_base::{env::GetInstanceTrait, utils::primitive_byte_array_to_string};
-use mj_macro::mj_all;
-
 use crate::{
     contact::Bot,
     message::message_trait::{
         CodableMessageTrait, MessageContentTrait, MessageTrait, SingleMessageTrait,
     },
 };
+use mj_base::env::GetClassTypeTrait;
+use mj_base::{env::GetInstanceTrait, utils::primitive_byte_array_to_string};
+use mj_helper_macro::mj_all;
 
 lazy_static! {
     pub static ref IMAGE_ID_REGEX: Regex =

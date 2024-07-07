@@ -2,7 +2,7 @@ use std::{collections::HashSet, hash::Hash};
 
 use j4rs::{Instance, InvocationArg, Jvm};
 
-use crate::env::FromInstanceTrait;
+use crate::env::TryFromInstanceTrait;
 
 pub fn primitive_byte_array_to_string(jvm: &Jvm, instance: Instance) -> Instance {
     // let instance = jvm.clone_instance(instance).unwrap();
@@ -10,28 +10,6 @@ pub fn primitive_byte_array_to_string(jvm: &Jvm, instance: Instance) -> Instance
         "rt.lea.LumiaUtils",
         "primitiveByteArrayToString",
         &[InvocationArg::try_from(instance).unwrap()],
-    )
-    .unwrap()
-}
-
-#[inline]
-pub fn i8_16_to_bytes_16(jvm: &Jvm, array: [i8; 16]) -> Instance {
-    let mut i8vector = Vec::new();
-    for i in array {
-        i8vector.push(InvocationArg::try_from(i).unwrap());
-    }
-    jvm.create_java_array("java.lang.Byte", &i8vector).unwrap()
-}
-
-#[inline]
-pub fn instance_from_i8_16<const CLASS_TYPE: &'static str>(
-    call_from_java_raw_as_i8_16: [i8; 16],
-) -> Instance {
-    let jvm = Jvm::attach_thread().unwrap();
-    let call_from_java_raw_as_java_bytes = i8_16_to_bytes_16(&jvm, call_from_java_raw_as_i8_16);
-    jvm.create_instance(
-        CLASS_TYPE,
-        &[InvocationArg::try_from(call_from_java_raw_as_java_bytes).unwrap()],
     )
     .unwrap()
 }
@@ -76,7 +54,7 @@ pub fn instance_is_null(instance: &Instance) -> bool {
 }
 
 #[inline]
-pub fn java_iter_to_rust_vec<T: FromInstanceTrait>(jvm: &Jvm, iter: Instance) -> Vec<T> {
+pub fn java_iter_to_rust_vec<T: TryFromInstanceTrait>(jvm: &Jvm, iter: Instance) -> Vec<T> {
     let mut res = Vec::new();
     while jvm
         .to_rust(
@@ -86,13 +64,15 @@ pub fn java_iter_to_rust_vec<T: FromInstanceTrait>(jvm: &Jvm, iter: Instance) ->
         .unwrap()
     {
         let next = jvm.invoke(&iter, "next", InvocationArg::empty()).unwrap();
-        res.push(T::from_instance(next));
+        if let Ok(ele) = T::try_from_instance(next) {
+            res.push(ele);
+        }
     }
     res
 }
 
 #[inline]
-pub fn java_iter_to_rust_hash_set<T: FromInstanceTrait + Hash + Eq>(
+pub fn java_iter_to_rust_hash_set<T: TryFromInstanceTrait + Hash + Eq>(
     jvm: &Jvm,
     iter: Instance,
 ) -> HashSet<T> {
@@ -105,7 +85,9 @@ pub fn java_iter_to_rust_hash_set<T: FromInstanceTrait + Hash + Eq>(
         .unwrap()
     {
         let next = jvm.invoke(&iter, "next", InvocationArg::empty()).unwrap();
-        res.insert(T::from_instance(next));
+        if let Ok(ele) = T::try_from_instance(next) {
+            res.insert(ele);
+        }
     }
     res
 }

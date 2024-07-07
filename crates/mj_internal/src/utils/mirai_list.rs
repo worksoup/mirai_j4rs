@@ -1,17 +1,18 @@
 use crate::contact::ActiveRankRecord;
+use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstanceTrait, GetInstanceTrait};
+use mj_base::env::{TryFromInstanceTrait, GetInstanceTrait};
 
 pub struct MiraiList<T> {
     instance: Instance,
     vec: Option<Vec<T>>,
 }
-impl<T> FromInstanceTrait for MiraiList<T> {
-    fn from_instance(instance: Instance) -> Self {
-        Self {
+impl<T> TryFromInstanceTrait for MiraiList<T> {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
+        Ok(Self {
             instance,
             vec: None,
-        }
+        })
     }
 }
 impl MiraiList<ActiveRankRecord> {
@@ -35,17 +36,17 @@ impl MiraiList<ActiveRankRecord> {
             .unwrap()
         {
             let v = jvm.invoke(&it, "next", InvocationArg::empty()).unwrap();
-            vec.push(ActiveRankRecord::from_instance(v))
+            ActiveRankRecord::try_from_instance(v).ok().map(|v| vec.push(v));
         }
         self.vec = Some(vec);
     }
 }
 
 impl<T> GetInstanceTrait for MiraiList<T> {
-    fn get_instance(&self) -> Instance {
-        Jvm::attach_thread()
+    fn get_instance(&self) -> Result<Instance, J4RsError> {
+        Ok(Jvm::attach_thread()
             .unwrap()
             .clone_instance(&self.instance)
-            .unwrap()
+            .unwrap())
     }
 }

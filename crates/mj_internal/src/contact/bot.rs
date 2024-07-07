@@ -1,9 +1,9 @@
+use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-
-use mj_base::env::GetClassTypeTrait;
+use mj_base::env::{FromInstanceTrait, GetClassTypeTrait};
 use mj_base::utils::java_iter_to_rust_vec;
 use mj_base::{
-    env::{FromInstanceTrait, GetInstanceTrait},
+    env::{GetInstanceTrait, TryFromInstanceTrait},
     utils::instance_is_null,
 };
 use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
@@ -31,13 +31,13 @@ impl Clone for Bot {
     fn clone(&self) -> Self {
         Bot {
             _jvm: Jvm::attach_thread().unwrap(),
-            instance: self.get_instance(),
+            instance: self.get_instance().unwrap(),
             ..*self
         }
     }
 }
-impl FromInstanceTrait for Bot {
-    fn from_instance(instance: Instance) -> Self {
+impl TryFromInstanceTrait for Bot {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
         let jvm = Jvm::attach_thread().unwrap();
         let id = Jvm::attach_thread()
             .unwrap()
@@ -47,11 +47,11 @@ impl FromInstanceTrait for Bot {
             .unwrap()
             .to_rust()
             .unwrap();
-        Bot {
+        Ok(Bot {
             _jvm: jvm,
             instance,
             id,
-        }
+        })
     }
 }
 
@@ -99,7 +99,7 @@ impl Bot {
             .invoke(&self.instance, "close", InvocationArg::empty())
             .unwrap();
     }
-    pub fn close_and_join(self, err: MiraiRsError) {
+    pub fn close_and_join(self, _err: MiraiRsError) {
         // TODO
         Jvm::attach_thread()
             .unwrap()
@@ -121,7 +121,7 @@ impl Bot {
             .unwrap()
             .invoke(&self.instance, "getConfiguration", InvocationArg::empty())
             .unwrap();
-        BotConfiguration::from_instance(bot_configuration)
+        BotConfiguration::try_from_instance(bot_configuration).unwrap()
     }
     pub fn get_event_channel(&self) -> EventChannel {
         let jvm = Jvm::attach_thread().unwrap();
@@ -144,7 +144,7 @@ impl Bot {
             )
             .unwrap();
         if !instance_is_null(&instance) {
-            Some(Friend::from_instance(instance))
+            Some(Friend::try_from_instance(instance).unwrap())
         } else {
             None
         }
@@ -157,12 +157,13 @@ impl Bot {
         FriendGroups::from_instance(instance)
     }
     pub fn get_friends(&self) -> ContactList<Friend> {
-        ContactList::from_instance(
+        ContactList::try_from_instance(
             Jvm::attach_thread()
                 .unwrap()
                 .invoke(&self.instance, "getFriends", InvocationArg::empty())
                 .unwrap(),
         )
+        .unwrap()
     }
     pub fn get_group(&self, id: i64) -> Option<Group> {
         Group::new(self, id)
@@ -172,7 +173,7 @@ impl Bot {
             .unwrap()
             .invoke(&self.instance, "getGroups", InvocationArg::empty())
             .unwrap();
-        ContactList::from_instance(instance)
+        ContactList::try_from_instance(instance).unwrap()
     }
     pub fn get_logger() -> MiraiLogger {
         todo!("get logger")
@@ -182,7 +183,7 @@ impl Bot {
             .unwrap()
             .invoke(&self.instance, "getOtherClients", InvocationArg::empty())
             .unwrap();
-        ContactList::from_instance(instance)
+        ContactList::try_from_instance(instance).unwrap()
     }
     pub fn get_stranger(&self, id: i64) -> Option<Stranger> {
         let instance = Jvm::attach_thread()
@@ -207,7 +208,7 @@ impl Bot {
             .unwrap()
             .invoke(&self.instance, "getStrangers", InvocationArg::empty())
             .unwrap();
-        ContactList::from_instance(instance)
+        ContactList::try_from_instance(instance).unwrap()
     }
     pub fn is_online(&self) -> bool {
         Jvm::attach_thread()

@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 
 use j4rs::{ClasspathEntry, Instance, InvocationArg, JavaOpt, Jvm, JvmBuilder};
 
-use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
+use mj_base::env::{AsInstanceTrait, TryFromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
 use mj_macro::java_type;
 
 use crate::{
@@ -331,6 +331,6 @@ impl BotBuilder {
                 ],
             )
             .unwrap();
-        Bot::from_instance(bot)
+        Bot::try_from_instance(bot).unwrap()
     }
 }

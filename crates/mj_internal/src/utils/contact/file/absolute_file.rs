@@ -1,10 +1,10 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-
+use j4rs::errors::J4RsError;
 use mj_base::{
-    env::{FromInstanceTrait, GetInstanceTrait},
+    env::{TryFromInstanceTrait, GetInstanceTrait},
     utils::primitive_byte_array_to_string,
 };
-use mj_macro::mj_all;
+use mj_helper_macro::mj_all;
 
 use crate::message::data::FileMessage;
 use crate::utils::contact::file::{AbsoluteFileFolderTrait, AbsoluteFolder};
@@ -105,7 +105,7 @@ impl AbsoluteFile {
         let instance = jvm
             .invoke(&self.instance, "refreshed", InvocationArg::empty())
             .unwrap();
-        FileMessage::from_instance(instance)
+        FileMessage::from_instance(instance).unwrap()
     }
 }
 

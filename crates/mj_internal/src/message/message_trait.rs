@@ -1,6 +1,6 @@
 use j4rs::{InvocationArg, Jvm};
 
-use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
+use mj_base::env::{AsInstanceTrait, TryFromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
 use mj_base::utils::primitive_byte_array_to_string;
 
 use crate::{
@@ -20,7 +20,7 @@ where
                 Jvm::attach_thread()
                     .unwrap()
                     .invoke(
-                        &self.get_instance(),
+                        &self.get_instance().unwrap(),
                         "contentToString",
                         InvocationArg::empty(),
                     )
@@ -35,7 +35,11 @@ where
             .to_rust(
                 Jvm::attach_thread()
                     .unwrap()
-                    .invoke(&self.get_instance(), "toString", InvocationArg::empty())
+                    .invoke(
+                        &self.get_instance().unwrap(),
+                        "toString",
+                        InvocationArg::empty(),
+                    )
                     .unwrap(),
             )
             .unwrap()
@@ -67,7 +71,7 @@ where
             .invoke_static("rt.lea.LumiaUtils", "callPlus", &[msg1, msg2]) // j4rs <= 0.17.1
             .unwrap(); // j4rs <= 0.17.1
                        // let instance = jvm.invoke(&self.get_instance(), "plus", &[msg2]).unwrap(); // j4rs above 0.17.1
-        MessageChain::from_instance(instance)
+        MessageChain::from_instance(instance).unwrap()
     }
 }
 
@@ -79,7 +83,7 @@ pub trait CodableMessageTrait: MessageTrait {
                 Jvm::attach_thread()
                     .unwrap()
                     .invoke(
-                        &self.get_instance(),
+                        &self.get_instance().unwrap(),
                         "serializeToMiraiCode",
                         InvocationArg::empty(),
                     )
@@ -115,7 +119,7 @@ where
                 &[InvocationArg::try_from(json).unwrap()],
             )
             .unwrap();
-        MessageChain::from_instance(instance)
+        MessageChain::from_instance(instance).unwrap()
     }
     fn deserialize_from_code<T: ContactTrait>(code: String, contact: T) -> MessageChain {
         let jvm = Jvm::attach_thread().unwrap();
@@ -129,7 +133,7 @@ where
                 ],
             )
             .unwrap();
-        MessageChain::from_instance(instance)
+        MessageChain::from_instance(instance).unwrap()
     }
     fn get(&self /*, key: MessageKey*/) -> SingleMessage {
         todo!("MessageKey")
@@ -181,7 +185,11 @@ where
     fn get_service_id(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
         let id = jvm
-            .invoke(&self.get_instance(), "getServiceId", InvocationArg::empty())
+            .invoke(
+                &self.get_instance().unwrap(),
+                "getServiceId",
+                InvocationArg::empty(),
+            )
             .unwrap();
         jvm.to_rust(id).unwrap()
     }
@@ -205,7 +213,7 @@ where
 {
     fn get_id(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.chain(&self.get_instance())
+        jvm.chain(&self.get_instance().unwrap())
             .unwrap()
             .invoke("getId", InvocationArg::empty())
             .unwrap()
@@ -217,7 +225,7 @@ where
     }
     fn get_name(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.chain(&self.get_instance())
+        jvm.chain(&self.get_instance().unwrap())
             .unwrap()
             .invoke("getName", InvocationArg::empty())
             .unwrap()
@@ -249,7 +257,7 @@ pub trait AudioTrait: MessageContentTrait + ConstrainSingleTrait {
     }
     fn get_extra_data(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = self.get_instance();
+        let instance = self.get_instance().unwrap();
         let instance = jvm
             .invoke(&instance, "getExtraData", InvocationArg::empty())
             .unwrap();
@@ -258,7 +266,7 @@ pub trait AudioTrait: MessageContentTrait + ConstrainSingleTrait {
     }
     fn get_file_md5(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = self.get_instance();
+        let instance = self.get_instance().unwrap();
         let instance = jvm
             .invoke(&instance, "getFileMd5", InvocationArg::empty())
             .unwrap();
@@ -267,7 +275,7 @@ pub trait AudioTrait: MessageContentTrait + ConstrainSingleTrait {
     }
     fn get_file_size(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = self.get_instance();
+        let instance = self.get_instance().unwrap();
         let instance = jvm
             .invoke(&instance, "getFileSize", InvocationArg::empty())
             .unwrap();
@@ -275,7 +283,7 @@ pub trait AudioTrait: MessageContentTrait + ConstrainSingleTrait {
     }
     fn get_file_name(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = self.get_instance();
+        let instance = self.get_instance().unwrap();
         // 这里就是 Filename 而非 FileName.
         let instance = jvm
             .invoke(&instance, "getFilename", InvocationArg::empty())
@@ -287,7 +295,7 @@ pub trait AudioTrait: MessageContentTrait + ConstrainSingleTrait {
 pub trait MessageHashCodeTrait: GetInstanceTrait {
     fn hash_code(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.chain(&self.get_instance())
+        jvm.chain(&self.get_instance().unwrap())
             .unwrap()
             .invoke("hashCode", InvocationArg::empty())
             .unwrap()

@@ -10,4 +10,5 @@ crate-type = ["cdylib", "lib"]
 j4rs = { workspace = true }
 j4rs_derive = { workspace = true }
 mj_base = { path = "../mj_base" }
+mj_helper_macro = { path = "../mj_helper_macro" }
 mj_macro = { path = "../mj_macro" }

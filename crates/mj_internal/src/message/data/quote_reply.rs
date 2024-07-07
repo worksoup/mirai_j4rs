@@ -1,7 +1,7 @@
+use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-
-use mj_base::env::{FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
-use mj_macro::mj_all;
+use mj_base::env::{TryFromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
+use mj_helper_macro::mj_all;
 
 use crate::message::{
     data::{message_chain::MessageChain, message_source::MessageSource},
@@ -31,7 +31,7 @@ impl QuoteReply {
         let instance = jvm
             .invoke(&self.instance, "getSource", InvocationArg::empty())
             .unwrap();
-        MessageSource::from_instance(instance)
+        MessageSource::from_instance(instance).unwrap()
     }
 }
 

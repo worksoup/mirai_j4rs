@@ -1,11 +1,12 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-
+use j4rs::errors::J4RsError;
 use mj_base::env::GetClassTypeTrait;
 use mj_base::{
-    env::{FromInstanceTrait, GetInstanceTrait},
+    env::{TryFromInstanceTrait, GetInstanceTrait},
     utils::java_iter_to_rust_vec,
 };
-use mj_macro::{mj_all, AsInstanceDerive, GetInstanceDerive};
+use mj_helper_macro::mj_all;
+use mj_macro::{AsInstanceDerive, GetInstanceDerive};
 
 use crate::contact::Friend;
 
@@ -14,9 +15,9 @@ pub struct FriendGroup {
     pub(crate) instance: Instance,
 }
 
-impl FromInstanceTrait for FriendGroup {
-    fn from_instance(instance: Instance) -> Self {
-        Self { instance }
+impl TryFromInstanceTrait for FriendGroup {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
+        Ok(Self { instance })
     }
 }
 

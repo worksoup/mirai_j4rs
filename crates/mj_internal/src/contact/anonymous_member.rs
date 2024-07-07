@@ -1,6 +1,5 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-
-use mj_macro::mj_all;
+use mj_helper_macro::mj_all;
 
 use crate::contact::{ContactOrBotTrait, ContactTrait, MemberTrait, UserOrBotTrait, UserTrait};
 

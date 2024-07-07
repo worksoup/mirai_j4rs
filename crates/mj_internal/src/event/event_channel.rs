@@ -40,7 +40,7 @@ impl EventChannel {
         let consumer = Jvm::attach_thread()
             .unwrap()
             .create_instance(
-                "rt.lea.LumiaConsumer",
+                "rt.lea.function.LumiaConsumer",
                 &[InvocationArg::try_from(on_event_ptr).unwrap()],
             )
             .unwrap();
@@ -51,7 +51,7 @@ impl EventChannel {
     ) -> [i8; 16] {
         let call_from_java: Box<dyn Fn(DataWrapper<Instance>) -> ()> =
             Box::new(|e: DataWrapper<Instance>| {
-                let e: E = e.get::<E>();
+                let e: E = e.get::<E>().unwrap();
                 on_event(e);
             });
         let call_from_java_raw: *mut dyn Fn(DataWrapper<Instance>) = Box::into_raw(call_from_java);
@@ -60,7 +60,7 @@ impl EventChannel {
     fn subscribe_internal_0_2<E: MiraiEventTrait>(on_event: Box<dyn FnOnce(E) -> ()>) -> [i8; 16] {
         let call_from_java: Box<dyn FnOnce(DataWrapper<Instance>) -> ()> =
             Box::new(move |e: DataWrapper<Instance>| {
-                let e: E = e.get::<E>();
+                let e: E = e.get::<E>().unwrap();
                 on_event(e);
             });
         let call_from_java_raw: *mut dyn FnOnce(DataWrapper<Instance>) =

@@ -1,7 +1,7 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-
+use j4rs::errors::J4RsError;
 use mj_base::env::{GetClassTypeTrait, GetInstanceTrait};
-use mj_macro::mj_all;
+use mj_helper_macro::mj_all;
 
 use crate::message::message_trait::{ConstrainSingleTrait, MessageTrait, SingleMessageTrait};
 

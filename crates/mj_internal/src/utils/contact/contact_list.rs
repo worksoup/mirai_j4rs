@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
+use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-
-use mj_base::env::{FromInstanceTrait, GetInstanceTrait};
+use mj_base::env::{TryFromInstanceTrait, GetInstanceTrait};
 use mj_base::utils::instance_is_null;
 
 use crate::contact::ContactTrait;
@@ -11,33 +11,33 @@ use crate::utils::MiraiRsCollectionTrait;
 
 pub struct ContactList<T>
 where
-    T: ContactTrait + FromInstanceTrait,
+    T: ContactTrait + TryFromInstanceTrait,
 {
     pub(crate) instance: Instance,
     pub(crate) _unused: PhantomData<T>,
 }
 
-impl<T: ContactTrait + FromInstanceTrait> FromInstanceTrait for ContactList<T> {
-    fn from_instance(instance: Instance) -> Self {
-        ContactList {
+impl<T: ContactTrait + TryFromInstanceTrait> TryFromInstanceTrait for ContactList<T> {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
+        Ok(ContactList {
             instance,
             _unused: PhantomData::default(),
-        }
+        })
     }
 }
 
-impl<T: ContactTrait + FromInstanceTrait> GetInstanceTrait for ContactList<T> {
-    fn get_instance(&self) -> Instance {
-        Jvm::attach_thread()
+impl<T: ContactTrait + TryFromInstanceTrait> GetInstanceTrait for ContactList<T> {
+    fn get_instance(&self) -> Result<Instance, J4RsError> {
+        Ok(Jvm::attach_thread()
             .unwrap()
             .clone_instance(&self.instance)
-            .unwrap()
+            .unwrap())
     }
 }
 
 impl<T> ContactList<T>
 where
-    T: ContactTrait + FromInstanceTrait,
+    T: ContactTrait + TryFromInstanceTrait,
 {
     pub fn contains(&self, contact: T) -> bool {
         Jvm::attach_thread()
@@ -85,7 +85,7 @@ where
             )
             .unwrap();
         if !instance_is_null(&instance) {
-            Some(T::from_instance(instance))
+            T::try_from_instance(instance).ok()
         } else {
             None
         }
@@ -125,8 +125,8 @@ where
     }
 }
 
-impl<T: ContactTrait + FromInstanceTrait> MessageHashCodeTrait for ContactList<T> {}
-impl<T: ContactTrait + FromInstanceTrait> MiraiRsCollectionTrait for ContactList<T> {
+impl<T: ContactTrait + TryFromInstanceTrait> MessageHashCodeTrait for ContactList<T> {}
+impl<T: ContactTrait + TryFromInstanceTrait> MiraiRsCollectionTrait for ContactList<T> {
     type Element = T;
 
     fn get_size(&self) -> i32 {

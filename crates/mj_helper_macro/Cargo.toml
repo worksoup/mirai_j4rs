@@ -1,0 +1,14 @@
+[package]
+name = "mj_helper_macro"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = "*"
+quote = "*"
+proc-macro2 = "*"
+mj_base = { path = "../mj_base" }
+j4rs = { workspace = true }

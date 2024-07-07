@@ -1,9 +1,8 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-
 use mj_base::env::{FromInstanceTrait, GetClassTypeTrait};
 use mj_base::utils::instance_is_null;
 use mj_base::MIRAI_PREFIX;
-use mj_macro::mj_all;
+use mj_helper_macro::mj_all;
 
 use crate::utils::contact::file::AbsoluteFile;
 use crate::{
@@ -93,7 +92,7 @@ impl FileMessage {
         // let instance = InvocationArg::try_from(self.get_instance()).unwrap();
         let contact = InvocationArg::try_from(
             jvm.cast(
-                &contact.get_instance(),
+                &contact.get_instance().unwrap(),
                 (MIRAI_PREFIX.to_string() + "contact.FileSupported").as_str(),
             )
             .unwrap(),

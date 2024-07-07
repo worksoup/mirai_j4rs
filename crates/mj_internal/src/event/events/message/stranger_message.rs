@@ -1,6 +1,7 @@
+use j4rs::errors::J4RsError;
 use j4rs::Instance;
 
-use mj_macro::mj_event;
+use mj_helper_macro::mj_event;
 
 use crate::contact::Stranger;
 use crate::event::{

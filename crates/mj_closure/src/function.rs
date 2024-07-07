@@ -1,102 +1,72 @@
-use std::{marker::PhantomData, mem::transmute};
-
-use j4rs::{prelude::*, Instance, InvocationArg, Jvm};
-use j4rs_derive::*;
-
+use crate::utils::raw_pointer_to_instance;
+use crate::RawPointer;
+use j4rs::errors::J4RsError;
+use j4rs::{Instance, InvocationArg, Jvm};
 use mj_base::{
     data_wrapper::DataWrapper,
-    env::{FromInstanceTrait, GetInstanceTrait},
-    utils::instance_from_i8_16,
+    env::{TryFromInstanceTrait, GetInstanceTrait},
 };
 use mj_macro::GetInstanceDerive;
+use std::marker::PhantomData;
 
-#[call_from_java("rt.lea.LumiaFunction.nativeApply")]
-fn lumia_function_apply(
-    function_raw_as_i8_16: Instance,
-    val1: Instance,
-) -> Result<Instance, String> {
-    let function_raw: [i8; 16] = Jvm::attach_thread()
-        .unwrap()
-        .to_rust(function_raw_as_i8_16)
-        .unwrap();
-    println!(
-        "lumia_function_apply, in {}, {}:{}",
-        file! {},
-        line!(),
-        column!()
-    );
-    println!("function_raw: {:?}", function_raw);
-    let function: *mut dyn Fn(DataWrapper<Instance>) -> Instance =
-        unsafe { transmute(function_raw) };
-    let value = unsafe { (*function)(DataWrapper::from_instance(val1)) };
-    Ok(value)
-}
-
-pub struct Function<'a, T: FromInstanceTrait, R: GetInstanceTrait + FromInstanceTrait> {
+#[derive(GetInstanceDerive)]
+pub struct Function<T, R> {
     instance: Instance,
-    internal_closure_raw: [i8; 16],
-    __a: PhantomData<&'a ()>,
+    internal_closure_raw: RawPointer,
     _t: PhantomData<T>,
     _r: PhantomData<R>,
 }
-
-#[derive(GetInstanceDerive)]
-pub struct FunctionRaw {
-    instance: Instance,
-    internal_closure_raw: [i8; 16],
-}
-
-impl FunctionRaw {
-    fn get_internal_closure_raw(&self) -> *mut dyn Fn(DataWrapper<Instance>) -> Instance {
-        unsafe { transmute(self.internal_closure_raw) }
+impl<T, R> Function<T, R> {
+    unsafe fn get_internal_closure_raw(
+        &self,
+    ) -> *mut dyn Fn(DataWrapper<Instance>) -> Result<Instance, J4RsError> {
+        unsafe { std::mem::transmute(self.internal_closure_raw) }
     }
-    pub fn drop_internal_closure_raw(&self) {
-        let _boxed = unsafe { Box::from_raw(self.get_internal_closure_raw()) };
+    pub fn drop(self) {
+        let _ = unsafe { Box::from_raw(self.get_internal_closure_raw()) };
     }
 }
-
-impl<'a, T: FromInstanceTrait, R: GetInstanceTrait + FromInstanceTrait> Function<'a, T, R> {
+impl<T, R> Function<T, R>
+where
+    R: TryFromInstanceTrait,
+{
+    pub fn apply(&self, arg: InvocationArg) -> Result<R, J4RsError> {
+        let jvm = Jvm::attach_thread()?;
+        let result = jvm.invoke(&self.get_instance()?, "apply", &[arg])?;
+        R::try_from_instance(result)
+    }
+}
+impl<T, R> Function<T, R>
+where
+    T: TryFromInstanceTrait,
+    R: GetInstanceTrait,
+{
     #[inline]
-    fn internal_closure_as_i8_16<F>(f: &'a F) -> [i8; 16]
+    fn internal_closure_as_raw_pointer<F>(f: F) -> RawPointer
     where
-        F: Fn(T) -> R,
+        F: Fn(T) -> R + 'static,
     {
-        let call_from_java_raw: *mut dyn Fn(DataWrapper<Instance>) -> Instance =
-            Box::into_raw(Box::new(|value: DataWrapper<Instance>| -> Instance {
-                f(value.get::<T>()).get_instance()
-            }));
-        unsafe { transmute::<_, [i8; 16]>(call_from_java_raw) }
+        let call_from_java: Box<dyn Fn(DataWrapper<Instance>) -> Result<Instance, J4RsError>> =
+            Box::new(
+                move |value: DataWrapper<Instance>| -> Result<Instance, J4RsError> {
+                    f(value.get::<T>()?).get_instance()
+                },
+            );
+        let call_from_java_raw = Box::into_raw(call_from_java);
+        unsafe { std::mem::transmute(call_from_java_raw) }
     }
-    pub fn new<F>(closure: &'a F) -> Function<'a, T, R>
+    pub fn new<F>(closure: F) -> Function<T, R>
     where
-        F: Fn(T) -> R,
+        F: Fn(T) -> R + 'static,
     {
-        let internal_closure_raw = Self::internal_closure_as_i8_16(closure);
+        let internal_closure_raw = Self::internal_closure_as_raw_pointer(closure);
         println!("closure_to_function\n{:?}", internal_closure_raw);
-        let instance = instance_from_i8_16::<"rt.lea.LumiaFunction">(internal_closure_raw);
+        let instance = raw_pointer_to_instance::<"rt.lea.function.LumiaFunction">(internal_closure_raw);
         Function {
             instance,
             internal_closure_raw,
-            __a: PhantomData::default(),
             _t: PhantomData::default(),
             _r: PhantomData::default(),
-        }
-    }
-    pub fn apply(&self, arg: InvocationArg) -> R {
-        let jvm = Jvm::attach_thread().unwrap();
-        let result = jvm.invoke(&self.instance, "apply", &[arg]).unwrap();
-        R::from_instance(result)
-    }
-    pub fn to_instance(&self) -> Instance {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.clone_instance(&self.instance).unwrap()
-    }
-    pub fn drop_and_to_raw(self) -> FunctionRaw {
-        let instance = self.instance;
-        let internal_closure_raw = self.internal_closure_raw;
-        FunctionRaw {
-            instance,
-            internal_closure_raw,
         }
     }
 }

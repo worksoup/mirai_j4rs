@@ -1,14 +1,14 @@
 use std::path::PathBuf;
 
+use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-
-use mj_base::env::GetClassTypeTrait;
+use mj_base::env::{FromInstanceTrait, GetClassTypeTrait};
 use mj_base::{
-    env::{FromInstanceTrait, GetInstanceTrait},
+    env::{GetInstanceTrait, TryFromInstanceTrait},
     utils::instance_is_null,
 };
-use mj_closure::{kt_func_1::KtFunc1Raw, kt_func_2::KtFunc2Raw};
-use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
+use mj_closure::{KtFunc1Raw, KtFunc2Raw};
+use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive, TryFromInstanceDerive};
 
 use crate::{
     contact::Bot,
@@ -19,7 +19,7 @@ use crate::{
     },
 };
 
-#[derive(AsInstanceDerive, GetInstanceDerive, FromInstanceDerive)]
+#[derive(AsInstanceDerive, GetInstanceDerive, TryFromInstanceDerive)]
 pub struct ContactListCache {
     instance: Instance,
 }
@@ -116,12 +116,12 @@ pub struct BotConfiguration {
     instance: Instance,
     _login_solver_holder: Option<(KtFunc2Raw, KtFunc2Raw, KtFunc1Raw, KtFunc2Raw)>,
 }
-impl FromInstanceTrait for BotConfiguration {
-    fn from_instance(instance: Instance) -> Self {
-        Self {
+impl TryFromInstanceTrait for BotConfiguration {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
+        Ok(Self {
             instance,
             _login_solver_holder: None,
-        }
+        })
     }
 }
 // builders
@@ -130,7 +130,7 @@ impl BotConfiguration {
         let instance = Jvm::attach_thread()
             .unwrap()
             .invoke(
-                &bot.get_configuration().get_instance(),
+                &bot.get_configuration().get_instance().unwrap(),
                 "copy",
                 InvocationArg::empty(),
             )
@@ -206,7 +206,7 @@ impl BotConfiguration {
         return PathBuf::from(i);
     }
     pub fn get_contact_list_cache(&self) -> Option<ContactListCache> {
-        return Some(ContactListCache::from_instance(
+        Some(ContactListCache::from_instance(
             Jvm::attach_thread()
                 .unwrap()
                 .invoke(
@@ -215,7 +215,7 @@ impl BotConfiguration {
                     InvocationArg::empty(),
                 )
                 .unwrap(),
-        ));
+        ))
     }
     pub fn get_device_info(&self) -> Option<impl Fn(Bot) -> DeviceInfo + '_> {
         let tmp = Jvm::attach_thread()

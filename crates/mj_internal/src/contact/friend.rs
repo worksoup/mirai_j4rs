@@ -1,6 +1,6 @@
+use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-
-use mj_base::env::{AsInstanceTrait, FromInstanceTrait};
+use mj_base::env::{AsInstanceTrait, TryFromInstanceTrait};
 use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
 
 use crate::contact::{
@@ -18,20 +18,20 @@ pub struct Friend {
     id: i64,
 }
 
-impl FromInstanceTrait for Friend {
-    fn from_instance(instance: Instance) -> Self {
+impl TryFromInstanceTrait for Friend {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
         let jvm = Jvm::attach_thread().unwrap();
         let bot = jvm
             .invoke(&instance, "getBot", InvocationArg::empty())
             .unwrap();
-        let bot = Bot::from_instance(bot);
+        let bot = Bot::try_from_instance(bot).unwrap();
         let id = jvm
             .to_rust(
                 jvm.invoke(&instance, "getId", InvocationArg::empty())
                     .unwrap(),
             )
             .unwrap();
-        Friend { bot, instance, id }
+        Ok(Friend { bot, instance, id })
     }
 }
 impl SendMessageSupportedTrait for Friend {}

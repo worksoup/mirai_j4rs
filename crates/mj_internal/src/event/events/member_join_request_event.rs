@@ -1,7 +1,7 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-
-use mj_base::env::FromInstanceTrait;
-use mj_macro::mj_event;
+use j4rs::errors::J4RsError;
+use mj_base::env::TryFromInstanceTrait;
+use mj_helper_macro::mj_event;
 
 use crate::contact::{Bot, Group, NormalMember};
 use crate::event::{BotEventTrait, MiraiEventTrait};
@@ -34,7 +34,7 @@ impl MemberJoinRequestEvent {
             .unwrap()
             .invoke(&self.instance, "getBot", InvocationArg::empty())
             .unwrap();
-        Bot::from_instance(instance)
+        Bot::try_from_instance(instance).unwrap()
     }
     pub fn get_event_id(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
@@ -55,7 +55,7 @@ impl MemberJoinRequestEvent {
     pub fn get_group(&self) -> Group {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm.invoke(&self.instance, "getGroup", InvocationArg::empty()).unwrap();
-        Group::from_instance(instance)
+        Group::try_from_instance(instance).unwrap()
     }
     pub fn get_group_id(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
@@ -70,7 +70,7 @@ impl MemberJoinRequestEvent {
     pub fn get_invitor(&self) -> NormalMember {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm.invoke(&self.instance, "getInvitor", InvocationArg::empty()).unwrap();
-        NormalMember::from_instance(instance)
+        NormalMember::try_from_instance(instance).unwrap()
     }
     pub fn get_invitor_id(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();

@@ -1,7 +1,9 @@
+use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-
-use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
-use mj_macro::mj_all;
+use mj_base::env::{
+    AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait,
+};
+use mj_helper_macro::mj_all;
 
 use crate::message::message_trait::{
     AudioTrait, ConstrainSingleTrait, MessageContentTrait, MessageTrait, SingleMessageTrait,
@@ -64,14 +66,18 @@ pub struct OnlineAudio {
 impl OnlineAudio {
     pub fn get_length(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = self.get_instance();
-        let instance = jvm.invoke(&instance, "getLength", InvocationArg::empty()).unwrap();
+        let instance = self.get_instance().unwrap();
+        let instance = jvm
+            .invoke(&instance, "getLength", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(instance).unwrap()
     }
     pub fn get_url_for_download(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = self.get_instance();
-        let instance = jvm.invoke(&instance, "getUrlForDownload", InvocationArg::empty()).unwrap();
+        let instance = self.get_instance().unwrap();
+        let instance = jvm
+            .invoke(&instance, "getUrlForDownload", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(instance).unwrap()
     }
 }

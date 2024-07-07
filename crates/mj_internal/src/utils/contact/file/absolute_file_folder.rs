@@ -1,5 +1,4 @@
-use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetInstanceTrait};
-use mj_macro::mj_all;
+use mj_helper_macro::mj_all;
 
 use crate::utils::contact::file::{AbsoluteFile, AbsoluteFileFolderTrait, AbsoluteFolder};
 

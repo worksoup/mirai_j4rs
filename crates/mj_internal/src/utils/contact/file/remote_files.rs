@@ -1,12 +1,12 @@
+use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-
-use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait};
-use mj_macro::{AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
+use mj_base::env::{AsInstanceTrait, TryFromInstanceTrait, GetClassTypeTrait, FromInstanceTrait};
+use mj_macro::{AsInstanceDerive, TryFromInstanceDerive, GetInstanceDerive};
 
 use crate::contact::Group;
 use crate::utils::contact::file::{AbsoluteFile, AbsoluteFolder, ExternalResource};
 
-#[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive, TryFromInstanceDerive)]
 pub struct RemoteFiles {
     instance: Instance,
 }
@@ -15,15 +15,22 @@ impl RemoteFiles {
     /// 该函数返回 FileSupported, 但是目前应该只有 Group 的吧？
     pub fn get_contact(&self) -> Group {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getContact", InvocationArg::empty()).unwrap();
         let instance = jvm
-            .cast(&instance, <Group as GetClassTypeTrait>::get_type_name().as_str())
+            .invoke(&self.instance, "getContact", InvocationArg::empty())
             .unwrap();
-        Group::from_instance(instance)
+        let instance = jvm
+            .cast(
+                &instance,
+                <Group as GetClassTypeTrait>::get_type_name().as_str(),
+            )
+            .unwrap();
+        Group::try_from_instance(instance).unwrap()
     }
     pub fn get_root(&self) -> AbsoluteFolder {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getRoot", InvocationArg::empty()).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "getRoot", InvocationArg::empty())
+            .unwrap();
         AbsoluteFolder::from_instance(instance)
     }
 

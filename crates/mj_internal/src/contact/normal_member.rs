@@ -1,13 +1,12 @@
+use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-
-use mj_base::env::{AsInstanceTrait, FromInstanceTrait};
+use mj_base::env::{AsInstanceTrait, TryFromInstanceTrait};
 use mj_base::utils::instance_is_null;
 use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
 
 use crate::contact::{
-    AssertMemberPermissionTrait, Bot, ContactOrBotTrait, ContactTrait, Friend, Group,
-    MemberPermission, MemberTrait, NudgeSupportedTrait, SendMessageSupportedTrait, UserOrBotTrait,
-    UserTrait,
+    AssertMemberPermissionTrait, Bot, ContactOrBotTrait, ContactTrait, Group, MemberPermission,
+    MemberTrait, NudgeSupportedTrait, SendMessageSupportedTrait, UserOrBotTrait, UserTrait,
 };
 use crate::utils::other::enums::AvatarSpec;
 
@@ -33,20 +32,20 @@ impl AssertMemberPermissionTrait for NormalMember {
     }
 }
 
-impl FromInstanceTrait for NormalMember {
-    fn from_instance(instance: Instance) -> Self {
+impl TryFromInstanceTrait for NormalMember {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
         let jvm = Jvm::attach_thread().unwrap();
         let bot = jvm
             .invoke(&instance, "getBot", InvocationArg::empty())
             .unwrap();
-        let bot = Bot::from_instance(bot);
+        let bot = Bot::try_from_instance(bot)?;
         let id = jvm
             .to_rust(
                 jvm.invoke(&instance, "getId", InvocationArg::empty())
                     .unwrap(),
             )
             .unwrap();
-        NormalMember { bot, instance, id }
+        Ok(NormalMember { bot, instance, id })
     }
 }
 

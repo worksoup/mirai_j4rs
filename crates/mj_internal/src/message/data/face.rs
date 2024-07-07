@@ -1,6 +1,6 @@
+use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-
-use mj_base::env::{FromInstanceTrait, GetClassTypeTrait};
+use mj_base::env::{TryFromInstanceTrait, GetClassTypeTrait};
 use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
 
 use crate::message::{
@@ -20,10 +20,10 @@ pub struct Face {
     instance: Instance,
 }
 
-impl FromInstanceTrait for Face {
-    fn from_instance(instance: Instance) -> Self {
+impl TryFromInstanceTrait for Face {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
         let jvm = Jvm::attach_thread().unwrap();
-        Face {
+        Ok(Face {
             name: jvm
                 .to_rust(
                     jvm.invoke(&instance, "getName", InvocationArg::empty())
@@ -37,7 +37,7 @@ impl FromInstanceTrait for Face {
                 )
                 .unwrap(),
             instance,
-        }
+        })
     }
 }
 

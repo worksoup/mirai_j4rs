@@ -4,18 +4,18 @@ use std::{
     marker::PhantomData,
 };
 
+use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-
-use mj_base::env::{AsInstanceTrait, GetClassTypeTrait};
+use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait};
 use mj_base::{
-    env::{FromInstanceTrait, GetInstanceTrait},
+    env::{GetInstanceTrait, TryFromInstanceTrait},
     utils::{instance_is_null, java_iter_to_rust_hash_set, java_iter_to_rust_vec},
     MIRAI_PREFIX,
 };
-use mj_macro::{java_type, mj_all, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
+use mj_helper_macro::mj_all;
+use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive, TryFromInstanceDerive};
 
 use crate::contact::AudioSupportedTrait;
-use crate::error::MiraiRsErrorEnum;
 use crate::utils::{MiraiList, MiraiMap};
 use crate::{
     contact::{
@@ -215,7 +215,7 @@ impl AnnouncementParameters {
 }
 
 impl GetInstanceTrait for AnnouncementParameters {
-    fn get_instance(&self) -> Instance {
+    fn get_instance(&self) -> Result<Instance, J4RsError> {
         let jvm = Jvm::attach_thread().unwrap();
         let mut builder = jvm
             .create_instance(
@@ -260,13 +260,14 @@ impl GetInstanceTrait for AnnouncementParameters {
             .invoke(&builder, "showEditCard", &[show_edit_card])
             .unwrap();
         builder = jvm.invoke(&builder, "showPopup", &[show_popup]).unwrap();
-        jvm.invoke(&builder, "build", InvocationArg::empty())
-            .unwrap()
+        Ok(jvm
+            .invoke(&builder, "build", InvocationArg::empty())
+            .unwrap())
     }
 }
 
-impl FromInstanceTrait for AnnouncementParameters {
-    fn from_instance(instance: Instance) -> Self {
+impl TryFromInstanceTrait for AnnouncementParameters {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
         let jvm = Jvm::attach_thread().unwrap();
         let image = jvm
             .invoke(&instance, "image", InvocationArg::empty())
@@ -296,14 +297,14 @@ impl FromInstanceTrait for AnnouncementParameters {
             .invoke(&instance, "showPopup", InvocationArg::empty())
             .unwrap();
         let show_popup = jvm.to_rust(show_popup).unwrap();
-        AnnouncementParameters {
+        Ok(AnnouncementParameters {
             image,
             send_to_new_member,
             is_pinned,
             show_edit_card,
             show_popup,
             require_confirmation,
-        }
+        })
     }
 }
 
@@ -395,7 +396,7 @@ impl OnlineAnnouncement {
         let group = jvm
             .invoke(&self.instance, "getGroup", InvocationArg::empty())
             .unwrap();
-        Group::from_instance(group)
+        Group::try_from_instance(group).unwrap()
     }
     /// 公告所在群所属的 [`Bot`].
     ///
@@ -420,7 +421,7 @@ impl OnlineAnnouncement {
             .invoke(&self.instance, "getSender", InvocationArg::empty())
             .unwrap();
         if !instance_is_null(&sender) {
-            Some(NormalMember::from_instance(sender))
+            NormalMember::try_from_instance(sender).ok()
         } else {
             None
         }
@@ -484,7 +485,7 @@ pub enum Announcement {
 
 impl AnnouncementTrait for Announcement {}
 
-#[derive(GetInstanceDerive, AsInstanceDerive, FromInstanceDerive)]
+#[derive(GetInstanceDerive, AsInstanceDerive, TryFromInstanceDerive)]
 pub struct AnnouncementImage {
     instance: Instance,
 }
@@ -658,15 +659,15 @@ pub struct ActiveRankRecord {
     temperature: Option<i32>,
     score: Option<i32>,
 }
-impl FromInstanceTrait for ActiveRankRecord {
-    fn from_instance(instance: Instance) -> Self {
-        Self {
+impl TryFromInstanceTrait for ActiveRankRecord {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
+        Ok(Self {
             instance,
             member_name: None,
             member_id: None,
             temperature: None,
             score: None,
-        }
+        })
     }
 }
 
@@ -716,7 +717,7 @@ impl ActiveRankRecord {
         // 笔记： rust 中此类代码的行为：完全限定的方法调用。
         // 同时指定了特型和类型。
         // 如果是 `FromInstance` 的话，应该是调用了默认的实现？
-        <NormalMember as FromInstanceTrait>::from_instance(instance)
+        <NormalMember as TryFromInstanceTrait>::try_from_instance(instance).unwrap()
     }
     pub fn get_member_id(&self) -> i64 {
         if let Some(id) = self.member_id {
@@ -825,16 +826,17 @@ impl MemberMedalInfo {
     }
     pub fn get_wearing(&self) -> MemberMedalType {
         let jvm = Jvm::attach_thread().unwrap();
-        MemberMedalType::from_instance(
+        MemberMedalType::try_from_instance(
             jvm.invoke(&self.instance, "getWearing", InvocationArg::empty())
                 .unwrap(),
         )
+        .unwrap()
     }
 }
 
-impl FromInstanceTrait for MemberMedalInfo {
-    fn from_instance(instance: Instance) -> Self {
-        Self { instance }
+impl TryFromInstanceTrait for MemberMedalInfo {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
+        Ok(Self { instance })
     }
 }
 
@@ -842,9 +844,9 @@ pub struct MemberActive {
     instance: Instance,
 }
 
-impl FromInstanceTrait for MemberActive {
-    fn from_instance(instance: Instance) -> Self {
-        Self { instance }
+impl TryFromInstanceTrait for MemberActive {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
+        Ok(Self { instance })
     }
 }
 
@@ -954,12 +956,13 @@ impl GroupActive {
             .unwrap()
     }
     pub fn query_active_rank(&self) -> MiraiList<ActiveRankRecord> {
-        MiraiList::from_instance(
+        MiraiList::try_from_instance(
             Jvm::attach_thread()
                 .unwrap()
                 .invoke(&self.instance, "queryActiveRank", InvocationArg::empty())
                 .unwrap(),
         )
+        .unwrap()
     }
     pub fn query_chart(&self) -> ActiveChart {
         ActiveChart {
@@ -1063,20 +1066,20 @@ impl GroupActive {
     }
 }
 
-impl FromInstanceTrait for Group {
-    fn from_instance(instance: Instance) -> Self {
+impl TryFromInstanceTrait for Group {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
         let jvm = Jvm::attach_thread().unwrap();
         let bot = jvm
             .invoke(&instance, "getBot", InvocationArg::empty())
             .unwrap();
-        let bot = Bot::from_instance(bot);
+        let bot = Bot::try_from_instance(bot)?;
         let id = jvm
             .to_rust(
                 jvm.invoke(&instance, "getId", InvocationArg::empty())
                     .unwrap(),
             )
             .unwrap();
-        Group { bot, instance, id }
+        Ok(Group { bot, instance, id })
     }
 }
 

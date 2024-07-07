@@ -1,7 +1,7 @@
+use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-
-use mj_base::{env::FromInstanceTrait, utils::instance_is_null};
-use mj_macro::mj_event;
+use mj_base::{env::TryFromInstanceTrait, utils::instance_is_null};
+use mj_helper_macro::mj_event;
 
 use crate::contact::Group;
 use crate::event::{BotEventTrait, FriendInfoChangeEventTrait};
@@ -15,7 +15,9 @@ pub struct NewFriendRequestEvent {
 impl NewFriendRequestEvent {
     pub fn accept(&self) {
         let jvm = Jvm::attach_thread().unwrap();
-        let _ = jvm.invoke(&self.instance, "accept", InvocationArg::empty()).unwrap();
+        let _ = jvm
+            .invoke(&self.instance, "accept", InvocationArg::empty())
+            .unwrap();
     }
     pub fn reject(&self, black_list: bool) {
         let jvm = Jvm::attach_thread().unwrap();
@@ -27,14 +29,19 @@ impl NewFriendRequestEvent {
     }
     pub fn get_event_id(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getEventId", InvocationArg::empty()).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getEventId", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn get_from_group(&self) -> Option<Group> {
         let jvm = Jvm::attach_thread().unwrap();
-        let group = jvm.invoke(&self.instance, "getFromGroup", InvocationArg::empty()).unwrap();
+        let group = jvm
+            .invoke(&self.instance, "getFromGroup", InvocationArg::empty())
+            .unwrap();
         if !instance_is_null(&group) {
-            Some(Group::from_instance(group))
+            Group::try_from_instance(group).ok()
         } else {
             None
         }
@@ -42,7 +49,10 @@ impl NewFriendRequestEvent {
     pub fn get_from_group_id(&self) -> Option<i64> {
         let jvm = Jvm::attach_thread().unwrap();
         let id: i64 = jvm
-            .to_rust(jvm.invoke(&self.instance, "getFromGroupId", InvocationArg::empty()).unwrap())
+            .to_rust(
+                jvm.invoke(&self.instance, "getFromGroupId", InvocationArg::empty())
+                    .unwrap(),
+            )
             .unwrap();
         if id != 0 {
             Some(id)
@@ -52,23 +62,35 @@ impl NewFriendRequestEvent {
     }
     pub fn get_from_id(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getFromId", InvocationArg::empty()).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getFromId", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn get_from_nick(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getFromNick", InvocationArg::empty()).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getFromNick", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn get_from_message(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "getMessage", InvocationArg::empty()).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "getMessage", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
     pub fn to_string(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(jvm.invoke(&self.instance, "toString", InvocationArg::empty()).unwrap())
-            .unwrap()
+        jvm.to_rust(
+            jvm.invoke(&self.instance, "toString", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap()
     }
 }
 

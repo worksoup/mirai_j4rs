@@ -1,6 +1,8 @@
 use j4rs::{InvocationArg, Jvm};
 
-use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
+use mj_base::env::{
+    AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait,
+};
 
 use crate::contact::Group;
 use crate::utils::contact::file::{AbsoluteFile, AbsoluteFolder};
@@ -37,8 +39,10 @@ pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
     // FileSupported 当前只有 Group
     fn get_contact(&self) -> Group {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(self.as_instance(), "getContact", InvocationArg::empty()).unwrap();
-        Group::from_instance(instance)
+        let instance = jvm
+            .invoke(self.as_instance(), "getContact", InvocationArg::empty())
+            .unwrap();
+        Group::try_from_instance(instance).unwrap()
     }
     fn get_extension<T: AbsoluteFileFolderTrait>(file_or_folder: T) -> String {
         let jvm = Jvm::attach_thread().unwrap();
@@ -69,7 +73,7 @@ pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
     }
     fn get_name(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = self.get_instance();
+        let instance = self.get_instance().unwrap();
         jvm.chain(&instance)
             .unwrap()
             .invoke("getName", InvocationArg::empty())
@@ -88,7 +92,9 @@ pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
     }
     fn get_parent(&self) -> AbsoluteFolder {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(self.as_instance(), "getParent", InvocationArg::empty()).unwrap();
+        let instance = jvm
+            .invoke(self.as_instance(), "getParent", InvocationArg::empty())
+            .unwrap();
         AbsoluteFolder::from_instance(instance)
     }
     fn get_upload_time(&self) -> i64 {
@@ -119,7 +125,7 @@ pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
             .unwrap()
     }
     fn to_file(&self) -> AbsoluteFile {
-        let instance = self.get_instance();
+        let instance = self.get_instance().unwrap();
         let instance = AbsoluteFile::cast_to_this_type(instance);
         AbsoluteFile::from_instance(instance)
     }
@@ -133,7 +139,7 @@ pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
             .unwrap()
     }
     fn to_folder(&self) -> AbsoluteFolder {
-        let instance = self.get_instance();
+        let instance = self.get_instance().unwrap();
         let instance = AbsoluteFolder::cast_to_this_type(instance);
         AbsoluteFolder::from_instance(instance)
     }

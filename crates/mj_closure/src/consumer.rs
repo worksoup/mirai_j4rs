@@ -1,92 +1,61 @@
-use std::{marker::PhantomData, mem::transmute};
-
-use j4rs::{prelude::*, Instance, InvocationArg, Jvm};
-use j4rs_derive::*;
-
-use mj_base::{data_wrapper::DataWrapper, env::FromInstanceTrait, utils::instance_from_i8_16};
+use crate::utils::raw_pointer_to_instance;
+use crate::RawPointer;
+use j4rs::errors::J4RsError;
+use j4rs::{Instance, InvocationArg, Jvm};
+use mj_base::env::GetInstanceTrait;
+use mj_base::{data_wrapper::DataWrapper, env::TryFromInstanceTrait};
 use mj_macro::GetInstanceDerive;
-
-#[call_from_java("rt.lea.LumiaConsumer.nativeAccept")]
-fn lumia_consumer_accept(consumer_as_i8_16: Instance, arg: Instance) {
-    let consumer_raw: [i8; 16] = Jvm::attach_thread()
-        .unwrap()
-        .to_rust(consumer_as_i8_16)
-        .unwrap();
-    println!(
-        "lumia_consumer_accept, in {}, {}:{}",
-        file! {},
-        line!(),
-        column!()
-    );
-    println!("consumer_raw: {:?}", consumer_raw);
-    let consumer: *mut dyn Fn(DataWrapper<Instance>) -> () = unsafe { transmute(consumer_raw) };
-    unsafe {
-        let _ = (*consumer)(DataWrapper::from_instance(arg));
-    };
-}
-
-pub struct Consumer<'a, T: FromInstanceTrait> {
-    instance: Instance,
-    internal_closure_raw: [i8; 16],
-    _t: PhantomData<T>,
-    __a: PhantomData<&'a ()>,
-}
+use std::marker::PhantomData;
 
 #[derive(GetInstanceDerive)]
-pub struct ConsumerRaw {
+pub struct Consumer<T> {
     instance: Instance,
-    internal_closure_raw: [i8; 16],
+    internal_closure_raw: RawPointer,
+    _t: PhantomData<T>,
 }
 
-impl ConsumerRaw {
-    fn get_internal_closure_raw(&self) -> *mut dyn Fn(DataWrapper<Instance>) -> () {
-        unsafe { transmute(self.internal_closure_raw) }
+impl<T> Consumer<T> {
+    unsafe fn get_internal_closure_raw(
+        &self,
+    ) -> *mut dyn Fn(DataWrapper<Instance>) -> Result<(), J4RsError> {
+        unsafe { std::mem::transmute(self.internal_closure_raw) }
     }
-    pub fn drop_internal_closure_raw(&self) {
-        let _boxed = unsafe { Box::from_raw(self.get_internal_closure_raw()) };
+    pub fn drop(self) {
+        let _ = unsafe { Box::from_raw(self.get_internal_closure_raw()) };
+    }
+    pub fn accept(&self, arg: InvocationArg) -> Result<(), J4RsError> {
+        Jvm::attach_thread()?.invoke(&self.get_instance()?, "accept", &[arg])?;
+        Ok(())
     }
 }
-
-impl<'a, T: FromInstanceTrait> Consumer<'a, T> {
+impl<T> Consumer<T>
+where
+    T: TryFromInstanceTrait,
+{
     #[inline]
-    fn internal_closure_as_i8_16<F: Fn(T) -> ()>(f: &'a F) -> [i8; 16] {
-        let call_from_java = |value: DataWrapper<Instance>| {
-            let value = value.get::<T>();
-            f(value);
-        };
-        let call_from_java_raw: *mut dyn Fn(DataWrapper<Instance>) =
-            Box::into_raw(Box::new(call_from_java));
-        unsafe { transmute::<_, [i8; 16]>(call_from_java_raw) }
+    fn internal_closure_as_raw_pointer<F>(f: F) -> RawPointer
+    where
+        F: Fn(T) + 'static,
+    {
+        let call_from_java: Box<dyn Fn(DataWrapper<Instance>) -> Result<(), J4RsError>> = Box::new(
+            move |value: DataWrapper<Instance>| -> Result<(), J4RsError> {
+                Ok(f(value.get::<T>()?))
+            },
+        );
+        let call_from_java_raw = Box::into_raw(call_from_java);
+        unsafe { std::mem::transmute(call_from_java_raw) }
     }
-    pub fn new<F: Fn(T) -> ()>(closure: &'a F) -> Consumer<T> {
-        let internal_closure_raw = Self::internal_closure_as_i8_16(closure);
-        println!("closure_to_consumer");
-        println!("{:?}", internal_closure_raw);
-        let _jvm = Jvm::attach_thread().unwrap();
-        let instance = instance_from_i8_16::<"rt.lea.LumiaConsumer">(internal_closure_raw);
+    pub fn new<F>(closure: F) -> Consumer<T>
+    where
+        F: Fn(T) + 'static,
+    {
+        let internal_closure_raw = Self::internal_closure_as_raw_pointer(closure);
+        println!("closure_to_function\n{:?}", internal_closure_raw);
+        let instance = raw_pointer_to_instance::<"rt.lea.function.LumiaConsumer">(internal_closure_raw);
         Consumer {
             instance,
             internal_closure_raw,
             _t: PhantomData::default(),
-            __a: PhantomData::default(),
-        }
-    }
-    pub fn accept(&self, arg: InvocationArg) {
-        let jvm = Jvm::attach_thread().unwrap();
-        let _ = jvm.invoke(&self.instance, "accept", &[arg]).unwrap();
-    }
-    pub fn to_instance(&self) -> Instance {
-        Jvm::attach_thread()
-            .unwrap()
-            .clone_instance(&self.instance)
-            .unwrap()
-    }
-    pub fn drop_and_to_raw(self) -> ConsumerRaw {
-        let instance = self.instance;
-        let internal_closure_raw = self.internal_closure_raw;
-        ConsumerRaw {
-            instance,
-            internal_closure_raw,
         }
     }
 }

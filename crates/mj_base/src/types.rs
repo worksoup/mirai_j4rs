@@ -1,13 +1,13 @@
 use j4rs::{Instance, Jvm};
-
-use crate::env::{AsInstanceTrait, FromInstanceTrait, GetInstanceTrait};
+use j4rs::errors::J4RsError;
+use crate::env::{AsInstanceTrait, TryFromInstanceTrait, GetInstanceTrait};
 
 pub struct UnknownTypeValue(Instance);
 
 impl GetInstanceTrait for UnknownTypeValue {
-    fn get_instance(&self) -> Instance {
+    fn get_instance(&self) -> Result<Instance, J4RsError> {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.clone_instance(&self.0).unwrap()
+        jvm.clone_instance(&self.0)
     }
 }
 impl AsInstanceTrait for UnknownTypeValue {
@@ -15,8 +15,8 @@ impl AsInstanceTrait for UnknownTypeValue {
         &self.0
     }
 }
-impl FromInstanceTrait for UnknownTypeValue {
-    fn from_instance(instance: Instance) -> Self {
-        Self(instance)
+impl TryFromInstanceTrait for UnknownTypeValue {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
+        Ok(Self(instance))
     }
 }

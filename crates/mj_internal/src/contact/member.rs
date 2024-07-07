@@ -1,4 +1,4 @@
-use mj_macro::mj_all;
+use mj_helper_macro::mj_all;
 
 use crate::contact::{
     AnonymousMember, ContactOrBotTrait, ContactTrait, MemberTrait, NormalMember, UserOrBotTrait,

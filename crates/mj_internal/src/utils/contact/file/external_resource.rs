@@ -1,7 +1,6 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-
 use mj_base::env::GetClassTypeTrait;
-use mj_macro::mj_all;
+use mj_helper_macro::mj_all;
 
 #[inline]
 fn i8_array_to_java_byte_array(vec: &[i8]) -> Instance {

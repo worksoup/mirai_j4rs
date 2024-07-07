@@ -1,8 +1,8 @@
 use std::hint::unreachable_unchecked;
 
+use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-
-use mj_base::env::{FromInstanceTrait, GetClassTypeTrait};
+use mj_base::env::{TryFromInstanceTrait, GetClassTypeTrait};
 use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
 
 use crate::message::message_trait::{
@@ -98,8 +98,8 @@ pub struct PokeMessage {
     r#enum: PokeMessageEnum,
     instance: Instance,
 }
-impl FromInstanceTrait for PokeMessage {
-    fn from_instance(instance: Instance) -> Self {
+impl TryFromInstanceTrait for PokeMessage {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
         let jvm = Jvm::attach_thread().unwrap();
         let t: (i32, i32) = (
             jvm.to_rust(
@@ -138,7 +138,7 @@ impl FromInstanceTrait for PokeMessage {
             },
             _ => unsafe { unreachable_unchecked() },
         };
-        PokeMessage { r#enum, instance }
+        Ok(PokeMessage { r#enum, instance })
     }
 }
 impl From<PokeMessage> for PokeMessageEnum {
@@ -168,7 +168,8 @@ impl From<PokeMessageEnum> for PokeMessage {
             PokeMessageEnum::碎屏 => "SuiPing",
             PokeMessageEnum::敲门 => "QiaoMen",
         };
-        PokeMessage::from_instance(jvm.static_class_field(type_name.as_str(), field).unwrap())
+        PokeMessage::try_from_instance(jvm.static_class_field(type_name.as_str(), field).unwrap())
+            .unwrap()
     }
 }
 impl PokeMessage {

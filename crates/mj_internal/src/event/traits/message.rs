@@ -1,6 +1,6 @@
 use j4rs::{InvocationArg, Jvm};
 
-use mj_base::env::FromInstanceTrait;
+use mj_base::env::{FromInstanceTrait, TryFromInstanceTrait};
 
 use crate::contact::{Bot, ContactTrait};
 use crate::event::{BotPassiveEventTrait, MiraiEventTrait, OtherClientEventTrait};
@@ -15,7 +15,7 @@ where
         let bot = jvm
             .invoke(&self.as_instance(), "getBot", InvocationArg::empty())
             .unwrap();
-        Bot::from_instance(bot)
+        Bot::try_from_instance(bot).unwrap()
     }
     fn get_message(&self) -> MessageChain {
         let jvm = Jvm::attach_thread().unwrap();
@@ -29,7 +29,7 @@ where
         let instance = jvm
             .invoke(&self.as_instance(), "getSender", InvocationArg::empty())
             .unwrap();
-        Sender::from_instance(instance)
+        Sender::try_from_instance(instance).unwrap()
     }
     fn get_sender_name(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
@@ -47,7 +47,7 @@ where
         let instance = jvm
             .invoke(&self.as_instance(), "getSubject", InvocationArg::empty())
             .unwrap();
-        Subject::from_instance(instance)
+        Subject::try_from_instance(instance).unwrap()
     }
     fn get_time(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();

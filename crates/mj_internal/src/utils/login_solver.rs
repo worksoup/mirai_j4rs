@@ -1,22 +1,19 @@
 use std::ops::Deref;
 
+use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-
 use mj_base::env::GetClassTypeTrait;
 use mj_base::{
     data_wrapper::DataWrapper,
-    env::{FromInstanceTrait, GetInstanceTrait},
+    env::{GetInstanceTrait, TryFromInstanceTrait},
 };
-use mj_closure::{
-    kt_func_0::KtFunc0, kt_func_0::KtFunc0Raw, kt_func_1::KtFunc1, kt_func_1::KtFunc1Raw,
-    kt_func_2::KtFunc2, kt_func_2::KtFunc2Raw,
-};
-use mj_macro::{java_type, AsInstanceDerive, FromInstanceDerive, GetInstanceDerive};
+use mj_closure::{KtFunc1, KtFunc1Raw, KtFunc2, KtFunc2Raw};
+use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive, TryFromInstanceDerive};
 
 use crate::contact::Bot;
 
 /// 该结构体未实现 [`LoginSolverTrait`], 如需使用相关功能请调用本实例的 `get_instance` 方法，获得 `Instance` 后直接操作。
-#[derive(AsInstanceDerive, GetInstanceDerive, FromInstanceDerive)]
+#[derive(AsInstanceDerive, GetInstanceDerive, TryFromInstanceDerive)]
 pub struct LoginSolver {
     instance: Instance,
 }
@@ -37,35 +34,36 @@ pub enum State {
     Default,
 }
 
-impl FromInstanceTrait for State {
-    fn from_instance(instance: Instance) -> Self {
+impl TryFromInstanceTrait for State {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
         let mp: String = Jvm::attach_thread().unwrap().to_rust(instance).unwrap();
-        match mp.as_str() {
+        Ok(match mp.as_str() {
             "WAITING_FOR_SCAN" => State::WaitingForScan,
             "WAITING_FOR_CONFIRM" => State::WaitingForConfirm,
             "CANCELLED" => State::Cancelled,
             "TIMEOUT" => State::Timeout,
             "CONFIRMED" => State::Confirmed,
             _ => State::Default,
-        }
+        })
     }
 }
 
 impl GetInstanceTrait for State {
-    fn get_instance(&self) -> Instance {
+    fn get_instance(&self) -> Result<Instance, J4RsError> {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.static_class_field(
-            <Self as GetClassTypeTrait>::get_type_name().as_str(),
-            match self {
-                State::WaitingForScan => "WAITING_FOR_SCAN",
-                State::WaitingForConfirm => "WAITING_FOR_CONFIRM",
-                State::Cancelled => "CANCELLED",
-                State::Timeout => "TIMEOUT",
-                State::Confirmed => "CONFIRMED",
-                State::Default => "DEFAULT",
-            },
-        )
-        .unwrap()
+        Ok(jvm
+            .static_class_field(
+                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                match self {
+                    State::WaitingForScan => "WAITING_FOR_SCAN",
+                    State::WaitingForConfirm => "WAITING_FOR_CONFIRM",
+                    State::Cancelled => "CANCELLED",
+                    State::Timeout => "TIMEOUT",
+                    State::Confirmed => "CONFIRMED",
+                    State::Default => "DEFAULT",
+                },
+            )
+            .unwrap())
     }
 }
 
@@ -75,10 +73,6 @@ pub struct QrCodeLoginListener {
     on_state_changed: Option<Box<dyn Fn(Bot, State) -> DataWrapper<()>>>,
     on_interval_loop: Option<Box<dyn Fn() -> DataWrapper<()>>>,
     on_completed: Option<Box<dyn Fn() -> DataWrapper<()>>>,
-    _1: Option<KtFunc2Raw>,
-    _2: Option<KtFunc2Raw>,
-    _3: Option<KtFunc0Raw>,
-    _4: Option<KtFunc0Raw>,
 }
 
 impl QrCodeLoginListener {
@@ -92,79 +86,80 @@ impl QrCodeLoginListener {
         I: Fn(),
         C: Fn(),
     >(
-        on_fetch_qrcode: &'static F,
-        on_state_changed: &'static S,
-        on_interval_loop: &'static I,
-        on_completed: &'static C,
+        _on_fetch_qrcode: &'static F,
+        _on_state_changed: &'static S,
+        _on_interval_loop: &'static I,
+        _on_completed: &'static C,
     ) -> Self {
-        let mut r = Self {
-            instance: None,
-            on_fetch_qrcode: Some(Box::new(
-                |bot: Bot, data: DataWrapper<Vec<i8>>| -> DataWrapper<()> {
-                    on_fetch_qrcode(bot, data.deref()).into()
-                },
-            )),
-            on_state_changed: Some(Box::new(|bot: Bot, state: State| -> DataWrapper<()> {
-                on_state_changed(bot, state).into()
-            })),
-            on_interval_loop: Some(Box::new(|| -> DataWrapper<()> {
-                on_interval_loop().into()
-            })),
-            on_completed: Some(Box::new(|| -> DataWrapper<()> { on_completed().into() })),
-            _1: None,
-            _2: None,
-            _3: None,
-            _4: None,
-        };
-        let jvm = Jvm::attach_thread().unwrap();
-
-        let qr_code_size = InvocationArg::try_from(QR_CODE_SIZE)
-            .unwrap()
-            .into_primitive()
-            .unwrap();
-        let qr_code_margin = InvocationArg::try_from(QR_CODE_MARGIN)
-            .unwrap()
-            .into_primitive()
-            .unwrap();
-        let qr_code_ec_level = InvocationArg::try_from(QR_CODE_EC_LEVEL)
-            .unwrap()
-            .into_primitive()
-            .unwrap();
-        let qr_code_state_update_interval = InvocationArg::try_from(QR_CODE_STATE_UPDATE_INTERVAL)
-            .unwrap()
-            .into_primitive()
-            .unwrap();
-
-        r._1 = Some(KtFunc2::new(r.on_fetch_qrcode.as_ref().unwrap()).drop_and_to_raw());
-        r._2 = Some(KtFunc2::new(r.on_state_changed.as_ref().unwrap()).drop_and_to_raw());
-        r._3 = Some(KtFunc0::new(r.on_interval_loop.as_ref().unwrap()).drop_and_to_raw());
-        r._4 = Some(KtFunc0::new(r.on_completed.as_ref().unwrap()).drop_and_to_raw());
-
-        let on_fetch_qrcode =
-            InvocationArg::try_from(r._1.as_ref().unwrap().get_instance()).unwrap();
-        let on_state_changed =
-            InvocationArg::try_from(r._2.as_ref().unwrap().get_instance()).unwrap();
-        let on_interval_loop =
-            InvocationArg::try_from(r._3.as_ref().unwrap().get_instance()).unwrap();
-        let on_completed = InvocationArg::try_from(r._4.as_ref().unwrap().get_instance()).unwrap();
-
-        let instance = jvm
-            .create_instance(
-                "rt.lea.LumiaQrCodeLoginListener",
-                &[
-                    qr_code_size,
-                    qr_code_margin,
-                    qr_code_ec_level,
-                    qr_code_state_update_interval,
-                    on_fetch_qrcode,
-                    on_state_changed,
-                    on_interval_loop,
-                    on_completed,
-                ],
-            )
-            .unwrap();
-        r.instance = Some(instance);
-        r
+        // let mut r = Self {
+        //     instance: None,
+        //     on_fetch_qrcode: Some(Box::new(
+        //         |bot: Bot, data: DataWrapper<Vec<i8>>| -> DataWrapper<()> {
+        //             on_fetch_qrcode(bot, data.deref()).into()
+        //         },
+        //     )),
+        //     on_state_changed: Some(Box::new(|bot: Bot, state: State| -> DataWrapper<()> {
+        //         on_state_changed(bot, state).into()
+        //     })),
+        //     on_interval_loop: Some(Box::new(|| -> DataWrapper<()> {
+        //         on_interval_loop().into()
+        //     })),
+        //     on_completed: Some(Box::new(|| -> DataWrapper<()> { on_completed().into() })),
+        //     _1: None,
+        //     _2: None,
+        //     _3: None,
+        //     _4: None,
+        // };
+        // let jvm = Jvm::attach_thread().unwrap();
+        //
+        // let qr_code_size = InvocationArg::try_from(QR_CODE_SIZE)
+        //     .unwrap()
+        //     .into_primitive()
+        //     .unwrap();
+        // let qr_code_margin = InvocationArg::try_from(QR_CODE_MARGIN)
+        //     .unwrap()
+        //     .into_primitive()
+        //     .unwrap();
+        // let qr_code_ec_level = InvocationArg::try_from(QR_CODE_EC_LEVEL)
+        //     .unwrap()
+        //     .into_primitive()
+        //     .unwrap();
+        // let qr_code_state_update_interval = InvocationArg::try_from(QR_CODE_STATE_UPDATE_INTERVAL)
+        //     .unwrap()
+        //     .into_primitive()
+        //     .unwrap();
+        //
+        // r._1 = Some(KtFunc2::new(r.on_fetch_qrcode.as_ref().unwrap()).drop_and_to_raw());
+        // r._2 = Some(KtFunc2::new(r.on_state_changed.as_ref().unwrap()).drop_and_to_raw());
+        // r._3 = Some(KtFunc0::new(r.on_interval_loop.as_ref().unwrap()).drop_and_to_raw());
+        // r._4 = Some(KtFunc0::new(r.on_completed.as_ref().unwrap()).drop_and_to_raw());
+        //
+        // let on_fetch_qrcode =
+        //     InvocationArg::try_from(r._1.as_ref().unwrap().get_instance()).unwrap();
+        // let on_state_changed =
+        //     InvocationArg::try_from(r._2.as_ref().unwrap().get_instance()).unwrap();
+        // let on_interval_loop =
+        //     InvocationArg::try_from(r._3.as_ref().unwrap().get_instance()).unwrap();
+        // let on_completed = InvocationArg::try_from(r._4.as_ref().unwrap().get_instance()).unwrap();
+        //
+        // let instance = jvm
+        //     .create_instance(
+        //         "rt.lea.LumiaQrCodeLoginListener",
+        //         &[
+        //             qr_code_size,
+        //             qr_code_margin,
+        //             qr_code_ec_level,
+        //             qr_code_state_update_interval,
+        //             on_fetch_qrcode,
+        //             on_state_changed,
+        //             on_interval_loop,
+        //             on_completed,
+        //         ],
+        //     )
+        //     .unwrap();
+        // r.instance = Some(instance);
+        // r
+        todo!()
     }
 
     pub fn on_fetch_qrcode(&self, bot: Bot, data: &Vec<i8>) {
@@ -229,31 +224,27 @@ impl QrCodeLoginListener {
 }
 
 impl GetInstanceTrait for QrCodeLoginListener {
-    fn get_instance(&self) -> Instance {
+    fn get_instance(&self) -> Result<Instance, J4RsError> {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.clone_instance(self.instance.as_ref().unwrap()).unwrap()
+        Ok(jvm.clone_instance(self.instance.as_ref().unwrap()).unwrap())
     }
 }
 
-impl FromInstanceTrait for QrCodeLoginListener {
-    fn from_instance(instance: Instance) -> Self {
-        Self {
+impl TryFromInstanceTrait for QrCodeLoginListener {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
+        Ok(Self {
             instance: Some(instance),
             on_fetch_qrcode: None,
             on_state_changed: None,
             on_interval_loop: None,
             on_completed: None,
-            _1: None,
-            _2: None,
-            _3: None,
-            _4: None,
-        }
+        })
     }
 }
 
 pub trait QrCodeLoginListenerTrait
 where
-    Self: FromInstanceTrait + GetInstanceTrait,
+    Self: TryFromInstanceTrait + GetInstanceTrait,
 {
     const QR_CODE_SIZE: i32 = 3;
     const QR_CODE_MARGIN: i32 = 4;
@@ -353,9 +344,9 @@ impl DeviceVerificationRequests {
     }
 }
 
-impl FromInstanceTrait for DeviceVerificationRequests {
-    fn from_instance(instance: Instance) -> Self {
-        Self { instance }
+impl TryFromInstanceTrait for DeviceVerificationRequests {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
+        Ok(Self { instance })
     }
 }
 
@@ -364,9 +355,9 @@ pub struct DeviceVerificationResult {
     instance: Instance,
 }
 
-impl FromInstanceTrait for DeviceVerificationResult {
-    fn from_instance(instance: Instance) -> Self {
-        Self { instance }
+impl TryFromInstanceTrait for DeviceVerificationResult {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
+        Ok(Self { instance })
     }
 }
 

@@ -1,6 +1,6 @@
+use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-
-use mj_base::env::FromInstanceTrait;
+use mj_base::env::TryFromInstanceTrait;
 use mj_base::env::GetClassTypeTrait;
 use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
 
@@ -74,10 +74,10 @@ impl MessageContentTrait for PlainText {}
 
 impl MessageHashCodeTrait for PlainText {}
 
-impl FromInstanceTrait for PlainText {
-    fn from_instance(instance: Instance) -> Self {
+impl TryFromInstanceTrait for PlainText {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
         let jvm = Jvm::attach_thread().unwrap();
-        PlainText {
+        Ok(PlainText {
             content: jvm
                 .to_rust(
                     jvm.invoke(&instance, "getContent", InvocationArg::empty())
@@ -85,6 +85,6 @@ impl FromInstanceTrait for PlainText {
                 )
                 .unwrap(),
             instance,
-        }
+        })
     }
 }

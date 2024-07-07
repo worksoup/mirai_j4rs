@@ -6,7 +6,7 @@ use std::{
 use j4rs::errors::J4RsError;
 use j4rs::Instance;
 
-use mj_base::env::{FromInstanceTrait, GetInstanceTrait};
+use mj_base::env::{GetInstanceTrait, TryFromInstanceTrait};
 
 use crate::contact::MemberPermission;
 use crate::error::MiraiRsErrorEnum::LumiaException;
@@ -67,7 +67,7 @@ impl MiraiRsError {
             what: self.what,
         }
     }
-    pub fn from_j4rs_err(j4rs_err: J4RsError) -> Self {
+    pub fn from_j4rs_err(_j4rs_err: J4RsError) -> Self {
         todo!()
     }
 }
@@ -78,14 +78,14 @@ impl From<J4RsError> for MiraiRsError {
     }
 }
 
-impl FromInstanceTrait for MiraiRsError {
-    fn from_instance(instance: Instance) -> Self {
+impl TryFromInstanceTrait for MiraiRsError {
+    fn try_from_instance(_instance: Instance) -> Result<Self, J4RsError> {
         todo!()
     }
 }
 
 impl GetInstanceTrait for MiraiRsError {
-    fn get_instance(&self) -> Instance {
+    fn get_instance(&self) -> Result<Instance, J4RsError> {
         todo!()
     }
 }

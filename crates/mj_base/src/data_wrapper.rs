@@ -1,8 +1,8 @@
 use std::ops::Deref;
 
+use crate::env::{TryFromInstanceTrait, GetInstanceTrait};
+use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-
-use crate::env::{FromInstanceTrait, GetInstanceTrait};
 
 pub struct DataWrapper<T> {
     data: T,
@@ -22,109 +22,82 @@ impl<T> From<T> for DataWrapper<T> {
     }
 }
 
-impl FromInstanceTrait for DataWrapper<String> {
-    fn from_instance(instance: Instance) -> Self {
+impl TryFromInstanceTrait for DataWrapper<String> {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust::<String>(instance).unwrap().into()
+        jvm.to_rust::<String>(instance).map(|r| r.into())
     }
 }
 
 impl GetInstanceTrait for DataWrapper<String> {
-    fn get_instance(&self) -> Instance {
-        Instance::try_from(InvocationArg::try_from(&self.data).unwrap()).unwrap()
+    fn get_instance(&self) -> Result<Instance, J4RsError> {
+        Instance::try_from(InvocationArg::try_from(&self.data).unwrap())
     }
 }
 
-impl FromInstanceTrait for DataWrapper<Vec<i8>> {
-    fn from_instance(instance: Instance) -> Self {
+impl TryFromInstanceTrait for DataWrapper<Vec<i8>> {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust::<Vec<_>>(instance).unwrap().into()
+        jvm.to_rust::<Vec<_>>(instance).map(|r| r.into())
     }
 }
 
 impl<P1, P2> DataWrapper<(P1, P2)>
 where
-    P1: FromInstanceTrait,
-    P2: FromInstanceTrait,
+    P1: TryFromInstanceTrait,
+    P2: TryFromInstanceTrait,
 {
     pub fn get_pair(self) -> (P1, P2) {
         self.data
     }
 }
 
-impl<P1, P2> FromInstanceTrait for DataWrapper<(P1, P2)>
-where
-    P1: FromInstanceTrait,
-    P2: FromInstanceTrait,
-{
-    fn from_instance(instance: Instance) -> Self {
-        let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.cast(&instance, "kotlin.Pair").unwrap();
-        let val1 = jvm
-            .invoke(&instance, "getFirst", InvocationArg::empty())
-            .unwrap();
-        let val2 = jvm
-            .invoke(&instance, "getSecond", InvocationArg::empty())
-            .unwrap();
-        let val1 = P1::from_instance(val1);
-        let val2 = P2::from_instance(val2);
-        Self { data: (val1, val2) }
-    }
-}
-
 impl DataWrapper<Instance> {
-    pub fn get<E>(&self) -> E
+    pub fn get<T>(&self) -> Result<T, J4RsError>
     where
-        E: FromInstanceTrait,
+        T: TryFromInstanceTrait,
     {
-        E::from_instance(
-            Jvm::attach_thread()
-                .unwrap()
-                .clone_instance(&self.data)
-                .unwrap(),
-        )
+        T::try_from_instance(Jvm::attach_thread()?.clone_instance(&self.data)?)
     }
 }
 
 impl GetInstanceTrait for DataWrapper<Instance> {
-    fn get_instance(&self) -> Instance {
+    fn get_instance(&self) -> Result<Instance, J4RsError> {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.clone_instance(&self.data).unwrap()
+        jvm.clone_instance(&self.data)
     }
 }
 
-impl FromInstanceTrait for DataWrapper<Instance> {
-    fn from_instance(instance: Instance) -> Self {
-        Self { data: instance }
+impl TryFromInstanceTrait for DataWrapper<Instance> {
+    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
+        Ok(Self { data: instance })
     }
 }
 
-impl FromInstanceTrait for DataWrapper<()> {
-    fn from_instance(_instance: Instance) -> Self {
-        Self { data: () }
+impl TryFromInstanceTrait for DataWrapper<()> {
+    fn try_from_instance(_: Instance) -> Result<Self, J4RsError> {
+        Ok(Self { data: () })
     }
 }
 
 impl GetInstanceTrait for DataWrapper<()> {
-    fn get_instance(&self) -> Instance {
+    fn get_instance(&self) -> Result<Instance, J4RsError> {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.invoke_static(
             "javax.lang.model.util.Types",
             "getNullType",
             InvocationArg::empty(),
         )
-        .unwrap()
     }
 }
 
-impl<T: FromInstanceTrait> FromInstanceTrait for DataWrapper<T> {
-    fn from_instance(instance: Instance) -> Self {
-        <T as FromInstanceTrait>::from_instance(instance).into()
+impl<T: TryFromInstanceTrait> TryFromInstanceTrait for DataWrapper<T> {
+    default fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
+        <T as TryFromInstanceTrait>::try_from_instance(instance).map(|r| r.into())
     }
 }
-
 impl<T: GetInstanceTrait> GetInstanceTrait for DataWrapper<T> {
-    fn get_instance(&self) -> Instance {
+    fn get_instance(&self) -> Result<Instance, J4RsError> {
         <T as GetInstanceTrait>::get_instance(&self.data)
     }
 }

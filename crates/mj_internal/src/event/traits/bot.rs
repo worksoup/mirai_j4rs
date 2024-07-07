@@ -1,6 +1,6 @@
 use j4rs::{InvocationArg, Jvm};
 
-use mj_base::env::FromInstanceTrait;
+use mj_base::env::TryFromInstanceTrait;
 
 use crate::contact::{Bot, ContactTrait, Member, NormalMember, UserTrait};
 use crate::event::{
@@ -16,7 +16,7 @@ where
         let bot = jvm
             .invoke(&self.as_instance(), "getBot", InvocationArg::empty())
             .unwrap();
-        Bot::from_instance(bot)
+        Bot::try_from_instance(bot).unwrap()
     }
 }
 

@@ -13,6 +13,8 @@
 
 目前简单适配了 `Mirai` 的二维码登录。似乎可以正常登录。
 
+**NOTE** 最后一次经过测试的版本应当是 `commit#cd555d6d`. 由于 mirai 没什么动静了，故本项目将不再开发。
+
 ## 协议支持
 
 请查看该 [issue](https://github.com/worksoup/mirai_j4rs/issues/2#issue-2114138266).

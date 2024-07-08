@@ -1,5 +1,4 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-use j4rs::errors::J4RsError;
 use mj_helper_macro::mj_all;
 
 use crate::message::message_trait::{

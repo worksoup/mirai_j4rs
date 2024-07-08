@@ -581,7 +581,6 @@ impl BotConfiguration {
         T: LoginSolverTrait,
     {
         let jvm = Jvm::attach_thread().unwrap();
-        // let (instance, _1, _2, _3, _4) = todo!();
         jvm.invoke(
             &self.instance,
             "setLoginSolver",

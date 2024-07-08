@@ -1,6 +1,6 @@
 use j4rs::{Instance, InvocationArg, Jvm};
 
-use jbuchong::{FromInstanceTrait, TryFromInstanceTrait as _};
+use jbuchong::FromInstanceTrait;
 
 use crate::{
     contact::ContactTrait,
@@ -46,7 +46,7 @@ where
             .unwrap();
         QuoteReply::from_instance(instance)
     }
-    pub fn quote_reply(&self, message: impl MessageTrait) -> QuoteReply {
+    pub fn quote_reply(&self, _message: impl MessageTrait) -> QuoteReply {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke(&self.instance, "quote", InvocationArg::empty())
@@ -71,7 +71,7 @@ where
             .unwrap()
             .into_primitive()
             .unwrap();
-        let instance = jvm.invoke(&self.instance, "recallIn", &[millis]).unwrap();
+        let _instance = jvm.invoke(&self.instance, "recallIn", &[millis]).unwrap();
         // TODO: 获取撤回结果并返回。
         Ok(())
     }

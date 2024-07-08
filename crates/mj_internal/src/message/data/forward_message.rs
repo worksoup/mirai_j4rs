@@ -1,7 +1,7 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-use jbuchong::{FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait};
-use mj_helper_macro::mj_all;
 use jbuchong::{java_type, AsInstanceDerive, GetInstanceDerive};
+use jbuchong::{FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
+use mj_helper_macro::mj_all;
 
 use crate::{
     contact::{ContactTrait, UserOrBotTrait},
@@ -26,10 +26,7 @@ impl ForwardMessageBuilder {
         let contact = contact.get_instance();
         let contact = InvocationArg::try_from(contact).unwrap();
         let instance = jvm
-            .create_instance(
-                <Self as GetClassTypeTrait>::get_type_name(),
-                &[contact],
-            )
+            .create_instance(<Self as GetClassTypeTrait>::get_type_name(), &[contact])
             .unwrap();
         Self { instance }
     }

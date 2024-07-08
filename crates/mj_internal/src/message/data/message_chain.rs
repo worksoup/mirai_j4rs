@@ -1,7 +1,7 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-use jbuchong::{FromInstanceTrait, GetInstanceTrait, TryFromInstanceTrait};
-use mj_helper_macro::mj_all;
 use jbuchong::{AsInstanceDerive, GetInstanceDerive};
+use jbuchong::{FromInstanceTrait, GetInstanceTrait};
+use mj_helper_macro::mj_all;
 
 use crate::{
     message::{

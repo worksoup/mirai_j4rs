@@ -1,4 +1,3 @@
-use j4rs::errors::J4RsError;
 use crate::message::{
     ConstrainSingleTrait, MessageMetaDataTrait, MessageTrait, SingleMessageTrait,
 };

@@ -1,7 +1,5 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-use jbuchong::{
-    AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait,
-};
+use jbuchong::{FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
 use mj_helper_macro::mj_all;
 
 use crate::message::message_trait::{

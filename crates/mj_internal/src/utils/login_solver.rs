@@ -3,8 +3,8 @@ use std::ops::Deref;
 use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
 use jbuchong::{
-    java_type, AsInstanceDerive, AsInstanceTrait, Func1, GetInstanceDerive, JavaBytes, JavaString,
-    KotlinUnit, TryFromInstanceDerive,
+    java_type, AsInstanceDerive, Func1, GetInstanceDerive, JavaBytes, JavaString, KotlinUnit,
+    TryFromInstanceDerive,
 };
 use jbuchong::{
     Func0, {GetInstanceTrait, TryFromInstanceTrait},

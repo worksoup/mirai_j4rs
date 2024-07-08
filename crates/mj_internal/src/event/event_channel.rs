@@ -1,4 +1,4 @@
-use crate::event::{Listener, MiraiEventTrait, OnEvent};
+use crate::event::{Listener, MiraiEventTrait};
 use j4rs::{Instance, InvocationArg, Jvm};
 use jbuchong::Consumer;
 use jbuchong::GetInstanceTrait;
@@ -40,17 +40,19 @@ impl EventChannel {
             consumer,
         }
     }
-    pub fn subscribe_always<'a, E: MiraiEventTrait>(
-        &'a self,
-        on_event: &'a Box<dyn Fn(E) -> ()>,
+    pub fn subscribe_always<E: MiraiEventTrait>(
+        &self,
+        on_event: impl Fn(E) -> () + 'static,
     ) -> Listener<E> {
-        todo!()
+        // TODO
+        self.subscribe(on_event)
     }
     pub fn subscribe_once<E: MiraiEventTrait>(
         &self,
-        on_event: Box<dyn FnOnce(E) -> ()>,
+        on_event: impl Fn(E) -> () + 'static,
     ) -> Listener<E> {
-        todo!()
+        // TODO
+        self.subscribe(on_event)
     }
     pub fn exception_handler(&self) -> Self {
         todo!("exception_handler")

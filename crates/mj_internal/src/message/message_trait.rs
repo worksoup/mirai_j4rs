@@ -1,9 +1,7 @@
 use j4rs::{InvocationArg, Jvm};
 
-use jbuchong::{
-    AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait,
-};
 use jbuchong::utils::primitive_byte_array_to_string;
+use jbuchong::{AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
 
 use crate::{
     contact::ContactTrait,

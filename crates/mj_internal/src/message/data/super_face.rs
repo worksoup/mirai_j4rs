@@ -1,10 +1,7 @@
-use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
 use jbuchong::{
-    utils::instance_is_null,
-    {GetClassTypeTrait as _, GetInstanceTrait as _, TryFromInstanceTrait},
+    utils::instance_is_null, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait as _,
 };
-use jbuchong::{FromInstanceTrait, GetClassTypeTrait};
 use mj_helper_macro::mj_all;
 
 use crate::message::{
@@ -21,7 +18,7 @@ pub struct SuperFace {
 }
 
 impl SuperFace {
-    fn new(face_id: i32, id: &str, r#type: i32) -> Self {
+    fn _new(face_id: i32, id: &str, r#type: i32) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let face_id = InvocationArg::try_from(face_id)
             .unwrap()

@@ -8,8 +8,8 @@ use crate::{
         CodableMessageTrait, MessageContentTrait, MessageTrait, SingleMessageTrait,
     },
 };
-use mj_base::env::GetClassTypeTrait;
-use mj_base::{env::GetInstanceTrait, utils::primitive_byte_array_to_string};
+use jbuchong::GetClassTypeTrait;
+use jbuchong::{utils::primitive_byte_array_to_string, GetInstanceTrait};
 use mj_helper_macro::mj_all;
 
 lazy_static! {
@@ -63,7 +63,7 @@ impl Image {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke_static(
-                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                <Self as GetClassTypeTrait>::get_type_name(),
                 "fromId",
                 &[InvocationArg::try_from(image_id).unwrap()],
             )
@@ -214,7 +214,7 @@ impl Image {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke_static(
-                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                <Self as GetClassTypeTrait>::get_type_name(),
                 "queryUrl",
                 &[InvocationArg::try_from(self.get_instance()).unwrap()],
             )

@@ -2,8 +2,8 @@ use std::path::{Path, PathBuf};
 
 use j4rs::{ClasspathEntry, Instance, InvocationArg, JavaOpt, Jvm, JvmBuilder};
 
-use mj_base::env::{AsInstanceTrait, TryFromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
-use mj_macro::java_type;
+use jbuchong::{AsInstanceTrait, TryFromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
+use jbuchong::java_type;
 
 use crate::{
     auth::bot_authorization::BotAuthorization,
@@ -26,7 +26,7 @@ use crate::{
 /// [`new`](crate::utils::bot_builder::BotBuilder::new)  即 `BotBuilder::create(working_dir, vec![], vec![])`.
 ///
 /// [`default`](crate::utils::bot_builder::BotBuilder::default) 即 `BotBuilder::new(".")`.
-#[java_type("BotFactory")]
+#[java_type("net.mamoe.mirai.BotFactory")]
 pub struct BotBuilder {
     instance: Instance,
     jvm: Jvm,
@@ -78,7 +78,7 @@ impl BotBuilder {
         let jvm = Self::create_jvm(&working_dir, jar_paths, java_opts);
         let instance = jvm
             .field(
-                &jvm.static_class(<Self as GetClassTypeTrait>::get_type_name().as_str())
+                &jvm.static_class(<Self as GetClassTypeTrait>::get_type_name())
                     .unwrap(),
                 "INSTANCE",
             )

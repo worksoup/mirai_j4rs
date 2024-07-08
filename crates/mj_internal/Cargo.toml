@@ -9,9 +9,8 @@ crate-type = ["cdylib", "lib"] # cdylib 供 jvm_side 使用。
 
 [dependencies]
 mj_helper_macro = { path = "../mj_helper_macro" }
-mj_macro = { path = "../mj_macro" }
 mj_base = { path = "../mj_base" }
-mj_closure = { path = "../mj_closure" }
+jbuchong = { workspace = true }
 j4rs = { workspace = true }
 j4rs_derive = { workspace = true }
 num_enum = "0.7"

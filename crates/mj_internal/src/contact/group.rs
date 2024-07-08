@@ -6,14 +6,13 @@ use std::{
 
 use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait};
-use mj_base::{
-    env::{GetInstanceTrait, TryFromInstanceTrait},
-    utils::{instance_is_null, java_iter_to_rust_hash_set, java_iter_to_rust_vec},
-    MIRAI_PREFIX,
+use jbuchong::utils::{instance_is_null, java_iter_to_rust_hash_set, java_iter_to_rust_vec};
+use jbuchong::{
+    AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait,
 };
+use mj_base::MIRAI_PREFIX;
 use mj_helper_macro::mj_all;
-use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive, TryFromInstanceDerive};
+use jbuchong::{java_type, AsInstanceDerive, GetInstanceDerive, TryFromInstanceDerive};
 
 use crate::contact::AudioSupportedTrait;
 use crate::utils::{MiraiList, MiraiMap};
@@ -124,7 +123,7 @@ impl GroupSettings {
 }
 
 #[derive(GetInstanceDerive, AsInstanceDerive)]
-#[java_type("contact.Group")]
+#[java_type("net.mamoe.mirai.contact.Group")]
 pub struct Group {
     bot: Bot,
     instance: Instance,
@@ -141,7 +140,7 @@ impl PublishAnnouncementSupportedTrait for Group {
         let group = InvocationArg::try_from(group).unwrap();
         let content = InvocationArg::try_from(content).unwrap();
         let online = jvm.invoke_static(
-            <Announcement as GetClassTypeTrait>::get_type_name().as_str(),
+            <Announcement as GetClassTypeTrait>::get_type_name(),
             "publishAnnouncement",
             &[group, content],
         )?;
@@ -164,7 +163,7 @@ impl PublishAnnouncementSupportedTrait for Group {
         let parameters = parameters.get_instance();
         let parameters = InvocationArg::try_from(parameters).unwrap();
         let online = jvm.invoke_static(
-            <Announcement as GetClassTypeTrait>::get_type_name().as_str(),
+            <Announcement as GetClassTypeTrait>::get_type_name(),
             "publishAnnouncement",
             &[group, content, parameters],
         )?;
@@ -318,7 +317,7 @@ impl OfflineAnnouncement {
         let announcement = InvocationArg::try_from(announcement.get_instance()).unwrap();
         let offline_announcement = jvm
             .invoke_static(
-                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                <Self as GetClassTypeTrait>::get_type_name(),
                 "from",
                 &[announcement],
             )
@@ -477,7 +476,25 @@ impl AnnouncementTrait for OnlineAnnouncement {}
 ///
 /// 通过一个群的 [`Announcements`] 获取到 [`OnlineAnnouncement`], 然后调用 [`OnlineAnnouncement::publish_to`] 即可。
 /// 由于 `Mirai` 目前不支持获取公告图片，所以转发的公告也不会带有原公告的图片。
-#[mj_all("contact.announcement.Announcement")]
+
+#[jbuchong::java_type("net.mamoe.mirai.contact.announcement.Announcement")]
+#[doc = " 群公告。可以是 [`OnlineAnnouncement`] 或 [`OfflineAnnouncement`]."]
+#[doc = ""]
+#[doc = " ## 发布公告"]
+#[doc = ""]
+#[doc = " ### 构造一条新公告并发布"]
+#[doc = ""]
+#[doc = " 构造 [`OfflineAnnouncement`] 然后调用 [`OfflineAnnouncement::publish_to`] 或 [`Announcements::publish`]"]
+#[doc = ""]
+#[doc = " 构造时的 [`AnnouncementParameters`] 可以设置一些附加属性。"]
+#[doc = ""]
+#[doc = " 也可以使用 [`Group::publish_announcement`] 和 [`Group::publish_announcement_with_parameters`] 创建并发布公告。"]
+#[doc = ""]
+#[doc = " ### 转发获取的公告到其他群"]
+#[doc = ""]
+#[doc = " 通过一个群的 [`Announcements`] 获取到 [`OnlineAnnouncement`], 然后调用 [`OnlineAnnouncement::publish_to`] 即可。"]
+#[doc = " 由于 `Mirai` 目前不支持获取公告图片，所以转发的公告也不会带有原公告的图片。"]
+#[derive(jbuchong::AsInstanceDerive, TryFromInstanceDerive, jbuchong::GetInstanceDerive)]
 pub enum Announcement {
     OnlineAnnouncement(OnlineAnnouncement),
     OfflineAnnouncement(OfflineAnnouncement),
@@ -651,7 +668,7 @@ impl Ord for MemberPermission {
     }
 }
 
-#[java_type("contact.active.ActiveRankRecord")]
+#[java_type("net.mamoe.mirai.contact.active.ActiveRankRecord")]
 pub struct ActiveRankRecord {
     instance: Instance,
     member_name: Option<String>,
@@ -682,7 +699,7 @@ impl ActiveRankRecord {
         let instance = Jvm::attach_thread()
             .unwrap()
             .create_instance(
-                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                <Self as GetClassTypeTrait>::get_type_name(),
                 &[
                     InvocationArg::try_from(member_name.clone()).unwrap(),
                     InvocationArg::try_from(member_id)

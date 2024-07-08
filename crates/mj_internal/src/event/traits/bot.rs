@@ -1,6 +1,6 @@
 use j4rs::{InvocationArg, Jvm};
 
-use mj_base::env::TryFromInstanceTrait;
+use jbuchong::TryFromInstanceTrait;
 
 use crate::contact::{Bot, ContactTrait, Member, NormalMember, UserTrait};
 use crate::event::{

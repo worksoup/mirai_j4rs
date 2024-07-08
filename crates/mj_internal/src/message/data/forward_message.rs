@@ -1,8 +1,7 @@
-use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait};
+use jbuchong::{FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait};
 use mj_helper_macro::mj_all;
-use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
+use jbuchong::{java_type, AsInstanceDerive, GetInstanceDerive};
 
 use crate::{
     contact::{ContactTrait, UserOrBotTrait},
@@ -16,7 +15,7 @@ use crate::{
 };
 
 #[derive(AsInstanceDerive, GetInstanceDerive)]
-#[java_type("message.data.ForwardMessageBuilder")]
+#[java_type("net.mamoe.mirai.message.data.ForwardMessageBuilder")]
 pub struct ForwardMessageBuilder {
     instance: Instance,
 }
@@ -28,7 +27,7 @@ impl ForwardMessageBuilder {
         let contact = InvocationArg::try_from(contact).unwrap();
         let instance = jvm
             .create_instance(
-                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                <Self as GetClassTypeTrait>::get_type_name(),
                 &[contact],
             )
             .unwrap();

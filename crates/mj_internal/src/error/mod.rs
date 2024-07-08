@@ -6,7 +6,7 @@ use std::{
 use j4rs::errors::J4RsError;
 use j4rs::Instance;
 
-use mj_base::env::{GetInstanceTrait, TryFromInstanceTrait};
+use jbuchong::{GetInstanceTrait, TryFromInstanceTrait};
 
 use crate::contact::MemberPermission;
 use crate::error::MiraiRsErrorEnum::LumiaException;

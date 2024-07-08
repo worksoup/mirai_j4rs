@@ -1,7 +1,7 @@
 use j4rs::{Instance, InvocationArg, Jvm};
 
-use mj_base::env::GetClassTypeTrait;
-use mj_base::{env::GetInstanceTrait as _, utils::instance_is_null};
+use jbuchong::GetClassTypeTrait;
+use jbuchong::{GetInstanceTrait as _, utils::instance_is_null};
 use mj_helper_macro::mj_all;
 
 use crate::message::message_trait::{
@@ -20,7 +20,7 @@ impl RockPaperScissors {
     fn new(field: &str) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
-            .static_class_field(<Self as GetClassTypeTrait>::get_type_name().as_str(), field)
+            .static_class_field(<Self as GetClassTypeTrait>::get_type_name(), field)
             .unwrap();
         Self { instance }
     }
@@ -55,7 +55,7 @@ impl RockPaperScissors {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke_static(
-                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                <Self as GetClassTypeTrait>::get_type_name(),
                 "random",
                 InvocationArg::empty(),
             )

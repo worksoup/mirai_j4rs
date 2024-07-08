@@ -1,12 +1,8 @@
 use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstanceTrait, GetClassTypeTrait};
-use mj_base::utils::java_iter_to_rust_vec;
-use mj_base::{
-    env::{GetInstanceTrait, TryFromInstanceTrait},
-    utils::instance_is_null,
-};
-use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
+use jbuchong::{FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait};
+use jbuchong::utils::{instance_is_null, java_iter_to_rust_vec};
+use jbuchong::{java_type, AsInstanceDerive, GetInstanceDerive};
 
 use crate::utils::contact::ContactList;
 use crate::utils::{BotConfiguration, MiraiLogger};
@@ -21,7 +17,7 @@ use crate::{
 };
 
 #[derive(GetInstanceDerive, AsInstanceDerive)]
-#[java_type("Bot")]
+#[java_type("net.mamoe.mirai.Bot")]
 pub struct Bot {
     _jvm: Jvm,
     instance: Instance,
@@ -124,12 +120,11 @@ impl Bot {
         BotConfiguration::try_from_instance(bot_configuration).unwrap()
     }
     pub fn get_event_channel(&self) -> EventChannel {
-        let jvm = Jvm::attach_thread().unwrap();
         let instance = Jvm::attach_thread()
             .unwrap()
             .invoke(&self.instance, "getEventChannel", InvocationArg::empty())
             .unwrap();
-        EventChannel { jvm, instance }
+        EventChannel { instance }
     }
     pub fn get_friend(&self, id: i64) -> Option<Friend> {
         let instance = Jvm::attach_thread()

@@ -1,10 +1,10 @@
 use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstanceTrait, GetClassTypeTrait};
-use mj_base::{
-    env::{GetClassTypeTrait as _, GetInstanceTrait as _, TryFromInstanceTrait},
+use jbuchong::{
     utils::instance_is_null,
+    {GetClassTypeTrait as _, GetInstanceTrait as _, TryFromInstanceTrait},
 };
+use jbuchong::{FromInstanceTrait, GetClassTypeTrait};
 use mj_helper_macro::mj_all;
 
 use crate::message::{
@@ -34,7 +34,7 @@ impl SuperFace {
             .unwrap();
         let instance = jvm
             .create_instance(
-                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                <Self as GetClassTypeTrait>::get_type_name(),
                 &[face_id, id, r#type],
             )
             .unwrap();
@@ -98,7 +98,7 @@ impl TryFrom<Face> for SuperFace {
         let face = InvocationArg::try_from(face.get_instance()).unwrap();
         let instance = jvm
             .invoke_static(
-                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                <Self as GetClassTypeTrait>::get_type_name(),
                 "fromOrNull",
                 &[face],
             )

@@ -2,13 +2,12 @@ use std::path::PathBuf;
 
 use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstanceTrait, GetClassTypeTrait};
-use mj_base::{
-    env::{GetInstanceTrait, TryFromInstanceTrait},
+use jbuchong::{java_type, AsInstanceDerive, GetInstanceDerive, TryFromInstanceDerive};
+use jbuchong::{
     utils::instance_is_null,
+    {GetInstanceTrait, TryFromInstanceTrait},
 };
-use mj_closure::{KtFunc1Raw, KtFunc2Raw};
-use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive, TryFromInstanceDerive};
+use jbuchong::{FromInstanceTrait, GetClassTypeTrait};
 
 use crate::{
     contact::Bot,
@@ -111,10 +110,10 @@ impl ContactListCache {
     }
 }
 #[derive(AsInstanceDerive, GetInstanceDerive)]
-#[java_type("utils.BotConfiguration")]
+#[java_type("net.mamoe.mirai.utils.BotConfiguration")]
 pub struct BotConfiguration {
     instance: Instance,
-    _login_solver_holder: Option<(KtFunc2Raw, KtFunc2Raw, KtFunc1Raw, KtFunc2Raw)>,
+    _login_solver_holder: Option<()>,
 }
 impl TryFromInstanceTrait for BotConfiguration {
     fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
@@ -146,7 +145,7 @@ impl Default for BotConfiguration {
         let instance = Jvm::attach_thread()
             .unwrap()
             .invoke_static(
-                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                <Self as GetClassTypeTrait>::get_type_name(),
                 "getDefault",
                 InvocationArg::empty(),
             )
@@ -521,9 +520,7 @@ impl BotConfiguration {
                             &Jvm::attach_thread()
                                 .unwrap()
                                 .static_class(
-                                    (<Self as GetClassTypeTrait>::get_type_name()
-                                        .as_str()
-                                        .to_string()
+                                    (<Self as GetClassTypeTrait>::get_type_name().to_string()
                                         + "$HeartbeatStrategy")
                                         .as_str(),
                                 )
@@ -584,15 +581,15 @@ impl BotConfiguration {
         T: LoginSolverTrait,
     {
         let jvm = Jvm::attach_thread().unwrap();
-        let (instance, _1, _2, _3, _4) = T::__instance();
+        // let (instance, _1, _2, _3, _4) = todo!();
         jvm.invoke(
             &self.instance,
             "setLoginSolver",
-            &[InvocationArg::try_from(instance).unwrap()],
+            &[InvocationArg::try_from(todo!()).unwrap()],
         )
         .unwrap();
         // 防止 drop.
-        self._login_solver_holder = Some((_1, _2, _3, _4))
+        self._login_solver_holder = todo!()
     }
     pub fn set_network_logger_supplier(&self) {
         Jvm::attach_thread()

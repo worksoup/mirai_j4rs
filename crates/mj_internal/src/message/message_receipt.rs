@@ -1,6 +1,6 @@
 use j4rs::{Instance, InvocationArg, Jvm};
 
-use mj_base::env::{FromInstanceTrait, TryFromInstanceTrait as _};
+use jbuchong::{FromInstanceTrait, TryFromInstanceTrait as _};
 
 use crate::{
     contact::ContactTrait,

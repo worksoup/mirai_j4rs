@@ -1,6 +1,6 @@
 use j4rs::{InvocationArg, Jvm};
 
-use mj_base::env::{AsInstanceTrait, TryFromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
+use jbuchong::{AsInstanceTrait, TryFromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
 
 pub trait MiraiEventTrait
 where

@@ -1,5 +1,5 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::GetClassTypeTrait;
+use jbuchong::GetClassTypeTrait;
 use mj_helper_macro::mj_all;
 
 #[inline]
@@ -35,7 +35,7 @@ impl ExternalResource {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke_static(
-                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                <Self as GetClassTypeTrait>::get_type_name(),
                 "create",
                 &[InvocationArg::try_from(
                     jvm.create_instance("java.io.File", &[InvocationArg::try_from(path).unwrap()])
@@ -54,7 +54,7 @@ impl ExternalResource {
         let bytes = i8_array_to_java_byte_array(bytes);
         let instance = jvm
             .invoke_static(
-                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                <Self as GetClassTypeTrait>::get_type_name(),
                 "create",
                 &[InvocationArg::try_from(bytes).unwrap()],
             )
@@ -75,7 +75,7 @@ impl ExternalResource {
         let format_name = InvocationArg::try_from(format_name).unwrap();
         let instance = jvm
             .invoke_static(
-                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                <Self as GetClassTypeTrait>::get_type_name(),
                 "create",
                 &[
                     InvocationArg::try_from(
@@ -106,7 +106,7 @@ impl ExternalResource {
         let bytes = i8_array_to_java_byte_array(bytes);
         let instance = jvm
             .invoke_static(
-                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                <Self as GetClassTypeTrait>::get_type_name(),
                 "create",
                 &[InvocationArg::try_from(bytes).unwrap(), format_name],
             )

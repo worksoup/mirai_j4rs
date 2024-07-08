@@ -1,8 +1,7 @@
-use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstanceTrait, GetInstanceTrait, TryFromInstanceTrait};
+use jbuchong::{FromInstanceTrait, GetInstanceTrait, TryFromInstanceTrait};
 use mj_helper_macro::mj_all;
-use mj_macro::{AsInstanceDerive, GetInstanceDerive};
+use jbuchong::{AsInstanceDerive, GetInstanceDerive};
 
 use crate::{
     message::{

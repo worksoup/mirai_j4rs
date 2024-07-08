@@ -1,7 +1,7 @@
 use crate::contact::ActiveRankRecord;
 use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{TryFromInstanceTrait, GetInstanceTrait};
+use jbuchong::{TryFromInstanceTrait, GetInstanceTrait};
 
 pub struct MiraiList<T> {
     instance: Instance,

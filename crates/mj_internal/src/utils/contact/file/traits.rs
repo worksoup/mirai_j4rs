@@ -1,6 +1,6 @@
 use j4rs::{InvocationArg, Jvm};
 
-use mj_base::env::{
+use jbuchong::{
     AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait,
 };
 

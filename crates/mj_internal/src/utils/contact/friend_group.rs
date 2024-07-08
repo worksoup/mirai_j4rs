@@ -1,12 +1,12 @@
 use j4rs::{Instance, InvocationArg, Jvm};
 use j4rs::errors::J4RsError;
-use mj_base::env::GetClassTypeTrait;
-use mj_base::{
-    env::{TryFromInstanceTrait, GetInstanceTrait},
+use jbuchong::GetClassTypeTrait;
+use jbuchong::{
+    {TryFromInstanceTrait, GetInstanceTrait},
     utils::java_iter_to_rust_vec,
 };
 use mj_helper_macro::mj_all;
-use mj_macro::{AsInstanceDerive, GetInstanceDerive};
+use jbuchong::{AsInstanceDerive, GetInstanceDerive};
 
 use crate::contact::Friend;
 
@@ -99,7 +99,7 @@ impl FriendGroups {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke_static(
-                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                <Self as GetClassTypeTrait>::get_type_name(),
                 "create",
                 &[InvocationArg::try_from(name).unwrap()],
             )

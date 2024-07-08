@@ -1,6 +1,5 @@
-use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{
+use jbuchong::{
     AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait,
 };
 use mj_helper_macro::mj_all;

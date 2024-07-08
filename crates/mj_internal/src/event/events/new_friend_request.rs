@@ -1,6 +1,5 @@
-use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::{env::TryFromInstanceTrait, utils::instance_is_null};
+use jbuchong::{utils::instance_is_null, TryFromInstanceTrait};
 use mj_helper_macro::mj_event;
 
 use crate::contact::Group;

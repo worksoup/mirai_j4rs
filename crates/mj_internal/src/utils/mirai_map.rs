@@ -1,5 +1,5 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{TryFromInstanceTrait, GetInstanceTrait};
+use jbuchong::{TryFromInstanceTrait, GetInstanceTrait};
 use std::collections::HashMap;
 use j4rs::errors::J4RsError;
 

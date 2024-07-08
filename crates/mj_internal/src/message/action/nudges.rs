@@ -1,9 +1,8 @@
 use std::marker::PhantomData;
 
 use j4rs::{Instance, InvocationArg, Jvm};
-use j4rs::errors::J4RsError;
-use mj_base::env::{AsInstanceTrait, TryFromInstanceTrait, GetInstanceTrait};
-use mj_macro::{AsInstanceDerive, TryFromInstanceDerive, GetInstanceDerive};
+use jbuchong::{AsInstanceTrait, TryFromInstanceTrait, GetInstanceTrait};
+use jbuchong::{AsInstanceDerive, TryFromInstanceDerive, GetInstanceDerive};
 
 use crate::{
     contact::{ContactTrait, UserOrBotTrait},

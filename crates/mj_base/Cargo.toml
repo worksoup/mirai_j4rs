@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 j4rs = { workspace = true }
 j4rs_derive = { workspace = true }
+jbuchong = { workspace = true }

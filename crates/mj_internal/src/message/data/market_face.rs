@@ -1,8 +1,8 @@
 use j4rs::errors::J4RsError;
 use j4rs::Instance;
 
-use mj_base::env::{AsInstanceTrait, GetClassTypeTrait};
-use mj_base::env::{TryFromInstanceTrait, GetInstanceTrait};
+use jbuchong::{AsInstanceTrait, GetClassTypeTrait};
+use jbuchong::{TryFromInstanceTrait, GetInstanceTrait};
 use mj_helper_macro::mj_all;
 
 use crate::message::data::dice::Dice;

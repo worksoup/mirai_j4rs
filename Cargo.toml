@@ -18,10 +18,10 @@ default-members = ["crates/mj_*"]
 [dependencies]
 mj_internal = { path = "crates/mj_internal" }
 mj_base = { path = "crates/mj_base" }
-mj_closure = { path = "crates/mj_closure" }
 mj_error = { path = "crates/mj_error" }
 
 
 [workspace.dependencies]
 j4rs = "0.20"
 j4rs_derive = "0.1"
+jbuchong = { git = "https://github.com/worksoup/jbuchong.git" }

@@ -1,6 +1,6 @@
 use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait};
+use jbuchong::{FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait};
 use mj_helper_macro::mj_all;
 
 use crate::message::{
@@ -40,7 +40,7 @@ impl From<MessageChain> for QuoteReply {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .create_instance(
-                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                <Self as GetClassTypeTrait>::get_type_name(),
                 &[InvocationArg::try_from(source_message.get_instance()).unwrap()],
             )
             .unwrap();

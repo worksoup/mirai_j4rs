@@ -1,6 +1,6 @@
-use j4rs::{Instance, Jvm};
 use j4rs::errors::J4RsError;
-use crate::env::{AsInstanceTrait, TryFromInstanceTrait, GetInstanceTrait};
+use j4rs::{Instance, Jvm};
+use jbuchong::{AsInstanceTrait, GetInstanceTrait, TryFromInstanceTrait};
 
 pub struct UnknownTypeValue(Instance);
 

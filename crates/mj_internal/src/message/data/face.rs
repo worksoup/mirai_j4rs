@@ -1,7 +1,7 @@
 use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{TryFromInstanceTrait, GetClassTypeTrait};
-use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
+use jbuchong::{TryFromInstanceTrait, GetClassTypeTrait};
+use jbuchong::{java_type, AsInstanceDerive, GetInstanceDerive};
 
 use crate::message::{
     data::super_face::SuperFace,
@@ -13,7 +13,7 @@ use crate::message::{
 
 include!("face_res.rs");
 #[derive(AsInstanceDerive, GetInstanceDerive)]
-#[java_type("message.data.Face")]
+#[java_type("net.mamoe.mirai.message.data.Face")]
 pub struct Face {
     name: String,
     id: i32,
@@ -64,7 +64,7 @@ impl From<FaceEnum> for Face {
         let instance = Jvm::attach_thread()
             .unwrap()
             .create_instance(
-                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                <Self as GetClassTypeTrait>::get_type_name(),
                 &[InvocationArg::try_from(id)
                     .unwrap()
                     .into_primitive()

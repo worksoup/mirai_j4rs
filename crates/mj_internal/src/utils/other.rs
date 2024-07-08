@@ -1,6 +1,6 @@
 use j4rs::{InvocationArg, Jvm};
 
-use mj_base::env::GetClassTypeTrait;
+use jbuchong::GetClassTypeTrait;
 
 use crate::utils::other::enums::MiraiProtocol;
 
@@ -9,8 +9,8 @@ pub mod enums {
     use j4rs::{Instance, InvocationArg, Jvm};
     use num_enum::IntoPrimitive;
 
-    use mj_base::env::{TryFromInstanceTrait, GetInstanceTrait};
-    use mj_macro::java_type;
+    use jbuchong::{TryFromInstanceTrait, GetInstanceTrait};
+    use jbuchong::java_type;
 
     use crate::utils::other::{protocol_enum_r2j, protocol_str2enum};
 
@@ -27,7 +27,7 @@ pub mod enums {
     }
 
     #[derive(Debug)]
-    #[java_type("utils.BotConfiguration$MiraiProtocol")]
+    #[java_type("net.mamoe.mirai.utils.BotConfiguration$MiraiProtocol")]
     pub enum MiraiProtocol {
         /// `MiraiProtocol.ANDROID_PHONE`
         #[doc(alias = "ANDROID_PHONE")]
@@ -86,7 +86,7 @@ pub mod enums {
         }
     }
 
-    #[java_type("contact.AvatarSpec")]
+    #[java_type("net.mamoe.mirai.contact.AvatarSpec")]
     #[derive(IntoPrimitive)]
     #[repr(i32)]
     pub enum AvatarSpec {
@@ -202,7 +202,7 @@ pub fn protocol_enum_r2j(
             .field(
                 &Jvm::attach_thread()
                     .unwrap()
-                    .static_class(<MiraiProtocol as GetClassTypeTrait>::get_type_name().as_str())
+                    .static_class(<MiraiProtocol as GetClassTypeTrait>::get_type_name())
                     .unwrap(),
                 match protocol {
                     MiraiProtocol::A => "ANDROID_PHONE",

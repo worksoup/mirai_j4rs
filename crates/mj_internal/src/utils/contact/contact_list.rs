@@ -2,8 +2,8 @@ use std::marker::PhantomData;
 
 use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{TryFromInstanceTrait, GetInstanceTrait};
-use mj_base::utils::instance_is_null;
+use jbuchong::{TryFromInstanceTrait, GetInstanceTrait};
+use jbuchong::utils::instance_is_null;
 
 use crate::contact::ContactTrait;
 use crate::message::MessageHashCodeTrait;

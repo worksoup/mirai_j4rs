@@ -1,7 +1,6 @@
-use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{AsInstanceTrait, TryFromInstanceTrait, GetClassTypeTrait, FromInstanceTrait};
-use mj_macro::{AsInstanceDerive, TryFromInstanceDerive, GetInstanceDerive};
+use jbuchong::{AsInstanceTrait, TryFromInstanceTrait, GetClassTypeTrait, FromInstanceTrait};
+use jbuchong::{AsInstanceDerive, TryFromInstanceDerive, GetInstanceDerive};
 
 use crate::contact::Group;
 use crate::utils::contact::file::{AbsoluteFile, AbsoluteFolder, ExternalResource};
@@ -21,7 +20,7 @@ impl RemoteFiles {
         let instance = jvm
             .cast(
                 &instance,
-                <Group as GetClassTypeTrait>::get_type_name().as_str(),
+                <Group as GetClassTypeTrait>::get_type_name(),
             )
             .unwrap();
         Group::try_from_instance(instance).unwrap()

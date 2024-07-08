@@ -1,10 +1,5 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-use j4rs::errors::J4RsError;
-use mj_base::{
-    env::{TryFromInstanceTrait, GetInstanceTrait},
-    utils::primitive_byte_array_to_string,
-};
-use mj_base::env::FromInstanceTrait;
+use jbuchong::{utils::primitive_byte_array_to_string, FromInstanceTrait, GetInstanceTrait};
 use mj_helper_macro::mj_all;
 
 use crate::message::data::FileMessage;

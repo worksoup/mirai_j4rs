@@ -1,7 +1,7 @@
 use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{AsInstanceTrait, TryFromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
-use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
+use jbuchong::{AsInstanceTrait, TryFromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
+use jbuchong::{java_type, AsInstanceDerive, GetInstanceDerive};
 
 use crate::{
     contact::Group,
@@ -12,7 +12,7 @@ use crate::{
 };
 
 #[derive(GetInstanceDerive, AsInstanceDerive)]
-#[java_type("message.data.At")]
+#[java_type("net.mamoe.mirai.message.data.At")]
 pub struct At {
     id: i64,
     instance: Instance,
@@ -23,7 +23,7 @@ impl At {
         let instance = Jvm::attach_thread()
             .unwrap()
             .create_instance(
-                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                <Self as GetClassTypeTrait>::get_type_name(),
                 &[InvocationArg::try_from(id)
                     .unwrap()
                     .into_primitive()

@@ -1,6 +1,6 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstanceTrait, GetClassTypeTrait};
-use mj_base::utils::instance_is_null;
+use jbuchong::{FromInstanceTrait, GetClassTypeTrait};
+use jbuchong::utils::instance_is_null;
 use mj_base::MIRAI_PREFIX;
 use mj_helper_macro::mj_all;
 
@@ -76,7 +76,7 @@ impl FileMessage {
             .unwrap();
         let instance = jvm
             .invoke_static(
-                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                <Self as GetClassTypeTrait>::get_type_name(),
                 "create",
                 &[file_id, internal_id, name, size],
             )

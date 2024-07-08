@@ -1,9 +1,9 @@
 use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{GetClassTypeTrait, GetInstanceTrait};
-use mj_macro::java_type;
+use jbuchong::java_type;
+use jbuchong::{GetClassTypeTrait, GetInstanceTrait};
 
-#[java_type("auth.BotAuthorization")]
+#[java_type("net.mamoe.mirai.auth.BotAuthorization")]
 pub enum BotAuthorization {
     Password(String),
     Md5([u8; 16]),
@@ -17,7 +17,7 @@ impl GetInstanceTrait for BotAuthorization {
         match self {
             BotAuthorization::Password(password) => Ok(jvm
                 .invoke_static(
-                    <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                    <Self as GetClassTypeTrait>::get_type_name(),
                     "byPassword",
                     &[InvocationArg::try_from(password).unwrap()],
                 )
@@ -33,7 +33,7 @@ impl GetInstanceTrait for BotAuthorization {
                 let arg = InvocationArg::try_from(arg).unwrap();
                 Ok(jvm
                     .invoke_static(
-                        <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                        <Self as GetClassTypeTrait>::get_type_name(),
                         "byPassword",
                         &[arg],
                     )
@@ -41,7 +41,7 @@ impl GetInstanceTrait for BotAuthorization {
             }
             BotAuthorization::QrCode => Ok(jvm
                 .invoke_static(
-                    <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                    <Self as GetClassTypeTrait>::get_type_name(),
                     "byQRCode",
                     InvocationArg::empty(),
                 )

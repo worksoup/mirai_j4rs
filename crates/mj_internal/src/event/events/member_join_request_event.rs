@@ -1,6 +1,5 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-use j4rs::errors::J4RsError;
-use mj_base::env::TryFromInstanceTrait;
+use jbuchong::TryFromInstanceTrait;
 use mj_helper_macro::mj_event;
 
 use crate::contact::{Bot, Group, NormalMember};
@@ -16,7 +15,9 @@ pub struct MemberJoinRequestEvent {
 impl MemberJoinRequestEvent {
     pub fn accept(&self) {
         let jvm = Jvm::attach_thread().unwrap();
-        let _ = jvm.invoke(&self.instance, "getBot", InvocationArg::empty()).unwrap();
+        let _ = jvm
+            .invoke(&self.instance, "getBot", InvocationArg::empty())
+            .unwrap();
     }
     pub fn equals(&self, other: impl MiraiEventTrait) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
@@ -38,48 +39,66 @@ impl MemberJoinRequestEvent {
     }
     pub fn get_event_id(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getEventId", InvocationArg::empty()).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "getEventId", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(instance).unwrap()
     }
     // TODO: 以下一些函数会返回空值，需要做判断。
     pub fn get_from_id(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getFromId", InvocationArg::empty()).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "getFromId", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(instance).unwrap()
     }
     pub fn get_from_nick(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getFromNick", InvocationArg::empty()).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "getFromNick", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(instance).unwrap()
     }
     pub fn get_group(&self) -> Group {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getGroup", InvocationArg::empty()).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "getGroup", InvocationArg::empty())
+            .unwrap();
         Group::try_from_instance(instance).unwrap()
     }
     pub fn get_group_id(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getGroupId", InvocationArg::empty()).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "getGroupId", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(instance).unwrap()
     }
     pub fn get_group_name(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getGroupName", InvocationArg::empty()).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "getGroupName", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(instance).unwrap()
     }
     pub fn get_invitor(&self) -> NormalMember {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getInvitor", InvocationArg::empty()).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "getInvitor", InvocationArg::empty())
+            .unwrap();
         NormalMember::try_from_instance(instance).unwrap()
     }
     pub fn get_invitor_id(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getInvitorId", InvocationArg::empty()).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "getInvitorId", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(instance).unwrap()
     }
     pub fn get_message(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "getMessage", InvocationArg::empty()).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "getMessage", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(instance).unwrap()
     }
     pub fn ignore(&self, blacklist: bool) {
@@ -100,7 +119,9 @@ impl MemberJoinRequestEvent {
     }
     pub fn to_string(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm.invoke(&self.instance, "toString", InvocationArg::empty()).unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "toString", InvocationArg::empty())
+            .unwrap();
         jvm.to_rust(instance).unwrap()
     }
 }

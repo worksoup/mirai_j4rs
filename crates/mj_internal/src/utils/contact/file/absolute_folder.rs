@@ -1,5 +1,5 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{AsInstanceTrait, FromInstanceTrait};
+use jbuchong::{AsInstanceTrait, FromInstanceTrait};
 use mj_helper_macro::mj_all;
 
 use crate::utils::{

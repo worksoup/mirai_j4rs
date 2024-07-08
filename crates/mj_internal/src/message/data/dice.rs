@@ -1,6 +1,5 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-use j4rs::errors::J4RsError;
-use mj_base::env::GetClassTypeTrait;
+use jbuchong::GetClassTypeTrait;
 use mj_helper_macro::mj_all;
 
 use crate::message::message_trait::{
@@ -24,7 +23,7 @@ impl Dice {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .create_instance(
-                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                <Self as GetClassTypeTrait>::get_type_name(),
                 &[InvocationArg::try_from(value)
                     .unwrap()
                     .into_primitive()

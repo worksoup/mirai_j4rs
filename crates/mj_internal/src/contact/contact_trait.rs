@@ -1,6 +1,6 @@
 use j4rs::{InvocationArg, Jvm};
 
-use mj_base::env::{
+use jbuchong::{
     AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait,
 };
 use mj_base::MIRAI_PREFIX;
@@ -79,7 +79,7 @@ where
                 .field(
                     &Jvm::attach_thread()
                         .unwrap()
-                        .static_class(<AvatarSpec as GetClassTypeTrait>::get_type_name().as_str())
+                        .static_class(<AvatarSpec as GetClassTypeTrait>::get_type_name())
                         .unwrap(),
                     match size.unwrap() {
                         AvatarSpec::XS => "SMALLEST",

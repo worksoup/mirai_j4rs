@@ -1,6 +1,6 @@
 use j4rs::{InvocationArg, Jvm};
 
-use mj_base::env::{FromInstanceTrait, TryFromInstanceTrait};
+use jbuchong::{FromInstanceTrait, TryFromInstanceTrait};
 
 use crate::contact::{Bot, ContactTrait};
 use crate::event::{BotPassiveEventTrait, MiraiEventTrait, OtherClientEventTrait};

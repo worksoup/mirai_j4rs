@@ -1,11 +1,11 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::{FromInstanceTrait, GetClassTypeTrait};
-use mj_base::{
-    env::{GetInstanceTrait, TryFromInstanceTrait},
+use jbuchong::{
     utils::instance_is_null,
+    {GetInstanceTrait, TryFromInstanceTrait},
 };
-use mj_closure::{Comparator, Consumer, Function, Predicate};
-use mj_macro::{AsInstanceDerive, GetInstanceDerive, TryFromInstanceDerive};
+use jbuchong::{Comparator, Consumer, Function, Predicate};
+use jbuchong::{FromInstanceTrait, GetClassTypeTrait};
+use jbuchong::{AsInstanceDerive, GetInstanceDerive, TryFromInstanceDerive};
 use std::{cmp::Ordering, marker::PhantomData};
 
 pub mod bot_builder;

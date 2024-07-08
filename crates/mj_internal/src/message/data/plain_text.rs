@@ -1,8 +1,8 @@
 use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-use mj_base::env::TryFromInstanceTrait;
-use mj_base::env::GetClassTypeTrait;
-use mj_macro::{java_type, AsInstanceDerive, GetInstanceDerive};
+use jbuchong::TryFromInstanceTrait;
+use jbuchong::GetClassTypeTrait;
+use jbuchong::{java_type, AsInstanceDerive, GetInstanceDerive};
 
 use crate::message::message_trait::{
     CodableMessageTrait, MessageContentTrait, MessageHashCodeTrait, MessageTrait,
@@ -10,7 +10,7 @@ use crate::message::message_trait::{
 };
 
 #[derive(AsInstanceDerive, GetInstanceDerive)]
-#[java_type("message.data.PlainText")]
+#[java_type("net.mamoe.mirai.message.data.PlainText")]
 pub struct PlainText {
     content: String,
     instance: Instance,
@@ -23,7 +23,7 @@ impl From<&str> for PlainText {
             content: value.to_string(),
             instance: jvm
                 .create_instance(
-                    <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                    <Self as GetClassTypeTrait>::get_type_name(),
                     &[InvocationArg::try_from(value).unwrap()],
                 )
                 .unwrap(),
@@ -36,7 +36,7 @@ impl From<String> for PlainText {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .create_instance(
-                <Self as GetClassTypeTrait>::get_type_name().as_str(),
+                <Self as GetClassTypeTrait>::get_type_name(),
                 &[InvocationArg::try_from(&value).unwrap()],
             )
             .unwrap();

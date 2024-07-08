@@ -1,8 +1,17 @@
+use mj_base::MIRAI_PREFIX;
 use proc_macro::TokenStream;
 use proc_macro2::Span;
 use quote::quote;
 use syn::{DeriveInput, LitStr};
 
+fn add_prefix(input: TokenStream) -> LitStr {
+    let type_name: &syn::LitStr = &syn::parse(input).expect("类型名称请用字符串表示！");
+    let type_name = type_name.value();
+    LitStr::new(
+        format!("{}{}", MIRAI_PREFIX, type_name).as_str(),
+        Span::mixed_site(),
+    )
+}
 /// ### `mj_all`
 ///
 /// 同时应用 [`GetInstanceDerive`], [`AsInstanceDerive`], [`FromInstanceDerive`] 和 [`java_type`](macro@java_type).
@@ -11,10 +20,9 @@ use syn::{DeriveInput, LitStr};
 #[proc_macro_attribute]
 pub fn mj_all(type_name: TokenStream, input: TokenStream) -> TokenStream {
     let ast: &DeriveInput = &syn::parse(input).unwrap();
-    let type_name: &syn::LitStr = &syn::parse(type_name).expect("类型名称请用字符串表示！");
+    let type_name = add_prefix(type_name);
     let gen = quote! {
-        #[derive(mj_macro::AsInstanceDerive, mj_macro::TryFromInstanceDerive, mj_macro::GetInstanceDerive)]
-        #[mj_macro::java_type(#type_name)]
+        #[jbuchong::java_all(#type_name)]
         #ast
     };
     gen.into()
@@ -67,8 +75,8 @@ pub fn mj_event(mj_type: TokenStream, input: TokenStream) -> TokenStream {
         syn::parse(mj_type).expect("类型名称请用字符串表示！")
     };
     let gen = quote! {
-        #[derive(mj_macro::AsInstanceDerive, mj_macro::TryFromInstanceDerive, mj_macro::GetInstanceDerive, mj_helper_macro::MiraiEventDerive)]
-        #[mj_macro::java_type(#type_name)]
+        #[derive(jbuchong::AsInstanceDerive, jbuchong::TryFromInstanceDerive, jbuchong::GetInstanceDerive, mj_helper_macro::MiraiEventDerive)]
+        #[jbuchong::java_type(#type_name)]
         #ast
     };
     gen.into()
@@ -87,8 +95,8 @@ pub fn mj_event_without_default_traits(mj_type: TokenStream, input: TokenStream)
         syn::parse(mj_type).expect("类型名称请用字符串表示！")
     };
     let gen = quote! {
-        #[derive(mj_macro::AsInstanceDerive, mj_macro::FromInstanceDerive, mj_macro::GetInstanceDerive)]
-        #[mj_macro::java_type(#type_name)]
+        #[derive(jbuchong::AsInstanceDerive, jbuchong::FromInstanceDerive, jbuchong::GetInstanceDerive)]
+        #[jbuchong::java_type(#type_name)]
         #ast
     };
     gen.into()

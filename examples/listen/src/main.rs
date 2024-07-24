@@ -127,10 +127,10 @@ fn main() {
             }
         });
     // 监听 GroupMessageEvent.
-    let listener_for_group_message_event = event_channel.subscribe_always(&on_group_message_event);
+    let listener_for_group_message_event = event_channel.subscribe_always(on_group_message_event);
     // 监听 FriendMessageEvent.
     let listener_for_friend_message_event =
-        event_channel.subscribe_always(&on_friend_message_event);
+        event_channel.subscribe_always(on_friend_message_event);
     // 因为监听并不阻塞线程，不阻塞的话程序会直接结束。这里仅供参考。
     let current_thread = std::thread::current();
     ctrlc::set_handler(move || current_thread.unpark()).unwrap();

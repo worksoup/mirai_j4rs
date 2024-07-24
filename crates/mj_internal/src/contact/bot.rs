@@ -1,9 +1,10 @@
 use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-use jbuchong::{FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait};
 use jbuchong::utils::{instance_is_null, java_iter_to_rust_vec};
 use jbuchong::{java_type, AsInstanceDerive, GetInstanceDerive};
+use jbuchong::{FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait};
 
+use crate::utils::backend::Mirai;
 use crate::utils::contact::ContactList;
 use crate::utils::{BotConfiguration, MiraiLogger};
 use crate::{

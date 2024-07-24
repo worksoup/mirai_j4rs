@@ -2,6 +2,7 @@ use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 
+use crate::utils::backend::Mirai;
 use crate::utils::bot_builder::BotBuilder;
 use crate::{
     auth::bot_authorization::BotAuthorization, contact::Bot, utils::other::enums::MiraiProtocol,
@@ -23,7 +24,7 @@ pub fn bot_group_member(working_dir: &str) -> (Bot, i64, i64) {
     .unwrap();
     let group_id = config.group_id;
     let member_id = config.member_id;
-    let bot_builder = BotBuilder::new(working_dir);
+    let bot_builder = BotBuilder::<Mirai>::new(working_dir);
     let bot_authorization = if !config.passwd.is_empty() {
         BotAuthorization::Password(config.passwd.clone())
     } else {
@@ -41,6 +42,5 @@ pub fn bot_group_member(working_dir: &str) -> (Bot, i64, i64) {
         member_id,
     )
 }
-
 #[cfg(test)]
 mod tests {}

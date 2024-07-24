@@ -1,3 +1,4 @@
+use std::marker::PhantomData;
 use std::path::PathBuf;
 
 use j4rs::errors::J4RsError;
@@ -9,6 +10,7 @@ use jbuchong::{
 };
 use jbuchong::{FromInstanceTrait, GetClassTypeTrait};
 
+use crate::utils::backend::{BotBackend, Mirai};
 use crate::{
     contact::Bot,
     utils::{

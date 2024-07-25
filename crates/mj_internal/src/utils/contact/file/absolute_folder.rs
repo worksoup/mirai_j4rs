@@ -128,8 +128,7 @@ impl AbsoluteFolder {
                 "uploadNewFile",
                 &[
                     InvocationArg::try_from(file_name).unwrap(),
-                    InvocationArg::try_from(jvm.clone_instance(resource.as_instance()).unwrap())
-                        .unwrap(),
+                    InvocationArg::from(jvm.clone_instance(resource.as_instance()).unwrap()),
                 ],
             )
             .unwrap();

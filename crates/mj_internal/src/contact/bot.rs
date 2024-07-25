@@ -1,12 +1,10 @@
-use j4rs::errors::J4RsError;
-use j4rs::{Instance, InvocationArg, Jvm};
-use jbuchong::utils::{instance_is_null, java_iter_to_rust_vec};
-use jbuchong::{java_type, AsInstanceDerive, GetInstanceDerive};
-use jbuchong::{FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait};
+use j4rs::{errors::J4RsError, Instance, InvocationArg, Jvm};
+use jbuchong::{
+    java,
+    utils::{instance_is_null, java_iter_to_rust_vec},
+    FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait,
+};
 
-use crate::utils::backend::Mirai;
-use crate::utils::contact::ContactList;
-use crate::utils::{BotConfiguration, MiraiLogger};
 use crate::{
     contact::{
         contact_trait::{ContactOrBotTrait, NudgeSupportedTrait, UserOrBotTrait},
@@ -14,11 +12,14 @@ use crate::{
     },
     error::MiraiRsError,
     event::EventChannel,
-    utils::{contact::friend_group::FriendGroups, other::enums::AvatarSpec},
+    utils::{
+        contact::{friend_group::FriendGroups, ContactList},
+        other::enums::AvatarSpec,
+        BotConfiguration, MiraiLogger,
+    },
 };
 
-#[derive(GetInstanceDerive, AsInstanceDerive)]
-#[java_type("net.mamoe.mirai.Bot")]
+#[java("net.mamoe.mirai.Bot")]
 pub struct Bot {
     _jvm: Jvm,
     instance: Instance,

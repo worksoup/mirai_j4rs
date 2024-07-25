@@ -1,9 +1,10 @@
+use std::fmt::{Display, Formatter};
 use std::marker::PhantomData;
 
 use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-use jbuchong::{TryFromInstanceTrait, GetInstanceTrait};
 use jbuchong::utils::instance_is_null;
+use jbuchong::{GetInstanceTrait, TryFromInstanceTrait};
 
 use crate::contact::ContactTrait;
 use crate::message::MessageHashCodeTrait;
@@ -21,7 +22,7 @@ impl<T: ContactTrait + TryFromInstanceTrait> TryFromInstanceTrait for ContactLis
     fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
         Ok(ContactList {
             instance,
-            _unused: PhantomData::default(),
+            _unused: PhantomData,
         })
     }
 }
@@ -112,8 +113,13 @@ where
             )
             .unwrap()
     }
-    pub fn to_string(&self) -> String {
-        Jvm::attach_thread()
+}
+impl<T> Display for ContactList<T>
+where
+    T: ContactTrait + TryFromInstanceTrait,
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let s: String = Jvm::attach_thread()
             .unwrap()
             .to_rust(
                 Jvm::attach_thread()
@@ -121,7 +127,8 @@ where
                     .invoke(&self.instance, "toString", InvocationArg::empty())
                     .unwrap(),
             )
-            .unwrap()
+            .unwrap();
+        f.write_str(s.as_str())
     }
 }
 

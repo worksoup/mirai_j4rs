@@ -26,6 +26,11 @@ impl OfflineAudio {
         todo!()
     }
 }
+impl Default for OfflineAudio {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl TryFrom<OnlineAudio> for OfflineAudio {
     // TODO: 需要合适的错误类型。

@@ -1,6 +1,6 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-use jbuchong::{java_type, AsInstanceDerive, GetInstanceDerive};
-use jbuchong::{FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
+use jbuchong::{java, GetClassTypeTrait, GetInstanceTrait, FromInstanceTrait};
+
 use mj_helper_macro::mj_all;
 
 use crate::{
@@ -14,8 +14,7 @@ use crate::{
     },
 };
 
-#[derive(AsInstanceDerive, GetInstanceDerive)]
-#[java_type("net.mamoe.mirai.message.data.ForwardMessageBuilder")]
+#[mj_all("message.data.ForwardMessageBuilder")]
 pub struct ForwardMessageBuilder {
     instance: Instance,
 }
@@ -104,7 +103,7 @@ pub struct ForwardMessage {
     instance: Instance,
 }
 
-#[derive(AsInstanceDerive, GetInstanceDerive)]
+#[java]
 pub struct ForwardMessageNode {
     instance: Instance,
 }

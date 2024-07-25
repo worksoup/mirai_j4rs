@@ -2,7 +2,7 @@ use j4rs::{Instance, InvocationArg, Jvm};
 use jbuchong::Consumer;
 
 pub enum OnEvent<'a, E> {
-    Fn(&'a Box<dyn Fn(E)>),
+    Fn(&'a dyn Fn(E)),
     // 此处需要值，确保引用有效，值不会被 drop.
     FnOnce, // 此处不需要值，因为值已经移动到下方 Listener 中 call_from_java 这个指针所代表的值里了。
 }
@@ -23,7 +23,6 @@ impl<E> Listener<E> {
             .invoke(&self.instance, "complete", InvocationArg::empty())
             .unwrap();
         self.consumer.drop();
-        let r = jvm.to_rust(b).unwrap();
-        r
+        jvm.to_rust(b).unwrap()
     }
 }

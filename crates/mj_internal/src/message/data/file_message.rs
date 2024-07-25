@@ -1,6 +1,6 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-use jbuchong::{FromInstanceTrait, GetClassTypeTrait};
 use jbuchong::utils::instance_is_null;
+use jbuchong::{FromInstanceTrait, GetClassTypeTrait};
 use mj_base::MIRAI_PREFIX;
 use mj_helper_macro::mj_all;
 
@@ -90,14 +90,13 @@ impl FileMessage {
     ) -> Option<AbsoluteFile> {
         let jvm = Jvm::attach_thread().unwrap();
         // let instance = InvocationArg::try_from(self.get_instance()).unwrap();
-        let contact = InvocationArg::try_from(
+        let contact = InvocationArg::from(
             jvm.cast(
                 &contact.get_instance().unwrap(),
                 (MIRAI_PREFIX.to_string() + "contact.FileSupported").as_str(),
             )
             .unwrap(),
-        )
-        .unwrap();
+        );
         let instance = jvm
             .invoke(&self.instance, "toAbsoluteFile", &[contact])
             .unwrap();

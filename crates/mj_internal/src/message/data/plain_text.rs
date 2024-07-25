@@ -1,16 +1,12 @@
-use j4rs::errors::J4RsError;
-use j4rs::{Instance, InvocationArg, Jvm};
-use jbuchong::TryFromInstanceTrait;
-use jbuchong::GetClassTypeTrait;
-use jbuchong::{java_type, AsInstanceDerive, GetInstanceDerive};
+use j4rs::{errors::J4RsError, Instance, InvocationArg, Jvm};
+use jbuchong::{java, GetClassTypeTrait, TryFromInstanceTrait};
 
 use crate::message::message_trait::{
     CodableMessageTrait, MessageContentTrait, MessageHashCodeTrait, MessageTrait,
     SingleMessageTrait,
 };
 
-#[derive(AsInstanceDerive, GetInstanceDerive)]
-#[java_type("net.mamoe.mirai.message.data.PlainText")]
+#[java("net.mamoe.mirai.message.data.PlainText")]
 pub struct PlainText {
     content: String,
     instance: Instance,

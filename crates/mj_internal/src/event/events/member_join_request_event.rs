@@ -1,6 +1,7 @@
 use j4rs::{Instance, InvocationArg, Jvm};
 use jbuchong::TryFromInstanceTrait;
 use mj_helper_macro::mj_event;
+use std::fmt::{Display, Formatter};
 
 use crate::contact::{Bot, Group, NormalMember};
 use crate::event::{BotEventTrait, MiraiEventTrait};
@@ -117,12 +118,14 @@ impl MemberJoinRequestEvent {
             .unwrap();
         let _ = jvm.invoke(&self.instance, "reject", &[blacklist]).unwrap();
     }
-    pub fn to_string(&self) -> String {
+}
+impl Display for MemberJoinRequestEvent {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke(&self.instance, "toString", InvocationArg::empty())
             .unwrap();
-        jvm.to_rust(instance).unwrap()
+        f.write_str(jvm.to_rust::<String>(instance).unwrap().as_str())
     }
 }
 impl MessageHashCodeTrait for MemberJoinRequestEvent {}

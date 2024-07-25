@@ -114,7 +114,7 @@ impl Image {
     /// 示例：`{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.ext`
     /// 可以直接使用 [static@IMAGE_ID_REGEX] 静态对象。
     pub fn get_image_id_regex() -> Regex {
-        return IMAGE_ID_REGEX.clone();
+        IMAGE_ID_REGEX.clone()
     }
 
     /// 获取图片 MD5.
@@ -197,7 +197,7 @@ impl Image {
             tmp
         };
         let md5 = jvm.create_java_array("byte", &md5).unwrap();
-        let md5 = InvocationArg::try_from(md5).unwrap();
+        let md5 = InvocationArg::from(md5);
         let size = InvocationArg::try_from(size)
             .unwrap()
             .into_primitive()

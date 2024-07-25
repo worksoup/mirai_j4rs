@@ -1,6 +1,5 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-use jbuchong::{AsInstanceDerive, GetInstanceDerive};
-use jbuchong::{FromInstanceTrait, GetInstanceTrait};
+use jbuchong::{java, FromInstanceTrait, GetInstanceTrait};
 use mj_helper_macro::mj_all;
 
 use crate::{
@@ -73,7 +72,7 @@ impl IntoIterator for MessageChain {
     }
 }
 
-#[derive(AsInstanceDerive, GetInstanceDerive)]
+#[java]
 pub struct MessageChainIterator {
     instance: Instance,
 }

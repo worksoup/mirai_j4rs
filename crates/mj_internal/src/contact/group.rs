@@ -1,25 +1,22 @@
-use std::{
-    cmp::Ordering,
-    collections::{HashMap, HashSet},
-    marker::PhantomData,
-};
-
-use j4rs::errors::J4RsError;
-use j4rs::{Instance, InvocationArg, Jvm};
-use jbuchong::utils::{instance_is_null, java_iter_to_rust_hash_set, java_iter_to_rust_vec};
+use j4rs::{errors::J4RsError, Instance, InvocationArg, Jvm};
 use jbuchong::{
+    java, java_all, java_type,
+    utils::{instance_is_null, java_iter_to_rust_hash_set, java_iter_to_rust_vec},
     AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait,
 };
 use mj_base::MIRAI_PREFIX;
 use mj_helper_macro::mj_all;
-use jbuchong::{java_type, AsInstanceDerive, GetInstanceDerive, TryFromInstanceDerive};
+use std::{
+    collections::{HashMap, HashSet},
+    fmt::{Display, Formatter},
+    marker::PhantomData,
+};
 
-use crate::contact::AudioSupportedTrait;
-use crate::utils::{MiraiList, MiraiMap};
 use crate::{
     contact::{
-        AnnouncementTrait, Bot, ContactOrBotTrait, ContactTrait, FileSupportedTrait, NormalMember,
-        PublishAnnouncementSupportedTrait, SendMessageSupportedTrait,
+        AnnouncementTrait, AudioSupportedTrait, Bot, ContactOrBotTrait, ContactTrait,
+        FileSupportedTrait, NormalMember, PublishAnnouncementSupportedTrait,
+        SendMessageSupportedTrait,
     },
     error::MiraiRsError,
     message::{
@@ -29,7 +26,7 @@ use crate::{
     utils::{
         contact::{file::ExternalResource, ContactList},
         other::enums::{AvatarSpec, GroupHonorType, MemberMedalType},
-        JavaStream,
+        JavaStream, MiraiList, MiraiMap,
     },
 };
 
@@ -122,8 +119,7 @@ impl GroupSettings {
     }
 }
 
-#[derive(GetInstanceDerive, AsInstanceDerive)]
-#[java_type("net.mamoe.mirai.contact.Group")]
+#[java("net.mamoe.mirai.contact.Group")]
 pub struct Group {
     bot: Bot,
     instance: Instance,
@@ -183,6 +179,7 @@ pub struct GroupActive {
 /// 字段均为公开，可以直接构造。
 /// 同时可以通过 [`AnnouncementParameters::default`] 方法获取一个默认的实例。
 /// 字段含义见结构体内注释。
+#[derive(Default)]
 pub struct AnnouncementParameters {
     /// 群公告的图片，目前仅支持发送图片，不支持获得图片。可通过 [`Announcements::upload_image_from_file`] 上传图片。
     ///
@@ -198,19 +195,6 @@ pub struct AnnouncementParameters {
     pub show_popup: bool,
     /// 需要群成员确认。
     pub require_confirmation: bool,
-}
-
-impl AnnouncementParameters {
-    pub fn default() -> Self {
-        AnnouncementParameters {
-            image: None,
-            send_to_new_member: false,
-            is_pinned: false,
-            show_edit_card: false,
-            show_popup: false,
-            require_confirmation: false,
-        }
-    }
 }
 
 impl GetInstanceTrait for AnnouncementParameters {
@@ -477,24 +461,7 @@ impl AnnouncementTrait for OnlineAnnouncement {}
 /// 通过一个群的 [`Announcements`] 获取到 [`OnlineAnnouncement`], 然后调用 [`OnlineAnnouncement::publish_to`] 即可。
 /// 由于 `Mirai` 目前不支持获取公告图片，所以转发的公告也不会带有原公告的图片。
 
-#[jbuchong::java_type("net.mamoe.mirai.contact.announcement.Announcement")]
-#[doc = " 群公告。可以是 [`OnlineAnnouncement`] 或 [`OfflineAnnouncement`]."]
-#[doc = ""]
-#[doc = " ## 发布公告"]
-#[doc = ""]
-#[doc = " ### 构造一条新公告并发布"]
-#[doc = ""]
-#[doc = " 构造 [`OfflineAnnouncement`] 然后调用 [`OfflineAnnouncement::publish_to`] 或 [`Announcements::publish`]"]
-#[doc = ""]
-#[doc = " 构造时的 [`AnnouncementParameters`] 可以设置一些附加属性。"]
-#[doc = ""]
-#[doc = " 也可以使用 [`Group::publish_announcement`] 和 [`Group::publish_announcement_with_parameters`] 创建并发布公告。"]
-#[doc = ""]
-#[doc = " ### 转发获取的公告到其他群"]
-#[doc = ""]
-#[doc = " 通过一个群的 [`Announcements`] 获取到 [`OnlineAnnouncement`], 然后调用 [`OnlineAnnouncement::publish_to`] 即可。"]
-#[doc = " 由于 `Mirai` 目前不支持获取公告图片，所以转发的公告也不会带有原公告的图片。"]
-#[derive(jbuchong::AsInstanceDerive, TryFromInstanceDerive, jbuchong::GetInstanceDerive)]
+#[mj_all("contact.announcement.Announcement")]
 pub enum Announcement {
     OnlineAnnouncement(OnlineAnnouncement),
     OfflineAnnouncement(OfflineAnnouncement),
@@ -502,7 +469,7 @@ pub enum Announcement {
 
 impl AnnouncementTrait for Announcement {}
 
-#[derive(GetInstanceDerive, AsInstanceDerive, TryFromInstanceDerive)]
+#[java_all]
 pub struct AnnouncementImage {
     instance: Instance,
 }
@@ -550,12 +517,19 @@ impl AnnouncementImage {
             .unwrap();
         jvm.to_rust(instance).unwrap()
     }
-    pub fn to_string(&self) -> String {
-        let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm
-            .invoke_static("", "toString", InvocationArg::empty())
-            .unwrap();
-        jvm.to_rust(instance).unwrap()
+}
+impl Display for AnnouncementImage {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str(
+            {
+                let jvm = Jvm::attach_thread().unwrap();
+                let instance = jvm
+                    .invoke_static("", "toString", InvocationArg::empty())
+                    .unwrap();
+                jvm.to_rust::<String>(instance).unwrap()
+            }
+            .as_str(),
+        )
     }
 }
 
@@ -613,10 +587,9 @@ impl Announcements {
             .invoke(
                 &self.instance,
                 "uploadImage",
-                &[
-                    InvocationArg::try_from(jvm.clone_instance(resource.as_instance()).unwrap())
-                        .unwrap(),
-                ],
+                &[InvocationArg::from(
+                    jvm.clone_instance(resource.as_instance()).unwrap(),
+                )],
             )
             .unwrap();
         AnnouncementImage::from_instance(image_instance)
@@ -629,7 +602,9 @@ impl Announcements {
     }
 }
 
-#[derive(num_enum::FromPrimitive, num_enum::IntoPrimitive, Debug)]
+#[derive(
+    num_enum::FromPrimitive, num_enum::IntoPrimitive, Debug, PartialOrd, Ord, Eq, PartialEq,
+)]
 #[repr(i32)]
 pub enum MemberPermission {
     Member = 0,
@@ -641,30 +616,6 @@ pub enum MemberPermission {
 impl MemberPermission {
     fn internal_to_i32(a: &MemberPermission) -> i32 {
         unsafe { *(a as *const MemberPermission as *const i32) }
-    }
-}
-
-impl PartialEq for MemberPermission {
-    fn eq(&self, other: &Self) -> bool {
-        let a = MemberPermission::internal_to_i32(self);
-        let b = MemberPermission::internal_to_i32(other);
-        a.eq(&b)
-    }
-}
-
-impl PartialOrd for MemberPermission {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        let a = MemberPermission::internal_to_i32(self);
-        let b = MemberPermission::internal_to_i32(other);
-        a.partial_cmp(&b)
-    }
-}
-
-impl Eq for MemberPermission {}
-
-impl Ord for MemberPermission {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.partial_cmp(other).unwrap()
     }
 }
 
@@ -1031,8 +982,7 @@ impl GroupActive {
             .invoke(
                 &self.instance,
                 "setRankTitles",
-                &[InvocationArg::try_from(mirai_map_instance)
-                    .unwrap()
+                &[InvocationArg::from(mirai_map_instance)
                     .into_primitive()
                     .unwrap()],
             )
@@ -1048,8 +998,7 @@ impl GroupActive {
             .invoke(
                 &self.instance,
                 "setTemperatureTitles",
-                &[InvocationArg::try_from(mirai_map_instance)
-                    .unwrap()
+                &[InvocationArg::from(mirai_map_instance)
                     .into_primitive()
                     .unwrap()],
             )
@@ -1232,7 +1181,7 @@ impl Group {
             .unwrap();
         ContactList {
             instance,
-            _unused: PhantomData::default(),
+            _unused: PhantomData,
         }
     }
     pub fn get_name(&self) -> String {

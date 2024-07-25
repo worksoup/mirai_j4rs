@@ -1,7 +1,5 @@
-use j4rs::errors::J4RsError;
-use j4rs::{Instance, InvocationArg, Jvm};
-use jbuchong::{AsInstanceTrait, TryFromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
-use jbuchong::{java_type, AsInstanceDerive, GetInstanceDerive};
+use j4rs::{errors::J4RsError, Instance, InvocationArg, Jvm};
+use jbuchong::{java, AsInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait};
 
 use crate::{
     contact::Group,
@@ -11,8 +9,7 @@ use crate::{
     },
 };
 
-#[derive(GetInstanceDerive, AsInstanceDerive)]
-#[java_type("net.mamoe.mirai.message.data.At")]
+#[java("net.mamoe.mirai.message.data.At")]
 pub struct At {
     id: i64,
     instance: Instance,
@@ -39,7 +36,7 @@ impl At {
                 Jvm::attach_thread()
                     .unwrap()
                     .invoke(
-                        &self.as_instance(),
+                        self.as_instance(),
                         "getDisplay",
                         &[InvocationArg::try_from(group.get_instance()).unwrap()],
                     )

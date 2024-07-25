@@ -1,5 +1,5 @@
+use j4rs::errors::J4RsError;
 use j4rs::{InvocationArg, Jvm};
-
 use jbuchong::GetClassTypeTrait;
 
 use crate::utils::other::enums::MiraiProtocol;
@@ -8,9 +8,10 @@ pub mod enums {
     use j4rs::errors::J4RsError;
     use j4rs::{Instance, InvocationArg, Jvm};
     use num_enum::IntoPrimitive;
+    use std::fmt::{Display, Formatter};
 
-    use jbuchong::{TryFromInstanceTrait, GetInstanceTrait};
     use jbuchong::java_type;
+    use jbuchong::{GetInstanceTrait, TryFromInstanceTrait};
 
     use crate::utils::other::{protocol_enum_r2j, protocol_str2enum};
 
@@ -109,7 +110,7 @@ pub mod enums {
         ORIGINAL = 0,
     }
 
-    #[derive(num_enum::FromPrimitive, IntoPrimitive, Debug, Hash)]
+    #[derive(num_enum::FromPrimitive, IntoPrimitive, Debug, PartialEq, Eq, Hash)]
     #[repr(i32)]
     pub enum MemberMedalType {
         #[default]
@@ -118,15 +119,6 @@ pub mod enums {
         SPECIAL = 302,
         ACTIVE = 315,
     }
-
-    impl PartialEq<Self> for MemberMedalType {
-        fn eq(&self, other: &Self) -> bool {
-            (unsafe { *(self as *const Self as *const i32) })
-                .eq(&unsafe { *(other as *const Self as *const i32) })
-        }
-    }
-
-    impl Eq for MemberMedalType {}
 
     impl TryFromInstanceTrait for MemberMedalType {
         fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
@@ -139,7 +131,7 @@ pub mod enums {
         }
     }
 
-    #[derive(num_enum::FromPrimitive, IntoPrimitive, Debug, Hash)]
+    #[derive(num_enum::FromPrimitive, IntoPrimitive, Debug, Hash, Eq, PartialEq)]
     #[repr(i32)]
     pub enum GroupHonorType {
         #[default]
@@ -160,13 +152,18 @@ pub mod enums {
         fn internal_to_i32(a: &GroupHonorType) -> i32 {
             unsafe { *(a as *const GroupHonorType as *const i32) }
         }
-        pub fn to_string(&self) -> String {
-            "GroupHonorType(id=".to_string()
-                + Self::internal_to_i32(self).to_string().as_str()
-                + ")"
-        }
         pub fn hash_code(&self) -> i32 {
             Self::internal_to_i32(self)
+        }
+    }
+    impl Display for GroupHonorType {
+        fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+            f.write_str(
+                ("GroupHonorType(id=".to_string()
+                    + Self::internal_to_i32(self).to_string().as_str()
+                    + ")")
+                    .as_str(),
+            )
         }
     }
 
@@ -180,40 +177,21 @@ pub mod enums {
             .map(i32::into)
         }
     }
-
-    impl PartialEq for GroupHonorType {
-        fn eq(&self, other: &Self) -> bool {
-            let a = GroupHonorType::internal_to_i32(self);
-            let b = GroupHonorType::internal_to_i32(other);
-            a.eq(&b)
-        }
-    }
-
-    impl Eq for GroupHonorType {}
 }
 
 #[inline]
-pub fn protocol_enum_r2j(
-    protocol: &MiraiProtocol,
-) -> Result<InvocationArg, std::convert::Infallible> {
-    InvocationArg::try_from(
-        Jvm::attach_thread()
-            .unwrap()
-            .field(
-                &Jvm::attach_thread()
-                    .unwrap()
-                    .static_class(<MiraiProtocol as GetClassTypeTrait>::get_type_name())
-                    .unwrap(),
-                match protocol {
-                    MiraiProtocol::A => "ANDROID_PHONE",
-                    MiraiProtocol::I => "IPAD",
-                    MiraiProtocol::M => "MACOS",
-                    MiraiProtocol::P => "ANDROID_PAD",
-                    MiraiProtocol::W => "ANDROID_WATCH",
-                },
-            )
-            .unwrap(),
-    )
+pub fn protocol_enum_r2j(protocol: &MiraiProtocol) -> Result<InvocationArg, J4RsError> {
+    let jvm = Jvm::attach_thread().unwrap();
+    Ok(InvocationArg::from(jvm.field(
+        &jvm.static_class(<MiraiProtocol as GetClassTypeTrait>::get_type_name())?,
+        match protocol {
+            MiraiProtocol::A => "ANDROID_PHONE",
+            MiraiProtocol::I => "IPAD",
+            MiraiProtocol::M => "MACOS",
+            MiraiProtocol::P => "ANDROID_PAD",
+            MiraiProtocol::W => "ANDROID_WATCH",
+        },
+    )?))
 }
 
 #[inline]

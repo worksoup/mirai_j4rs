@@ -1,7 +1,7 @@
 use crate::contact::ActiveRankRecord;
 use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-use jbuchong::{TryFromInstanceTrait, GetInstanceTrait};
+use jbuchong::{GetInstanceTrait, TryFromInstanceTrait};
 
 pub struct MiraiList<T> {
     instance: Instance,
@@ -36,7 +36,9 @@ impl MiraiList<ActiveRankRecord> {
             .unwrap()
         {
             let v = jvm.invoke(&it, "next", InvocationArg::empty()).unwrap();
-            ActiveRankRecord::try_from_instance(v).ok().map(|v| vec.push(v));
+            if let Ok(v) = ActiveRankRecord::try_from_instance(v) {
+                vec.push(v)
+            }
         }
         self.vec = Some(vec);
     }

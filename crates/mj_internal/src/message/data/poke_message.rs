@@ -1,9 +1,7 @@
 use std::hint::unreachable_unchecked;
 
-use j4rs::errors::J4RsError;
-use j4rs::{Instance, InvocationArg, Jvm};
-use jbuchong::{TryFromInstanceTrait, GetClassTypeTrait};
-use jbuchong::{java_type, AsInstanceDerive, GetInstanceDerive};
+use j4rs::{errors::J4RsError, Instance, InvocationArg, Jvm};
+use jbuchong::{java, GetClassTypeTrait, TryFromInstanceTrait};
 
 use crate::message::message_trait::{
     CodableMessageTrait, ConstrainSingleTrait, MessageContentTrait, MessageHashCodeTrait,
@@ -92,8 +90,7 @@ impl PokeMessageEnum {
         }
     }
 }
-#[derive(AsInstanceDerive, GetInstanceDerive)]
-#[java_type("net.mamoe.mirai.message.data.PokeMessage")]
+#[java("net.mamoe.mirai.message.data.PokeMessage")]
 pub struct PokeMessage {
     r#enum: PokeMessageEnum,
     instance: Instance,
@@ -168,8 +165,7 @@ impl From<PokeMessageEnum> for PokeMessage {
             PokeMessageEnum::碎屏 => "SuiPing",
             PokeMessageEnum::敲门 => "QiaoMen",
         };
-        PokeMessage::try_from_instance(jvm.static_class_field(type_name, field).unwrap())
-            .unwrap()
+        PokeMessage::try_from_instance(jvm.static_class_field(type_name, field).unwrap()).unwrap()
     }
 }
 impl PokeMessage {

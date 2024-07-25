@@ -73,7 +73,7 @@ where
     // }
     // ```
     fn get_avatar_url(&self, size: Option<AvatarSpec>) -> String {
-        let size = j4rs::InvocationArg::try_from(
+        let size = j4rs::InvocationArg::from(
             Jvm::attach_thread()
                 .unwrap()
                 .field(
@@ -91,8 +91,7 @@ where
                     },
                 )
                 .unwrap(),
-        )
-        .unwrap();
+        );
         Jvm::attach_thread()
             .unwrap()
             .to_rust(
@@ -121,7 +120,7 @@ pub trait SendMessageSupportedTrait: ContactTrait {
                 &[j4rs::InvocationArg::try_from(message.get_instance()).unwrap()],
             )
             .unwrap();
-        MessageReceipt::new(instance, &self)
+        MessageReceipt::new(instance, self)
     }
 
     fn send_string(&self, string: &str) -> MessageReceipt<'_, Self> {
@@ -133,7 +132,7 @@ pub trait SendMessageSupportedTrait: ContactTrait {
                 &[j4rs::InvocationArg::try_from(string).unwrap()],
             )
             .unwrap();
-        MessageReceipt::new(instance, &self)
+        MessageReceipt::new(instance, self)
     }
     fn upload_image(&self, resource: &ExternalResource) -> Image {
         let jvm = Jvm::attach_thread().unwrap();
@@ -144,11 +143,10 @@ pub trait SendMessageSupportedTrait: ContactTrait {
             .invoke(
                 &self.get_instance().unwrap(),
                 "uploadImage",
-                &[InvocationArg::try_from(
+                &[InvocationArg::from(
                     jvm.clone_instance(&resource.get_instance().unwrap())
                         .unwrap(),
-                )
-                .unwrap()],
+                )],
             )
             .unwrap();
         Image::from_instance(image_instance)

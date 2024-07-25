@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
 
 use j4rs::{Instance, InvocationArg, Jvm};
-use jbuchong::{AsInstanceTrait, TryFromInstanceTrait, GetInstanceTrait};
-use jbuchong::{AsInstanceDerive, TryFromInstanceDerive, GetInstanceDerive};
+use jbuchong::{java_all, AsInstanceTrait, GetInstanceTrait, TryFromInstanceTrait};
 
 use crate::{
     contact::{ContactTrait, UserOrBotTrait},
@@ -43,7 +42,7 @@ pub trait NudgeTrait<UserOrBot: UserOrBotTrait>:
         jvm.to_rust(instance).unwrap()
     }
 }
-#[derive(GetInstanceDerive, AsInstanceDerive, TryFromInstanceDerive)]
+#[java_all]
 pub struct Nudge<UserOrBot: UserOrBotTrait> {
     instance: Instance,
     _u: PhantomData<UserOrBot>,

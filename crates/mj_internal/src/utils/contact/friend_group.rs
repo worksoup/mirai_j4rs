@@ -1,16 +1,14 @@
-use j4rs::{Instance, InvocationArg, Jvm};
-use j4rs::errors::J4RsError;
-use jbuchong::GetClassTypeTrait;
+use j4rs::{errors::J4RsError, Instance, InvocationArg, Jvm};
 use jbuchong::{
-    {TryFromInstanceTrait, GetInstanceTrait},
+    java,
     utils::java_iter_to_rust_vec,
+    GetClassTypeTrait, {GetInstanceTrait, TryFromInstanceTrait},
 };
 use mj_helper_macro::mj_all;
-use jbuchong::{AsInstanceDerive, GetInstanceDerive};
 
 use crate::contact::Friend;
 
-#[derive(AsInstanceDerive, GetInstanceDerive)]
+#[java]
 pub struct FriendGroup {
     pub(crate) instance: Instance,
 }

@@ -1,20 +1,15 @@
 use std::ops::Deref;
 
-use j4rs::errors::J4RsError;
-use j4rs::{Instance, InvocationArg, Jvm};
+use j4rs::{errors::J4RsError, Instance, InvocationArg, Jvm};
 use jbuchong::{
-    java_type, AsInstanceDerive, Func1, GetInstanceDerive, JavaBytes, JavaString, KotlinUnit,
-    TryFromInstanceDerive,
+    java, java_all, java_type, Func0, Func1, Func2, GetClassTypeTrait, JavaBytes, JavaString,
+    KotlinUnit, {GetInstanceTrait, TryFromInstanceTrait},
 };
-use jbuchong::{
-    Func0, {GetInstanceTrait, TryFromInstanceTrait},
-};
-use jbuchong::{Func2, GetClassTypeTrait};
 
 use crate::contact::Bot;
 
 /// 该结构体未实现 [`LoginSolverTrait`], 如需使用相关功能请调用本实例的 `get_instance` 方法，获得 `Instance` 后直接操作。
-#[derive(AsInstanceDerive, GetInstanceDerive, TryFromInstanceDerive)]
+#[java_all]
 pub struct LoginSolver {
     instance: Instance,
 }
@@ -183,8 +178,7 @@ impl QrCodeLoginListener {
                 tmp
             };
             let data = jvm.create_java_array("byte", &data).unwrap();
-            let data = InvocationArg::try_from(data)
-                .unwrap()
+            let data = InvocationArg::from(data)
                 .into_primitive()
                 .unwrap();
             jvm.invoke(instance, "onFetchQRCode", &[bot, data]).unwrap();
@@ -251,13 +245,13 @@ where
     const QR_CODE_MARGIN: i32 = 4;
     const QR_CODE_EC_LEVEL: i32 = 2;
     const QR_CODE_STATE_UPDATE_INTERVAL: i64 = 5000;
-    fn on_fetch_qrcode(bot: Bot, data: &Vec<i8>);
+    fn on_fetch_qrcode(bot: Bot, data: &[i8]);
     fn on_state_changed(bot: Bot, state: State);
     fn on_interval_loop();
     fn on_completed();
 }
 
-#[derive(AsInstanceDerive, GetInstanceDerive)]
+#[java]
 pub struct SmsRequests {
     instance: Instance,
 }
@@ -351,7 +345,7 @@ impl TryFromInstanceTrait for DeviceVerificationRequests {
     }
 }
 
-#[derive(AsInstanceDerive, GetInstanceDerive)]
+#[java]
 pub struct DeviceVerificationResult {
     instance: Instance,
 }
@@ -365,7 +359,7 @@ impl TryFromInstanceTrait for DeviceVerificationResult {
 pub trait LoginSolverTrait: 'static {
     const IS_SLIDER_CAPTCHA_SUPPORTED: bool = true;
     fn on_solve_slider_captcha(bot: Bot, url: &str) -> String;
-    fn on_solve_pic_captcha(bot: Bot, data: &Vec<i8>) -> String;
+    fn on_solve_pic_captcha(bot: Bot, data: &[i8]) -> String;
     fn create_qrcode_login_listener(bot: Bot) -> QrCodeLoginListener;
     fn on_solve_device_verification(
         bot: Bot,
@@ -378,7 +372,7 @@ pub trait LoginSolverTrait: 'static {
         Self::on_solve_pic_captcha(bot, data.deref()).into()
     }
     fn __create_qrcode_login_listener(bot: Bot) -> QrCodeLoginListener {
-        Self::create_qrcode_login_listener(bot).into()
+        Self::create_qrcode_login_listener(bot)
     }
     fn __instance() -> (
         Instance,

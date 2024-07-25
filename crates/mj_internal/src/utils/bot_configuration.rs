@@ -1,175 +1,66 @@
-use std::marker::PhantomData;
 use std::path::PathBuf;
 
-use j4rs::errors::J4RsError;
 use j4rs::{Instance, InvocationArg, Jvm};
-use jbuchong::{java_type, AsInstanceDerive, GetInstanceDerive, TryFromInstanceDerive};
 use jbuchong::{
-    utils::instance_is_null,
-    {GetInstanceTrait, TryFromInstanceTrait},
+    java_all, utils::instance_is_null, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait,
 };
-use jbuchong::{FromInstanceTrait, GetClassTypeTrait};
 
-use crate::utils::backend::{BotBackend, Mirai};
+use mj_helper_macro::{error_msg_suppressor, java_fn, mj_all};
+
 use crate::{
     contact::Bot,
     utils::{
+        data_wrapper::{DataWrapper, PrimitiveConvert},
         login_solver::{LoginSolver, LoginSolverTrait},
         other::enums::{HeartbeatStrategy, MiraiProtocol},
         DeviceInfo, MiraiLogger,
     },
 };
 
-#[derive(AsInstanceDerive, GetInstanceDerive, TryFromInstanceDerive)]
+#[java_all]
 pub struct ContactListCache {
     instance: Instance,
 }
 
 impl ContactListCache {
-    pub fn get_save_interval_millis(&self) -> u64 {
-        return Jvm::attach_thread()
-            .unwrap()
-            .to_rust(
-                Jvm::attach_thread()
-                    .unwrap()
-                    .invoke(
-                        &self.instance,
-                        "getSaveIntervalMillis",
-                        InvocationArg::empty(),
-                    )
-                    .unwrap(),
-            )
-            .unwrap();
-    }
-    pub fn set_save_interval_millis(&self, millis: u64) {
-        Jvm::attach_thread()
-            .unwrap()
-            .invoke(
-                &self.instance,
-                "setSaveIntervalMillis",
-                &[InvocationArg::try_from(millis as i64)
-                    .unwrap()
-                    .into_primitive()
-                    .unwrap()],
-            )
-            .unwrap();
-    }
-    pub fn get_friend_list_cache_enabled(&self) -> bool {
-        return Jvm::attach_thread()
-            .unwrap()
-            .to_rust(
-                Jvm::attach_thread()
-                    .unwrap()
-                    .invoke(
-                        &self.instance,
-                        "getFriendListCacheEnabled",
-                        InvocationArg::empty(),
-                    )
-                    .unwrap(),
-            )
-            .unwrap();
-    }
-    pub fn set_friend_list_cache_enabled(&self, bool: bool) {
-        Jvm::attach_thread()
-            .unwrap()
-            .invoke(
-                &self.instance,
-                "setFriendListCacheEnabled",
-                &[InvocationArg::try_from(bool)
-                    .unwrap()
-                    .into_primitive()
-                    .unwrap()],
-            )
-            .unwrap();
-    }
-    pub fn get_group_member_list_cache_enabled(&self) -> bool {
-        return Jvm::attach_thread()
-            .unwrap()
-            .to_rust(
-                Jvm::attach_thread()
-                    .unwrap()
-                    .invoke(
-                        &self.instance,
-                        "getGroupMemberListCacheEnabled",
-                        InvocationArg::empty(),
-                    )
-                    .unwrap(),
-            )
-            .unwrap();
-    }
-    pub fn set_group_member_list_cache_enabled(&self, bool: bool) {
-        Jvm::attach_thread()
-            .unwrap()
-            .invoke(
-                &self.instance,
-                "setGroupMemberListCacheEnabled",
-                &[InvocationArg::try_from(bool)
-                    .unwrap()
-                    .into_primitive()
-                    .unwrap()],
-            )
-            .unwrap();
+    #[java_fn]
+    pub fn get_save_interval_millis(&self) -> i64 {}
+    #[java_fn]
+    pub fn set_save_interval_millis(&self, millis: DataWrapper<i64, PrimitiveConvert>) {}
+    #[java_fn]
+    pub fn get_friend_list_cache_enabled(&self) -> bool {}
+    #[java_fn]
+    pub fn set_friend_list_cache_enabled(&self, bool: DataWrapper<bool, PrimitiveConvert>) {}
+    #[java_fn]
+    pub fn get_group_member_list_cache_enabled(&self) -> bool {}
+    #[java_fn]
+    pub fn set_group_member_list_cache_enabled(
+        &self,
+        enabled: DataWrapper<bool, PrimitiveConvert>,
+    ) {
     }
 }
-#[derive(AsInstanceDerive, GetInstanceDerive)]
-#[java_type("net.mamoe.mirai.utils.BotConfiguration")]
+#[mj_all("utils.BotConfiguration")]
 pub struct BotConfiguration {
     instance: Instance,
     _login_solver_holder: Option<()>,
 }
-impl TryFromInstanceTrait for BotConfiguration {
-    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
-        Ok(Self {
-            instance,
-            _login_solver_holder: None,
-        })
-    }
-}
 // builders
 impl BotConfiguration {
+    #[java_fn("copy")]
+    fn copy_internal(&self) -> Self {}
     pub fn copy_configuration_from(bot: &Bot) -> Self {
-        let instance = Jvm::attach_thread()
-            .unwrap()
-            .invoke(
-                &bot.get_configuration().get_instance().unwrap(),
-                "copy",
-                InvocationArg::empty(),
-            )
-            .unwrap();
-        BotConfiguration {
-            instance,
-            _login_solver_holder: None,
-        }
+        bot.get_configuration().copy_internal()
     }
 }
 impl Default for BotConfiguration {
-    fn default() -> Self {
-        let instance = Jvm::attach_thread()
-            .unwrap()
-            .invoke_static(
-                <Self as GetClassTypeTrait>::get_type_name(),
-                "getDefault",
-                InvocationArg::empty(),
-            )
-            .unwrap();
-        BotConfiguration {
-            instance,
-            _login_solver_holder: None,
-        }
-    }
+    #[java_fn("getDefault")]
+    fn default() -> Self {}
 }
 // getters
 impl BotConfiguration {
-    pub fn get_auto_reconnect_on_force_offline(&self) -> bool {
-        return Jvm::attach_thread()
-            .unwrap()
-            .chain(&self.instance)
-            .unwrap()
-            .invoke("getAutoReconnectOnForceOffline", InvocationArg::empty())
-            .unwrap()
-            .to_rust()
-            .unwrap();
-    }
+    #[java_fn]
+    pub fn get_auto_reconnect_on_force_offline(&self) -> bool {}
     pub fn get_bot_logger_supplier(&self) -> Box<dyn Fn(&Bot) -> MiraiLogger + '_> {
         let bot_logger_supplier = |bot: &Bot| -> MiraiLogger {
             let tmp = Jvm::attach_thread()
@@ -191,32 +82,23 @@ impl BotConfiguration {
                     .unwrap(),
             )
         };
-        return Box::new(bot_logger_supplier);
+        Box::new(bot_logger_supplier)
     }
+    #[java_fn]
     pub fn get_cache_dir(&self) -> PathBuf {
-        let i: String = Jvm::attach_thread()
-            .unwrap()
-            .chain(&self.instance)
-            .unwrap()
-            .invoke("getCacheDir", InvocationArg::empty())
+        let i: String = error_msg_suppressor!("jvm.chain(&instance)")
             .unwrap()
             .invoke("toString", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap();
-        return PathBuf::from(i);
+        PathBuf::from(i)
     }
+    #[java_fn]
     pub fn get_contact_list_cache(&self) -> Option<ContactListCache> {
-        Some(ContactListCache::from_instance(
-            Jvm::attach_thread()
-                .unwrap()
-                .invoke(
-                    &self.instance,
-                    "getContactListCache",
-                    InvocationArg::empty(),
-                )
-                .unwrap(),
-        ))
+        Some(ContactListCache::from_instance(error_msg_suppressor!(
+            "instance"
+        )))
     }
     pub fn get_device_info(&self) -> Option<impl Fn(Bot) -> DeviceInfo + '_> {
         let tmp = Jvm::attach_thread()
@@ -235,89 +117,32 @@ impl BotConfiguration {
                     .unwrap(),
             )
         };
-        return Some(bot_logger_supplier);
+        Some(bot_logger_supplier)
     }
-    pub fn get_heartbeat_period_millis(&self) -> u64 {
-        return Jvm::attach_thread()
-            .unwrap()
-            .to_rust(
-                Jvm::attach_thread()
-                    .unwrap()
-                    .invoke(
-                        &self.instance,
-                        "getHeartbeatPeriodMillis",
-                        InvocationArg::empty(),
-                    )
-                    .unwrap(),
-            )
-            .unwrap();
-    }
+    #[java_fn]
+    pub fn get_heartbeat_period_millis(&self) -> i64 {}
+
+    #[java_fn]
     pub fn get_heartbeat_strategy(&self) -> HeartbeatStrategy {
-        let hbs: String = Jvm::attach_thread()
-            .unwrap()
-            .to_rust(
-                Jvm::attach_thread()
-                    .unwrap()
-                    .invoke(
-                        &self.instance,
-                        "getHeartbeatStrategy",
-                        InvocationArg::empty(),
-                    )
-                    .unwrap(),
-            )
-            .unwrap();
-        if hbs == "STAT_HB" {
-            return HeartbeatStrategy::S;
+        let jvm: Jvm = error_msg_suppressor!("jvm");
+        let instance: Instance = error_msg_suppressor!("instance");
+        let hbs: String = jvm.to_rust(instance).unwrap();
+        match hbs.as_str() {
+            "STAT_HB" => HeartbeatStrategy::S,
+            "REGISTER" => HeartbeatStrategy::R,
+            "NONE" => HeartbeatStrategy::N,
+            _ => {
+                println!("&self.instance is None!");
+                HeartbeatStrategy::S
+            }
         }
-        if hbs == "REGISTER" {
-            return HeartbeatStrategy::R;
-        }
-        if hbs == "NONE" {
-            return HeartbeatStrategy::N;
-        }
-        println!("&self.instance is None!");
-        return HeartbeatStrategy::S;
     }
-    pub fn get_heartbeat_timeout_millis(&self) -> u64 {
-        return Jvm::attach_thread()
-            .unwrap()
-            .to_rust(
-                Jvm::attach_thread()
-                    .unwrap()
-                    .invoke(
-                        &self.instance,
-                        "getHeartbeatTimeoutMillis",
-                        InvocationArg::empty(),
-                    )
-                    .unwrap(),
-            )
-            .unwrap();
-    }
-    pub fn get_highway_upload_coroutine_count(&self) -> usize {
-        return Jvm::attach_thread()
-            .unwrap()
-            .to_rust(
-                Jvm::attach_thread()
-                    .unwrap()
-                    .invoke(
-                        &self.instance,
-                        "getHighwayUploadCoroutineCount",
-                        InvocationArg::empty(),
-                    )
-                    .unwrap(),
-            )
-            .unwrap();
-    }
-    pub fn get_login_cache_enabled(&self) -> bool {
-        Jvm::attach_thread()
-            .unwrap()
-            .chain(&self.instance)
-            .unwrap()
-            .invoke("getLoginCacheEnabled", InvocationArg::empty())
-            .unwrap()
-            .to_rust()
-            .unwrap()
-    }
+    #[java_fn]
+    pub fn get_heartbeat_timeout_millis(&self) -> i64 {}
+    #[java_fn]
+    pub fn get_highway_upload_coroutine_count(&self) -> i32 {}
+    #[java_fn]
+    pub fn get_login_cache_enabled(&self) -> bool {}
     pub fn get_login_solver(&self) -> Option<LoginSolver> {
         let instance = Jvm::attach_thread()
             .unwrap()
@@ -353,142 +178,61 @@ impl BotConfiguration {
                 .unwrap(),
         );
     }
+    #[java_fn]
     pub fn get_protocol(&self) -> MiraiProtocol {
-        let mp: String = Jvm::attach_thread()
-            .unwrap()
-            .to_rust(
-                Jvm::attach_thread()
-                    .unwrap()
-                    .invoke(&self.instance, "getProtocol", InvocationArg::empty())
-                    .unwrap(),
-            )
-            .unwrap();
+        let jvm: Jvm = error_msg_suppressor!("jvm");
+        let instance: Instance = error_msg_suppressor!("instance");
+        let mp: String = jvm.to_rust(instance).unwrap();
         crate::utils::other::protocol_str2enum(mp)
     }
-    pub fn get_reconnection_retry_times(&self) -> i32 {
-        return Jvm::attach_thread()
-            .unwrap()
-            .to_rust(
-                Jvm::attach_thread()
-                    .unwrap()
-                    .invoke(
-                        &self.instance,
-                        "getReconnectionRetryTimes",
-                        InvocationArg::empty(),
-                    )
-                    .unwrap(),
-            )
-            .unwrap();
-    }
-    pub fn get_stat_heartbeat_period_millis(&self) -> i64 {
-        return Jvm::attach_thread()
-            .unwrap()
-            .to_rust(
-                Jvm::attach_thread()
-                    .unwrap()
-                    .invoke(
-                        &self.instance,
-                        "getStatHeartbeatPeriodMillis",
-                        InvocationArg::empty(),
-                    )
-                    .unwrap(),
-            )
-            .unwrap();
-    }
+    #[java_fn]
+    pub fn get_reconnection_retry_times(&self) -> i32 {}
+    #[java_fn]
+    pub fn get_stat_heartbeat_period_millis(&self) -> i64 {}
+    #[java_fn]
     pub fn get_working_dir(&self) -> PathBuf {
-        let i: String = Jvm::attach_thread()
-            .unwrap()
-            .chain(&self.instance)
-            .unwrap()
-            .invoke("getWorkingDir", InvocationArg::empty())
+        let jvm: Jvm = error_msg_suppressor!("jvm");
+        let instance: Instance = error_msg_suppressor!("instance");
+        let i: String = jvm
+            .chain(&instance)
             .unwrap()
             .invoke("toString", InvocationArg::empty())
             .unwrap()
             .to_rust()
             .unwrap();
-        return PathBuf::from(i);
+        PathBuf::from(i)
     }
 }
 
 /// isXXX()
 impl BotConfiguration {
-    pub fn is_convert_line_separator(&self) -> bool {
-        return Jvm::attach_thread()
-            .unwrap()
-            .chain(&self.instance)
-            .unwrap()
-            .invoke("isConvertLineSeparator", InvocationArg::empty())
-            .unwrap()
-            .to_rust()
-            .unwrap();
-    }
-    pub fn is_showing_verbose_event_log(&self) -> bool {
-        return Jvm::attach_thread()
-            .unwrap()
-            .chain(&self.instance)
-            .unwrap()
-            .invoke("isShowingVerboseEventLog", InvocationArg::empty())
-            .unwrap()
-            .to_rust()
-            .unwrap();
-    }
+    #[java_fn]
+    pub fn is_convert_line_separator(&self) -> bool {}
+    #[java_fn]
+    pub fn is_showing_verbose_event_log(&self) -> bool {}
 }
 
 /// setters
 impl BotConfiguration {
-    pub fn set_auto_reconnect_on_force_offline(&self, yes: bool) {
-        Jvm::attach_thread()
-            .unwrap()
-            .invoke(
-                &self.instance,
-                "setAutoReconnectOnForceOffline",
-                &[InvocationArg::try_from(yes)
-                    .unwrap()
-                    .into_primitive()
-                    .unwrap()],
-            )
-            .unwrap();
-    }
+    #[java_fn]
+    pub fn set_auto_reconnect_on_force_offline(&self, yes: DataWrapper<bool, PrimitiveConvert>) {}
     pub fn set_bot_logger_supplier(&self) {
         todo!("not impl yet: set_bot_logger_supplier");
     }
+
+    #[java_fn("setCacheDir")]
+    fn set_cache_dir_internal(&self, file: Instance) {}
     pub fn set_cache_dir(&self, path: &str) {
         let file = Jvm::attach_thread()
             .unwrap()
             .create_instance("java.io.File", &[InvocationArg::try_from(path).unwrap()])
             .unwrap();
-        Jvm::attach_thread()
-            .unwrap()
-            .invoke(
-                &self.instance,
-                "setCacheDir",
-                &[InvocationArg::try_from(file).unwrap()],
-            )
-            .unwrap();
+        self.set_cache_dir_internal(file)
     }
-    pub fn set_contact_list_cache(&self, cache: ContactListCache) {
-        Jvm::attach_thread()
-            .unwrap()
-            .invoke(
-                &self.instance,
-                "setContactListCache",
-                &[InvocationArg::try_from(cache.get_instance()).unwrap()],
-            )
-            .unwrap();
-    }
-    pub fn set_convert_line_separator(&self, yes: bool) {
-        Jvm::attach_thread()
-            .unwrap()
-            .invoke(
-                &self.instance,
-                "setConvertLineSeparator",
-                &[InvocationArg::try_from(yes)
-                    .unwrap()
-                    .into_primitive()
-                    .unwrap()],
-            )
-            .unwrap();
-    }
+    #[java_fn]
+    pub fn set_contact_list_cache(&self, cache: ContactListCache) {}
+    #[java_fn]
+    pub fn set_convert_line_separator(&self, yes: bool) {}
     pub fn set_device_info(&self) {
         Jvm::attach_thread()
             .unwrap()
@@ -496,26 +240,15 @@ impl BotConfiguration {
             .unwrap();
         todo!("set_device_info");
     }
-    pub fn set_heartbeat_period_millis(&self, millis: i64) {
-        Jvm::attach_thread()
-            .unwrap()
-            .invoke(
-                &self.instance,
-                "setHeartbeatPeriodMillis",
-                &[InvocationArg::try_from(millis)
-                    .unwrap()
-                    .into_primitive()
-                    .unwrap()],
-            )
-            .unwrap();
-    }
+    #[java_fn]
+    pub fn set_heartbeat_period_millis(&self, millis: DataWrapper<i64, PrimitiveConvert>) {}
     pub fn set_heartbeat_strategy(&self, heartbeat_strategy: HeartbeatStrategy) {
         Jvm::attach_thread()
             .unwrap()
             .invoke(
                 &self.instance,
                 "setHeartbeatStrategy",
-                &[InvocationArg::try_from(
+                &[InvocationArg::from(
                     Jvm::attach_thread()
                         .unwrap()
                         .field(
@@ -534,8 +267,7 @@ impl BotConfiguration {
                             },
                         )
                         .unwrap(),
-                )
-                .unwrap()],
+                )],
             )
             .unwrap();
     }
@@ -663,7 +395,7 @@ impl BotConfiguration {
             .invoke(
                 &self.instance,
                 "setWorkingDir",
-                &[InvocationArg::try_from(file).unwrap()],
+                &[InvocationArg::from(file)],
             )
             .unwrap();
     }
@@ -773,35 +505,35 @@ impl BotConfiguration {
         arg: &str,
         method_name: &str,
     ) {
-        let path = if path.is_none() {
-            Jvm::attach_thread()
-                .unwrap()
-                .create_instance("java.io.File", &[InvocationArg::try_from(arg).unwrap()])
-                .unwrap()
-        } else {
+        let path = if let Some(path) = path {
             Jvm::attach_thread()
                 .unwrap()
                 .create_instance(
                     "java.io.File",
-                    &[InvocationArg::try_from(path.unwrap().to_str().unwrap()).unwrap()],
+                    &[InvocationArg::try_from(path.to_str().unwrap()).unwrap()],
                 )
                 .unwrap()
-        };
-        let retain = InvocationArg::try_from(if retain.is_none() {
-            7i64 * 24 * 60 * 60 * 1000
         } else {
-            retain.unwrap()
-        })
-        .unwrap()
-        .into_primitive()
-        .unwrap();
-        if identity.is_none() {
+            Jvm::attach_thread()
+                .unwrap()
+                .create_instance("java.io.File", &[InvocationArg::try_from(arg).unwrap()])
+                .unwrap()
+        };
+        let retain = InvocationArg::try_from(retain.unwrap_or(7i64 * 24 * 60 * 60 * 1000))
+            .unwrap()
+            .into_primitive()
+            .unwrap();
+        if let Some(identity) = identity {
             Jvm::attach_thread()
                 .unwrap()
                 .invoke(
                     &self.instance,
                     method_name,
-                    &[InvocationArg::try_from(path).unwrap(), retain],
+                    &[
+                        InvocationArg::from(path),
+                        retain,
+                        InvocationArg::from(identity),
+                    ],
                 )
                 .unwrap();
         } else {
@@ -810,11 +542,7 @@ impl BotConfiguration {
                 .invoke(
                     &self.instance,
                     method_name,
-                    &[
-                        InvocationArg::try_from(path).unwrap(),
-                        InvocationArg::try_from(retain).unwrap(),
-                        InvocationArg::try_from(identity.unwrap()).unwrap(),
-                    ],
+                    &[InvocationArg::from(path), retain],
                 )
                 .unwrap();
         };
@@ -826,40 +554,33 @@ impl BotConfiguration {
         arg: &str,
         method_name: &str,
     ) {
-        let path = if path.is_none() {
-            Jvm::attach_thread()
-                .unwrap()
-                .create_instance("java.io.File", &[InvocationArg::try_from(arg).unwrap()])
-                .unwrap()
-        } else {
+        let path = if let Some(path) = path {
             Jvm::attach_thread()
                 .unwrap()
                 .create_instance(
                     "java.io.File",
-                    &[InvocationArg::try_from(path.unwrap().to_str().unwrap()).unwrap()],
+                    &[InvocationArg::try_from(path.to_str().unwrap()).unwrap()],
                 )
                 .unwrap()
+        } else {
+            Jvm::attach_thread()
+                .unwrap()
+                .create_instance("java.io.File", &[InvocationArg::try_from(arg).unwrap()])
+                .unwrap()
         };
-        if identity.is_none() {
+        if let Some(identity) = identity {
             Jvm::attach_thread()
                 .unwrap()
                 .invoke(
                     &self.instance,
                     method_name,
-                    &[InvocationArg::try_from(path).unwrap()],
+                    &[InvocationArg::from(path), InvocationArg::from(identity)],
                 )
                 .unwrap();
         } else {
             Jvm::attach_thread()
                 .unwrap()
-                .invoke(
-                    &self.instance,
-                    method_name,
-                    &[
-                        InvocationArg::try_from(path).unwrap(),
-                        InvocationArg::try_from(identity.unwrap()).unwrap(),
-                    ],
-                )
+                .invoke(&self.instance, method_name, &[InvocationArg::from(path)])
                 .unwrap();
         };
     }

@@ -37,11 +37,10 @@ impl ExternalResource {
             .invoke_static(
                 <Self as GetClassTypeTrait>::get_type_name(),
                 "create",
-                &[InvocationArg::try_from(
+                &[InvocationArg::from(
                     jvm.create_instance("java.io.File", &[InvocationArg::try_from(path).unwrap()])
                         .unwrap(),
-                )
-                .unwrap()],
+                )],
             )
             .unwrap();
         Self { instance }
@@ -56,7 +55,7 @@ impl ExternalResource {
             .invoke_static(
                 <Self as GetClassTypeTrait>::get_type_name(),
                 "create",
-                &[InvocationArg::try_from(bytes).unwrap()],
+                &[InvocationArg::from(bytes)],
             )
             .unwrap();
         Self { instance }
@@ -78,14 +77,13 @@ impl ExternalResource {
                 <Self as GetClassTypeTrait>::get_type_name(),
                 "create",
                 &[
-                    InvocationArg::try_from(
+                    InvocationArg::from(
                         jvm.create_instance(
                             "java.io.File",
                             &[InvocationArg::try_from(path).unwrap()],
                         )
                         .unwrap(),
-                    )
-                    .unwrap(),
+                    ),
                     format_name,
                 ],
             )
@@ -108,7 +106,7 @@ impl ExternalResource {
             .invoke_static(
                 <Self as GetClassTypeTrait>::get_type_name(),
                 "create",
-                &[InvocationArg::try_from(bytes).unwrap(), format_name],
+                &[InvocationArg::from(bytes), format_name],
             )
             .unwrap();
         Self { instance }

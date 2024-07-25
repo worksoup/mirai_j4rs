@@ -1,10 +1,9 @@
-use j4rs::{Instance, InvocationArg, Jvm};
-use mj_helper_macro::mj_all;
-
 use crate::message::message_trait::{
     CodableMessageTrait, MessageContentTrait, MessageHashCodeTrait, MessageTrait,
     SingleMessageTrait,
 };
+use j4rs::{Instance, InvocationArg, Jvm};
+use mj_helper_macro::mj_all;
 
 #[mj_all("message.data.AtAll")]
 pub struct AtAll {
@@ -23,7 +22,11 @@ impl AtAll {
         "@全体成员".into()
     }
 }
-
+impl Default for AtAll {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl MessageTrait for AtAll {
     fn to_content(&self) -> String {
         "@全体成员".to_string()

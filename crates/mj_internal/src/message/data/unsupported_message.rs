@@ -1,10 +1,9 @@
 use j4rs::Instance;
-
-use jbuchong::{AsInstanceDerive, TryFromInstanceDerive, GetInstanceDerive};
+use jbuchong::java_all;
 
 use crate::message::message_trait::{MessageContentTrait, MessageTrait, SingleMessageTrait};
 
-#[derive(AsInstanceDerive, GetInstanceDerive, TryFromInstanceDerive)]
+#[java_all]
 pub struct UnsupportedMessage {
     instance: Instance,
 }

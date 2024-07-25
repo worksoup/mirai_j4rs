@@ -1,17 +1,15 @@
-use j4rs::errors::J4RsError;
-use j4rs::{Instance, InvocationArg, Jvm};
-use jbuchong::{AsInstanceTrait, TryFromInstanceTrait};
-use jbuchong::{java_type, AsInstanceDerive, GetInstanceDerive};
+use j4rs::{errors::J4RsError, Instance, InvocationArg, Jvm};
+use jbuchong::{java, AsInstanceTrait, TryFromInstanceTrait};
 
-use crate::contact::{
-    Bot, ContactOrBotTrait, ContactTrait, NudgeSupportedTrait, SendMessageSupportedTrait,
-    UserOrBotTrait, UserTrait,
+use crate::{
+    contact::{
+        Bot, ContactOrBotTrait, ContactTrait, NudgeSupportedTrait, SendMessageSupportedTrait,
+        UserOrBotTrait, UserTrait,
+    },
+    utils::{contact::friend_group::FriendGroup, other::enums::AvatarSpec},
 };
-use crate::utils::contact::friend_group::FriendGroup;
-use crate::utils::other::enums::AvatarSpec;
 
-#[derive(GetInstanceDerive, AsInstanceDerive)]
-#[java_type("net.mamoe.mirai.contact.Friend")]
+#[java("net.mamoe.mirai.contact.Friend")]
 pub struct Friend {
     bot: Bot,
     instance: Instance,

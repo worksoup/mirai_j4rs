@@ -14,7 +14,7 @@ where
     fn get_bot(&self) -> Bot {
         let jvm = Jvm::attach_thread().unwrap();
         let bot = jvm
-            .invoke(&self.as_instance(), "getBot", InvocationArg::empty())
+            .invoke(self.as_instance(), "getBot", InvocationArg::empty())
             .unwrap();
         Bot::try_from_instance(bot).unwrap()
     }
@@ -26,7 +26,7 @@ pub trait BaseGroupMemberInfoChangeEventTrait: BotEventTrait {
     fn get_group_id(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
-            .invoke(&self.as_instance(), "getGroupId", InvocationArg::empty())
+            .invoke(self.as_instance(), "getGroupId", InvocationArg::empty())
             .unwrap();
         jvm.to_rust(instance).unwrap()
     }

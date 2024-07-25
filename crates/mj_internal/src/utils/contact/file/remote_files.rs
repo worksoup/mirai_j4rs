@@ -1,11 +1,14 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-use jbuchong::{AsInstanceTrait, TryFromInstanceTrait, GetClassTypeTrait, FromInstanceTrait};
-use jbuchong::{AsInstanceDerive, TryFromInstanceDerive, GetInstanceDerive};
+use jbuchong::{
+    java_all, AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, TryFromInstanceTrait,
+};
 
-use crate::contact::Group;
-use crate::utils::contact::file::{AbsoluteFile, AbsoluteFolder, ExternalResource};
+use crate::{
+    contact::Group,
+    utils::contact::file::{AbsoluteFile, AbsoluteFolder, ExternalResource},
+};
 
-#[derive(GetInstanceDerive, AsInstanceDerive, TryFromInstanceDerive)]
+#[java_all]
 pub struct RemoteFiles {
     instance: Instance,
 }
@@ -18,10 +21,7 @@ impl RemoteFiles {
             .invoke(&self.instance, "getContact", InvocationArg::empty())
             .unwrap();
         let instance = jvm
-            .cast(
-                &instance,
-                <Group as GetClassTypeTrait>::get_type_name(),
-            )
+            .cast(&instance, <Group as GetClassTypeTrait>::get_type_name())
             .unwrap();
         Group::try_from_instance(instance).unwrap()
     }
@@ -42,8 +42,7 @@ impl RemoteFiles {
                 "uploadNewFile",
                 &[
                     InvocationArg::try_from(file_name).unwrap(),
-                    InvocationArg::try_from(jvm.clone_instance(resource.as_instance()).unwrap())
-                        .unwrap(),
+                    InvocationArg::from(jvm.clone_instance(resource.as_instance()).unwrap()),
                 ],
             )
             .unwrap();

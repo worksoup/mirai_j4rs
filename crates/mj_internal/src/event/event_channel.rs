@@ -30,8 +30,8 @@ impl EventChannel {
                 &self.instance,
                 "subscribe",
                 &[
-                    InvocationArg::try_from(class_type).unwrap(),
-                    InvocationArg::try_from(consumer.get_instance().unwrap()).unwrap(),
+                    InvocationArg::from(class_type),
+                    InvocationArg::from(consumer.get_instance().unwrap()),
                 ],
             )
             .unwrap();

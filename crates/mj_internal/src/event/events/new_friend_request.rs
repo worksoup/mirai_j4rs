@@ -1,6 +1,7 @@
 use j4rs::{Instance, InvocationArg, Jvm};
 use jbuchong::{utils::instance_is_null, TryFromInstanceTrait};
 use mj_helper_macro::mj_event;
+use std::fmt::{Display, Formatter};
 
 use crate::contact::Group;
 use crate::event::{BotEventTrait, FriendInfoChangeEventTrait};
@@ -83,16 +84,22 @@ impl NewFriendRequestEvent {
         )
         .unwrap()
     }
-    pub fn to_string(&self) -> String {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(
-            jvm.invoke(&self.instance, "toString", InvocationArg::empty())
-                .unwrap(),
+}
+impl Display for NewFriendRequestEvent {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str(
+            {
+                let jvm = Jvm::attach_thread().unwrap();
+                jvm.to_rust::<String>(
+                    jvm.invoke(&self.instance, "toString", InvocationArg::empty())
+                        .unwrap(),
+                )
+                .unwrap()
+            }
+            .as_str(),
         )
-        .unwrap()
     }
 }
-
 impl MessageHashCodeTrait for NewFriendRequestEvent {}
 
 impl BotEventTrait for NewFriendRequestEvent {}

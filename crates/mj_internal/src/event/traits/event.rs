@@ -8,18 +8,18 @@ where
 {
     fn cancel(&self) {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.invoke(&self.as_instance(), "cancel", InvocationArg::empty())
+        jvm.invoke(self.as_instance(), "cancel", InvocationArg::empty())
             .unwrap();
     }
     fn intercept(&self) {
         let jvm = Jvm::attach_thread().unwrap();
-        jvm.invoke(&self.as_instance(), "intercept", InvocationArg::empty())
+        jvm.invoke(self.as_instance(), "intercept", InvocationArg::empty())
             .unwrap();
     }
     fn is_canceled(&self) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.to_rust(
-            jvm.invoke(&self.as_instance(), "isCanceled", InvocationArg::empty())
+            jvm.invoke(self.as_instance(), "isCanceled", InvocationArg::empty())
                 .unwrap(),
         )
         .unwrap()
@@ -27,7 +27,7 @@ where
     fn is_intercepted(&self) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.to_rust(
-            jvm.invoke(&self.as_instance(), "isIntercepted", InvocationArg::empty())
+            jvm.invoke(self.as_instance(), "isIntercepted", InvocationArg::empty())
                 .unwrap(),
         )
         .unwrap()

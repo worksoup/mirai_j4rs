@@ -1,7 +1,5 @@
-use j4rs::errors::J4RsError;
-use j4rs::{Instance, InvocationArg, Jvm};
-use jbuchong::{TryFromInstanceTrait, GetClassTypeTrait};
-use jbuchong::{java_type, AsInstanceDerive, GetInstanceDerive};
+use j4rs::{errors::J4RsError, Instance, InvocationArg, Jvm};
+use jbuchong::{java, GetClassTypeTrait, TryFromInstanceTrait};
 
 use crate::message::{
     data::super_face::SuperFace,
@@ -12,8 +10,7 @@ use crate::message::{
 };
 
 include!("face_res.rs");
-#[derive(AsInstanceDerive, GetInstanceDerive)]
-#[java_type("net.mamoe.mirai.message.data.Face")]
+#[java("net.mamoe.mirai.message.data.Face")]
 pub struct Face {
     name: String,
     id: i32,
@@ -77,7 +74,7 @@ impl From<FaceEnum> for Face {
 
 impl From<SuperFace> for Face {
     fn from(super_face: SuperFace) -> Self {
-        super_face.get_face().into()
+        super_face.get_face()
     }
 }
 

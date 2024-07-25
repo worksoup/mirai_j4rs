@@ -30,7 +30,7 @@ impl GetInstanceTrait for BotAuthorization {
                         .unwrap()
                 });
                 let arg = jvm.create_java_array("byte", &password_md5).unwrap();
-                let arg = InvocationArg::try_from(arg).unwrap();
+                let arg = InvocationArg::from(arg);
                 Ok(jvm
                     .invoke_static(
                         <Self as GetClassTypeTrait>::get_type_name(),

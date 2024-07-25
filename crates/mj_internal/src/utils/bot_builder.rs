@@ -4,14 +4,10 @@ use std::path::Path;
 
 use j4rs::{ClasspathEntry, Instance, JavaOpt, Jvm, JvmBuilder};
 
-use jbuchong::java_type;
-use jbuchong::{AsInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait};
+use jbuchong::{java, java_type};
 
 use crate::utils::backend::{BotBackend, Mirai};
-use crate::{
-    auth::bot_authorization::BotAuthorization,
-    utils::{login_solver::LoginSolverTrait, BotConfiguration},
-};
+use crate::{auth::bot_authorization::BotAuthorization, utils::BotConfiguration};
 
 /// # [`BotBuilder`]
 /// 用来获得 [`Bot`].
@@ -26,6 +22,7 @@ use crate::{
 /// [`default`](crate::utils::bot_builder::BotBuilder::default) 即 `BotBuilder::new(".")`.
 #[java_type("net.mamoe.mirai.BotFactory", Backend = Mirai)]
 #[java_type("top.mrxiaom.overflow.BotBuilder", Backend = Overflow)]
+#[java]
 pub struct BotBuilder<Backend: BotBackend> {
     instance: Instance,
     jvm: Jvm,
@@ -42,8 +39,8 @@ impl Default for BotBuilder<Mirai> {
 impl<Backend: BotBackend> BotBuilder<Backend> {
     fn create_jvm<P: AsRef<Path>>(
         working_dir: P,
-        jar_paths: &Vec<String>,
-        java_opts: &Vec<String>,
+        jar_paths: &[String],
+        java_opts: &[String],
     ) -> Jvm {
         let entries = jar_paths
             .iter()
@@ -83,12 +80,12 @@ mod mirai_backend {
 
     impl BotBuilder<Mirai> {
         pub fn new<P: AsRef<Path>>(working_dir: P) -> Self {
-            Self::create(working_dir, &vec![], &vec![])
+            Self::create(working_dir, &[], &[])
         }
         pub fn create<P: AsRef<Path>>(
             working_dir: P,
-            jar_paths: &Vec<String>,
-            java_opts: &Vec<String>,
+            jar_paths: &[String],
+            java_opts: &[String],
         ) -> Self {
             let working_dir = std::fs::canonicalize(working_dir).expect("目录无法解析。");
             let jvm = Self::create_jvm(&working_dir, jar_paths, java_opts);
@@ -364,81 +361,121 @@ mod mirai_backend {
     }
 }
 mod overflow_backend {
+    use crate::contact::Bot;
     use crate::utils::backend::Overflow;
     use crate::utils::bot_builder::BotBuilder;
+    use crate::utils::data_wrapper::{DataWrapper, PrimitiveConvert};
     use j4rs::{Instance, InvocationArg, Jvm};
-    use jbuchong::GetClassTypeTrait;
+    use jbuchong::{FromInstanceTrait, GetClassTypeTrait};
+    use jbuchong::{GetInstanceTrait, ToArgTrait};
+    use mj_helper_macro::{error_msg_suppressor, java_fn};
     use std::marker::PhantomData;
     use std::path::Path;
 
     impl BotBuilder<Overflow> {
         pub fn positive<P: AsRef<Path>>(working_dir: P, host: &str) -> Self {
-            Self::positive_create(working_dir, &vec![], &vec![], host)
+            Self::positive_create(working_dir, &[], &[], host)
         }
         pub fn reversed<P: AsRef<Path>>(working_dir: P, port: i32) -> Self {
-            Self::reversed_create(working_dir, &vec![], &vec![], port)
+            Self::reversed_create(working_dir, &[], &[], port)
         }
-        fn create(jvm: &Jvm) -> Instance {
-            jvm.field(
-                &jvm.static_class(<Self as GetClassTypeTrait>::get_type_name())
-                    .unwrap(),
-                "Companion",
-            )
-            .unwrap()
+        #[java_fn("positive")]
+        fn positive_internal(jvm: &Jvm, host: &str) -> Instance {
+            /**/
+        }
+        #[java_fn("reversed")]
+        fn reversed_internal(jvm: &Jvm, port: DataWrapper<i32, PrimitiveConvert>) -> Instance {
+            /**/
+        }
+        fn new_internal(jvm: Jvm, instance: Instance) -> Self {
+            Self {
+                instance,
+                jvm,
+                config: None,
+                id: None,
+                bot_authorization: None,
+                _backend: PhantomData,
+            }
         }
         pub fn positive_create<P: AsRef<Path>>(
             working_dir: P,
-            jar_paths: &Vec<String>,
-            java_opts: &Vec<String>,
+            jar_paths: &[String],
+            java_opts: &[String],
             host: &str,
         ) -> Self {
             let jvm = Self::create_jvm(&working_dir, jar_paths, java_opts);
-            let instance = Self::create(&jvm);
-            let instance = jvm
-                .invoke(
-                    &instance,
-                    "positive",
-                    &[InvocationArg::try_from(host).unwrap()],
-                )
-                .unwrap();
-            Self {
-                instance,
-                jvm,
-                config: None,
-                id: None,
-                bot_authorization: None,
-                _backend: PhantomData,
-            }
+            let instance = Self::positive_internal(&jvm, host);
+            Self::new_internal(jvm, instance)
         }
         pub fn reversed_create<P: AsRef<Path>>(
             working_dir: P,
-            jar_paths: &Vec<String>,
-            java_opts: &Vec<String>,
+            jar_paths: &[String],
+            java_opts: &[String],
             port: i32,
         ) -> Self {
             let jvm = Self::create_jvm(&working_dir, jar_paths, java_opts);
-            let instance = Self::create(&jvm);
-            let instance = jvm
-                .invoke(
-                    &instance,
-                    "reversed",
-                    &[InvocationArg::try_from(port)
-                        .unwrap()
-                        .into_primitive()
-                        .unwrap()],
-                )
-                .unwrap();
-            Self {
-                instance,
-                jvm,
-                config: None,
-                id: None,
-                bot_authorization: None,
-                _backend: PhantomData,
-            }
+            let instance = Self::reversed_internal(&jvm, port);
+            Self::new_internal(jvm, instance)
         }
     }
     impl BotBuilder<Overflow> {
-        
+        #[java_fn]
+        pub fn connect(&self) -> Bot {
+            /* auto impl. */
+        }
+        fn extra_code(&mut self, instance: Instance) -> &mut BotBuilder<Overflow> {
+            self.instance = instance;
+            self
+        }
+        #[java_fn]
+        pub fn no_platform(&mut self) -> &mut BotBuilder<Overflow> {
+            /* auto impl. */
+            error_msg_suppressor!("return self.extra_code(instance);");
+        }
+        #[java_fn]
+        pub fn no_print_info(&mut self) -> &mut BotBuilder<Overflow> {
+            /* auto impl. */
+            error_msg_suppressor!("return self.extra_code(instance);");
+        }
+        // TODO: org.slf4j.Logger
+        #[java_fn]
+        pub fn override_logger(&mut self) -> &mut BotBuilder<Overflow> {
+            /* auto impl. */
+            error_msg_suppressor!("return self.extra_code(instance);");
+        }
+        #[java_fn]
+        pub fn retry_rest_mills(
+            &mut self,
+            retry_rest_mills: DataWrapper<i64, PrimitiveConvert>,
+        ) -> &mut BotBuilder<Overflow> {
+            /* auto impl. */
+            error_msg_suppressor!("return self.extra_code(instance);");
+        }
+        #[java_fn]
+        pub fn retry_times(
+            &mut self,
+            retry_times: DataWrapper<i32, PrimitiveConvert>,
+        ) -> &mut BotBuilder<Overflow> {
+            /* auto impl. */
+            error_msg_suppressor!("return self.extra_code(instance);");
+        }
+        #[java_fn]
+        pub fn retry_wait_mills(
+            &mut self,
+            retry_wait_mills: DataWrapper<i64, PrimitiveConvert>,
+        ) -> &mut BotBuilder<Overflow> {
+            /* auto impl. */
+            error_msg_suppressor!("return self.extra_code(instance);");
+        }
+        #[java_fn]
+        pub fn token(&mut self, token: &str) -> &mut BotBuilder<Overflow> {
+            /* auto impl. */
+            error_msg_suppressor!("return self.extra_code(instance);");
+        }
+        #[java_fn("useCQCode")]
+        pub fn use_cqcode(&mut self) -> &mut BotBuilder<Overflow> {
+            /* auto impl. */
+            error_msg_suppressor!("return self.extra_code(instance);");
+        }
     }
 }

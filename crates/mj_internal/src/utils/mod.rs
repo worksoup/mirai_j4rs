@@ -1,17 +1,17 @@
 use j4rs::{Instance, InvocationArg, Jvm};
 use jbuchong::{
+    java_all,
     utils::instance_is_null,
+    Comparator, Consumer, FromInstanceTrait, Function, GetClassTypeTrait, Predicate,
     {GetInstanceTrait, TryFromInstanceTrait},
 };
-use jbuchong::{AsInstanceDerive, GetInstanceDerive, TryFromInstanceDerive};
-use jbuchong::{Comparator, Consumer, Function, Predicate};
-use jbuchong::{FromInstanceTrait, GetClassTypeTrait};
 use std::{cmp::Ordering, marker::PhantomData};
 
 pub mod backend;
 pub mod bot_builder;
 mod bot_configuration;
 pub mod contact;
+pub mod data_wrapper;
 mod device_info;
 pub mod just_for_examples;
 pub mod login_solver;
@@ -37,7 +37,7 @@ pub trait MiraiRsCollectionTrait {
 pub trait MiraiRsIterableTrait: Iterator {}
 
 /// 对应 `Stream<AbsoluteFileFolder>`
-#[derive(GetInstanceDerive, AsInstanceDerive, TryFromInstanceDerive)]
+#[java_all]
 pub struct JavaStream<T: TryFromInstanceTrait + GetClassTypeTrait> {
     pub(crate) instance: Instance,
     pub(crate) _unused: PhantomData<T>,
@@ -61,7 +61,7 @@ impl<T: TryFromInstanceTrait + GetClassTypeTrait> JavaStream<T> {
         let p = Predicate::new(p);
         let predicate = InvocationArg::try_from(p.get_instance()).unwrap();
         let instance = jvm.invoke(&self.instance, "filter", &[predicate]).unwrap();
-        let _ = p.drop();
+        p.drop();
         JavaStream::from_instance(instance)
     }
 
@@ -73,9 +73,9 @@ impl<T: TryFromInstanceTrait + GetClassTypeTrait> JavaStream<T> {
     {
         let jvm = Jvm::attach_thread().unwrap();
         let f = Function::new(f);
-        let mapper = InvocationArg::try_from(f.get_instance().unwrap()).unwrap();
+        let mapper = InvocationArg::from(f.get_instance().unwrap());
         let instance = jvm.invoke(&self.instance, "map", &[mapper]).unwrap();
-        let _ = f.drop();
+        f.drop();
         JavaStream::from_instance(instance)
     }
 
@@ -85,9 +85,9 @@ impl<T: TryFromInstanceTrait + GetClassTypeTrait> JavaStream<T> {
     {
         let jvm = Jvm::attach_thread().unwrap();
         let f = Consumer::new(f);
-        let predicate = InvocationArg::try_from(f.get_instance().unwrap()).unwrap();
+        let predicate = InvocationArg::from(f.get_instance().unwrap());
         let _ = jvm.invoke(&self.instance, "filter", &[predicate]).unwrap();
-        let _ = f.drop();
+        f.drop();
     }
 
     pub fn count(&self) -> i64 {
@@ -105,9 +105,9 @@ impl<T: TryFromInstanceTrait + GetClassTypeTrait> JavaStream<T> {
     {
         let jvm = Jvm::attach_thread().unwrap();
         let f = Function::new(f);
-        let mapper = InvocationArg::try_from(f.get_instance().unwrap()).unwrap();
+        let mapper = InvocationArg::from(f.get_instance().unwrap());
         let instance = jvm.invoke(&self.instance, "flatMap", &[mapper]).unwrap();
-        let _ = f.drop();
+        f.drop();
         JavaStream::from_instance(instance)
     }
 
@@ -137,9 +137,9 @@ impl<T: TryFromInstanceTrait + GetClassTypeTrait> JavaStream<T> {
     {
         let jvm = Jvm::attach_thread().unwrap();
         let f = Comparator::new(f);
-        let compare = InvocationArg::try_from(f.get_instance().unwrap()).unwrap();
+        let compare = InvocationArg::from(f.get_instance().unwrap());
         let instance = jvm.invoke(&self.instance, "max", &[compare]).unwrap();
-        let _ = f.drop();
+        f.drop();
         if !instance_is_null(&instance) {
             T::try_from_instance(instance).ok()
         } else {
@@ -153,9 +153,9 @@ impl<T: TryFromInstanceTrait + GetClassTypeTrait> JavaStream<T> {
     {
         let jvm = Jvm::attach_thread().unwrap();
         let f = Comparator::new(f);
-        let compare = InvocationArg::try_from(f.get_instance().unwrap()).unwrap();
+        let compare = InvocationArg::from(f.get_instance().unwrap());
         let instance = jvm.invoke(&self.instance, "min", &[compare]).unwrap();
-        let _ = f.drop();
+        f.drop();
         if !instance_is_null(&instance) {
             Some(T::try_from_instance(instance).unwrap())
         } else {

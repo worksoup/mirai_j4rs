@@ -30,7 +30,7 @@ impl<K, V> MiraiMap<K, V> {
     {
         let jvm = Jvm::attach_thread().unwrap();
         let java_cast =
-            |instance: &Instance, obj: &str| -> Instance { jvm.cast(&instance, obj).unwrap() };
+            |instance: &Instance, obj: &str| -> Instance { jvm.cast(instance, obj).unwrap() };
         let mut map = HashMap::<K, V>::new();
         let entry_set = jvm
             .invoke(&self.instance, "entrySet", InvocationArg::empty())
@@ -72,9 +72,9 @@ impl MiraiMap<i32, String> {
              jvm: &Jvm,
              cast: &dyn Fn(&Instance, &str) -> Instance|
              -> (i32, String) {
-                let k: i64 = jvm.to_rust(cast(&k, "java.lang.Integer")).unwrap();
+                let k: i64 = jvm.to_rust(cast(k, "java.lang.Integer")).unwrap();
                 let k: i32 = (k & i32::MAX as i64) as i32;
-                let v: String = jvm.to_rust(cast(&v, "java.lang.String")).unwrap();
+                let v: String = jvm.to_rust(cast(v, "java.lang.String")).unwrap();
                 (k, v)
             },
         ))
@@ -90,8 +90,8 @@ impl MiraiMap<String, i32> {
              jvm: &Jvm,
              cast: &dyn Fn(&Instance, &str) -> Instance|
              -> (String, i32) {
-                let k: String = jvm.to_rust(cast(&k, "java.lang.String")).unwrap();
-                let v: i64 = jvm.to_rust(cast(&v, "java.lang.Integer")).unwrap();
+                let k: String = jvm.to_rust(cast(k, "java.lang.String")).unwrap();
+                let v: i64 = jvm.to_rust(cast(v, "java.lang.Integer")).unwrap();
                 let v: i32 = (v & i32::MAX as i64) as i32;
                 (k, v)
             },
@@ -109,9 +109,9 @@ impl MiraiMap<String, String> {
              cast: &dyn Fn(&Instance, &str) -> Instance|
              -> (String, String) {
                 let k: String = jvm
-                    .to_rust(jvm.invoke(&k, "toString", InvocationArg::empty()).unwrap())
+                    .to_rust(jvm.invoke(k, "toString", InvocationArg::empty()).unwrap())
                     .unwrap();
-                let v: String = jvm.to_rust(cast(&v, "java.lang.String")).unwrap();
+                let v: String = jvm.to_rust(cast(v, "java.lang.String")).unwrap();
                 (k, v)
             },
         ))

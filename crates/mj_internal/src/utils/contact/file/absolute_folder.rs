@@ -2,7 +2,7 @@ use j4rs::{Instance, InvocationArg, Jvm};
 use jbuchong::{AsInstanceTrait, FromInstanceTrait};
 use mj_helper_macro::mj_all;
 
-use crate::utils::backend::BotBackend;
+use crate::utils::backend::{BotBackend, Mirai, Overflow};
 use crate::utils::{
     contact::file::{AbsoluteFile, AbsoluteFileFolder, AbsoluteFileFolderTrait, ExternalResource},
     JavaStream,
@@ -17,9 +17,23 @@ pub struct AbsoluteFolder<B: BotBackend> {
     instance: Instance,
     _backend: B,
 }
-
-impl<B: BotBackend> AbsoluteFolder<B> {
-    pub fn children(&self) -> JavaStream<AbsoluteFileFolder<B>> {
+impl AbsoluteFolder<Overflow> {
+    pub fn children(&self) -> JavaStream<AbsoluteFileFolder<Overflow>> {
+        // waiting for overflow's impl.
+        todo!()
+    }
+    /// 上传新文件。
+    pub fn upload_new_file(
+        &self,
+        _file_name: &str,
+        _resource: &ExternalResource,
+    ) -> AbsoluteFile<Overflow> {
+        // waiting for overflow's impl.
+        todo!()
+    }
+}
+impl AbsoluteFolder<Mirai> {
+    pub fn children(&self) -> JavaStream<AbsoluteFileFolder<Mirai>> {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke(&self.instance, "childrenStream", InvocationArg::empty())
@@ -29,6 +43,27 @@ impl<B: BotBackend> AbsoluteFolder<B> {
             _unused: Default::default(),
         }
     }
+    /// 上传新文件。
+    pub fn upload_new_file(
+        &self,
+        file_name: &str,
+        resource: &ExternalResource,
+    ) -> AbsoluteFile<Mirai> {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm
+            .invoke(
+                &self.instance,
+                "uploadNewFile",
+                &[
+                    InvocationArg::try_from(file_name).unwrap(),
+                    InvocationArg::from(jvm.clone_instance(resource.as_instance()).unwrap()),
+                ],
+            )
+            .unwrap();
+        AbsoluteFile::from_instance(instance)
+    }
+}
+impl<B: BotBackend> AbsoluteFolder<B> {
     pub fn create_folder(&self, folder_name: &str) -> AbsoluteFolder<B> {
         let jvm = Jvm::attach_thread().unwrap();
         let folder_name = InvocationArg::try_from(folder_name).unwrap();
@@ -120,21 +155,6 @@ impl<B: BotBackend> AbsoluteFolder<B> {
             .invoke(&self.instance, "resolveFolderById", &[id])
             .unwrap();
         AbsoluteFolder::from_instance(instance)
-    }
-    /// 上传新文件。
-    pub fn upload_new_file(&self, file_name: &str, resource: &ExternalResource) -> AbsoluteFile<B> {
-        let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm
-            .invoke(
-                &self.instance,
-                "uploadNewFile",
-                &[
-                    InvocationArg::try_from(file_name).unwrap(),
-                    InvocationArg::from(jvm.clone_instance(resource.as_instance()).unwrap()),
-                ],
-            )
-            .unwrap();
-        AbsoluteFile::from_instance(instance)
     }
     /// 上传新文件，传入的 callback 可以获取到当前上传文件的进度。
     pub fn upload_new_file_with_progression_callback() -> AbsoluteFile<B> {

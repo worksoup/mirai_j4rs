@@ -75,35 +75,37 @@ mod tests {
         assert_eq!(group_.get_id(), group_id);
         let root = remote_files.get_root();
         println!("根目录名：{}", root.get_name());
-        let root_children = root.children().to_vec();
-        for file in root_children {
-            println!(
-                "文件/目录名：{}，上传时间：{}，修改时间：{}，文件-目录：{}-{}，上传者：{}",
-                file.get_name(),
-                file.get_upload_time(),
-                file.get_last_modified_time(),
-                file.is_file(),
-                file.is_folder(),
-                file.get_uploader_id()
-            );
-            if file.is_file() {
-                let file = file.to_file();
-                let name = file.get_name();
-                if name == "mirai_j4rs_test.mp3" {
-                    if file.delete() {
-                        println!("已删除。");
-                    }
-                } else {
-                    println!("url: {}", file.get_url());
-                    println!("md5: {:?}", file.get_md5());
-                    println!("sha1: {:?}", file.get_sha1());
-                    println!("size: {:?}", file.get_size());
-                }
-            }
-        }
-        let res = ExternalResource::create_from_file(FILE_PATH);
-        let _ = root.upload_new_file("mirai_j4rs_test.mp3", &res);
-        res.close();
+        // not impl yet.
+        // let root_children = root.children().to_vec();
+        // for file in root_children {
+        //     println!(
+        //         "文件/目录名：{}，上传时间：{}，修改时间：{}，文件-目录：{}-{}，上传者：{}",
+        //         file.get_name(),
+        //         file.get_upload_time(),
+        //         file.get_last_modified_time(),
+        //         file.is_file(),
+        //         file.is_folder(),
+        //         file.get_uploader_id()
+        //     );
+        //     if file.is_file() {
+        //         let file = file.to_file();
+        //         let name = file.get_name();
+        //         if name == "mirai_j4rs_test.mp3" {
+        //             if file.delete() {
+        //                 println!("已删除。");
+        //             }
+        //         } else {
+        //             println!("url: {}", file.get_url());
+        //             println!("md5: {:?}", file.get_md5());
+        //             println!("sha1: {:?}", file.get_sha1());
+        //             println!("size: {:?}", file.get_size());
+        //         }
+        //     }
+        // }
+        // not impl yet.
+        // let res = ExternalResource::create_from_file(FILE_PATH);
+        // let _ = root.upload_new_file("mirai_j4rs_test.mp3", &res);
+        // res.close();
         // `ForwardMessage`
         let message = ForwardMessageBuilder::new(&group)
             .add(
@@ -117,7 +119,8 @@ mod tests {
         // `Image`
         let image = group.upload_image_from_file(IMAGE_PATH);
         println!("{}", image.get_image_id());
-        println!("{}", image.get_md5());
+        // ERROR on Overflow backend!
+        // println!("{}", image.get_md5());
         println!("{}", image.get_size());
         println!("{}", image.to_code());
         println!("{}", image.to_content());

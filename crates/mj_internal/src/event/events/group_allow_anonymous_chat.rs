@@ -7,18 +7,20 @@ use crate::event::{
     BroadcastControllableTrait, GroupEventTrait, GroupMemberInfoChangeEventTrait,
     GroupOperableEventTrait, GroupSettingsChangeEventTrait,
 };
+use crate::utils::backend::BotBackend;
 
 #[mj_event]
-pub struct GroupAllowAnonymousChatEvent {
+pub struct GroupAllowAnonymousChatEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl GroupSettingsChangeEventTrait<bool> for GroupAllowAnonymousChatEvent {}
-impl GroupOperableEventTrait for GroupAllowAnonymousChatEvent {}
-impl GroupMemberInfoChangeEventTrait for GroupAllowAnonymousChatEvent {}
+impl<B: BotBackend> GroupSettingsChangeEventTrait<B, bool> for GroupAllowAnonymousChatEvent<B> {}
+impl<B: BotBackend> GroupOperableEventTrait<B> for GroupAllowAnonymousChatEvent<B> {}
+impl<B: BotBackend> GroupMemberInfoChangeEventTrait<B> for GroupAllowAnonymousChatEvent<B> {}
 
-impl BotEventTrait for GroupAllowAnonymousChatEvent {}
-impl GroupEventTrait for GroupAllowAnonymousChatEvent {}
-impl BaseGroupMemberInfoChangeEventTrait for GroupAllowAnonymousChatEvent {}
-impl BroadcastControllableTrait for GroupAllowAnonymousChatEvent {}
-impl BotPassiveEventTrait for GroupAllowAnonymousChatEvent {}
+impl<B: BotBackend> BotEventTrait<B> for GroupAllowAnonymousChatEvent<B> {}
+impl<B: BotBackend> GroupEventTrait<B> for GroupAllowAnonymousChatEvent<B> {}
+impl<B: BotBackend> BaseGroupMemberInfoChangeEventTrait<B> for GroupAllowAnonymousChatEvent<B> {}
+impl<B:BotBackend> BroadcastControllableTrait<B> for GroupAllowAnonymousChatEvent<B> {}
+impl<B: BotBackend> BotPassiveEventTrait<B> for GroupAllowAnonymousChatEvent<B> {}

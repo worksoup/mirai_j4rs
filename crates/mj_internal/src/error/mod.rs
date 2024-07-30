@@ -11,7 +11,7 @@ use jbuchong::{GetInstanceTrait, TryFromInstanceTrait};
 use crate::contact::MemberPermission;
 use crate::error::MiraiRsErrorEnum::LumiaException;
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct MemberPermissionCheck {
     required: MemberPermission,
     actual: MemberPermission,
@@ -44,7 +44,7 @@ impl Display for MemberPermissionCheck {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum MiraiRsErrorEnum {
     /// 权限不足。
     PermissionDenied(MemberPermissionCheck),
@@ -69,6 +69,9 @@ impl MiraiRsError {
     }
     pub fn from_j4rs_err(_j4rs_err: J4RsError) -> Self {
         todo!()
+    }
+    pub fn get_type(&self) -> MiraiRsErrorEnum {
+        self.r#type.clone()
     }
 }
 

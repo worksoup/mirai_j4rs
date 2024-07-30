@@ -6,16 +6,18 @@ use mj_helper_macro::mj_event;
 use crate::event::{
     BotActiveEventTrait, BotEventTrait, CancellableEventTrait, MessagePreSendEventTrait,
 };
+use crate::utils::backend::BotBackend;
 
 #[mj_event]
-pub struct GroupMessagePreSendEvent {
+pub struct GroupMessagePreSendEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl BotEventTrait for GroupMessagePreSendEvent {}
+impl<B: BotBackend> BotEventTrait<B> for GroupMessagePreSendEvent<B> {}
 
-impl BotActiveEventTrait for GroupMessagePreSendEvent {}
+impl<B: BotBackend> BotActiveEventTrait<B> for GroupMessagePreSendEvent<B> {}
 
-impl CancellableEventTrait for GroupMessagePreSendEvent {}
+impl<B:BotBackend> CancellableEventTrait<B> for GroupMessagePreSendEvent<B> {}
 
-impl MessagePreSendEventTrait for GroupMessagePreSendEvent {}
+impl<B: BotBackend> MessagePreSendEventTrait<B> for GroupMessagePreSendEvent<B> {}

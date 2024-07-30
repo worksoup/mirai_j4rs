@@ -6,36 +6,38 @@ use crate::message::data::rock_paper_scissors::RockPaperScissors;
 use crate::message::message_trait::{
     ConstrainSingleTrait, MarketFaceTrait, MessageContentTrait, MessageTrait, SingleMessageTrait,
 };
+use crate::utils::backend::BotBackend;
 
 #[mj_all("message.data.MarketFace")]
-pub struct MarketFace {
+pub struct MarketFace<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl MessageTrait for MarketFace {}
+impl<B: BotBackend> MessageTrait<B> for MarketFace<B> {}
 
-impl SingleMessageTrait for MarketFace {}
+impl<B: BotBackend> SingleMessageTrait<B> for MarketFace<B> {}
 
-impl ConstrainSingleTrait for MarketFace {}
+impl<B: BotBackend> ConstrainSingleTrait<B> for MarketFace<B> {}
 
-impl MessageContentTrait for MarketFace {}
+impl<B: BotBackend> MessageContentTrait<B> for MarketFace<B> {}
 
-impl MarketFaceTrait for MarketFace {}
+impl<B: BotBackend> MarketFaceTrait<B> for MarketFace<B> {}
 
 #[mj_all("message.data.MarketFace")]
-pub enum MarketFaceAll {
-    Dice(Dice),
+pub enum MarketFaceAll<B: BotBackend> {
+    Dice(Dice<B>),
     #[fall]
-    MarketFace(MarketFace),
-    RockPaperScissors(RockPaperScissors),
+    MarketFace(MarketFace<B>),
+    RockPaperScissors(RockPaperScissors<B>),
 }
 
-impl MessageTrait for MarketFaceAll {}
+impl<B: BotBackend> MessageTrait<B> for MarketFaceAll<B> {}
 
-impl SingleMessageTrait for MarketFaceAll {}
+impl<B: BotBackend> SingleMessageTrait<B> for MarketFaceAll<B> {}
 
-impl ConstrainSingleTrait for MarketFaceAll {}
+impl<B: BotBackend> ConstrainSingleTrait<B> for MarketFaceAll<B> {}
 
-impl MessageContentTrait for MarketFaceAll {}
+impl<B: BotBackend> MessageContentTrait<B> for MarketFaceAll<B> {}
 
-impl MarketFaceTrait for MarketFaceAll {}
+impl<B: BotBackend> MarketFaceTrait<B> for MarketFaceAll<B> {}

@@ -5,9 +5,12 @@ use jbuchong::{
 };
 
 use crate::contact::Group;
+use crate::utils::backend::BotBackend;
 use crate::utils::contact::file::{AbsoluteFile, AbsoluteFolder};
 
-pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
+pub trait AbsoluteFileFolderTrait<B: BotBackend>:
+    Sized + GetInstanceTrait + AsInstanceTrait
+{
     fn delete(&self) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(self.as_instance())
@@ -37,14 +40,14 @@ pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
             .unwrap()
     }
     // FileSupported 当前只有 Group
-    fn get_contact(&self) -> Group {
+    fn get_contact(&self) -> Group<B> {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke(self.as_instance(), "getContact", InvocationArg::empty())
             .unwrap();
         Group::try_from_instance(instance).unwrap()
     }
-    fn get_extension<T: AbsoluteFileFolderTrait>(file_or_folder: T) -> String {
+    fn get_extension<T: AbsoluteFileFolderTrait<B>>(file_or_folder: T) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(file_or_folder.as_instance())
             .unwrap()
@@ -81,7 +84,7 @@ pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
             .to_rust()
             .unwrap()
     }
-    fn get_name_without_extension<T: AbsoluteFileFolderTrait>(file_or_folder: T) -> String {
+    fn get_name_without_extension<T: AbsoluteFileFolderTrait<B>>(file_or_folder: T) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.chain(file_or_folder.as_instance())
             .unwrap()
@@ -90,7 +93,7 @@ pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
             .to_rust()
             .unwrap()
     }
-    fn get_parent(&self) -> AbsoluteFolder {
+    fn get_parent(&self) -> AbsoluteFolder<B> {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke(self.as_instance(), "getParent", InvocationArg::empty())
@@ -124,9 +127,9 @@ pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
             .to_rust()
             .unwrap()
     }
-    fn to_file(&self) -> AbsoluteFile {
+    fn to_file(&self) -> AbsoluteFile<B> {
         let instance = self.get_instance().unwrap();
-        let instance = AbsoluteFile::cast_to_this_type(instance);
+        let instance = <AbsoluteFile<B>>::cast_to_this_type(instance);
         AbsoluteFile::from_instance(instance)
     }
     fn is_folder(&self) -> bool {
@@ -138,9 +141,9 @@ pub trait AbsoluteFileFolderTrait: Sized + GetInstanceTrait + AsInstanceTrait {
             .to_rust()
             .unwrap()
     }
-    fn to_folder(&self) -> AbsoluteFolder {
+    fn to_folder(&self) -> AbsoluteFolder<B> {
         let instance = self.get_instance().unwrap();
-        let instance = AbsoluteFolder::cast_to_this_type(instance);
+        let instance = <AbsoluteFolder<B>>::cast_to_this_type(instance);
         AbsoluteFolder::from_instance(instance)
     }
     fn refresh(&self) -> bool {

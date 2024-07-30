@@ -6,18 +6,20 @@ use crate::event::{
     BaseGroupMemberInfoChangeEventTrait, BotEventTrait, BotPassiveEventTrait, GroupEventTrait,
     GroupMemberInfoChangeEventTrait,
 };
+use crate::utils::backend::BotBackend;
 
 #[mj_event]
-pub struct BotUnmuteEvent {
+pub struct BotUnmuteEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl BotEventTrait for BotUnmuteEvent {}
+impl<B: BotBackend> BotEventTrait<B> for BotUnmuteEvent<B> {}
 
-impl GroupEventTrait for BotUnmuteEvent {}
+impl<B: BotBackend> GroupEventTrait<B> for BotUnmuteEvent<B> {}
 
-impl BotPassiveEventTrait for BotUnmuteEvent {}
+impl<B: BotBackend> BotPassiveEventTrait<B> for BotUnmuteEvent<B> {}
 
-impl BaseGroupMemberInfoChangeEventTrait for BotUnmuteEvent {}
+impl<B: BotBackend> BaseGroupMemberInfoChangeEventTrait<B> for BotUnmuteEvent<B> {}
 
-impl GroupMemberInfoChangeEventTrait for BotUnmuteEvent {}
+impl<B: BotBackend> GroupMemberInfoChangeEventTrait<B> for BotUnmuteEvent<B> {}

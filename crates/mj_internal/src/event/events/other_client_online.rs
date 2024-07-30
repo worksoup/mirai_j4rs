@@ -3,13 +3,15 @@ use j4rs::Instance;
 use mj_helper_macro::mj_event;
 
 use crate::event::{BotEventTrait, BotPassiveEventTrait, OtherClientEventTrait};
+use crate::utils::backend::BotBackend;
 
 #[mj_event]
-pub struct OtherClientOnlineEvent {
+pub struct OtherClientOnlineEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl OtherClientEventTrait for OtherClientOnlineEvent {}
-impl BotPassiveEventTrait for OtherClientOnlineEvent {}
+impl<B:BotBackend> OtherClientEventTrait<B> for OtherClientOnlineEvent<B> {}
+impl<B:BotBackend> BotPassiveEventTrait<B> for OtherClientOnlineEvent<B> {}
 
-impl BotEventTrait for OtherClientOnlineEvent {}
+impl<B:BotBackend> BotEventTrait<B> for OtherClientOnlineEvent<B> {}

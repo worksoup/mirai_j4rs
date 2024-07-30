@@ -16,11 +16,11 @@ fn main() {
         MiraiProtocol::M.is_nudge_supported()
     );
     println!(
-        "苹果手机协议是否支持戳一戳{}",
+        "苹果平板协议是否支持戳一戳{}",
         MiraiProtocol::I.is_nudge_supported()
     );
     println!(
-        "苹果平板协议是否支持戳一戳{}",
+        "安卓平板协议是否支持戳一戳{}",
         MiraiProtocol::P.is_nudge_supported()
     );
     println!(
@@ -36,11 +36,11 @@ fn main() {
         MiraiProtocol::M.is_qr_login_supported()
     );
     println!(
-        "苹果手机协议是否支持二维码{}",
+        "苹果平板协议是否支持二维码{}",
         MiraiProtocol::I.is_qr_login_supported()
     );
     println!(
-        "苹果平板协议是否支持二维码{}",
+        "安卓平板协议是否支持二维码{}",
         MiraiProtocol::P.is_qr_login_supported()
     );
     bot.login();

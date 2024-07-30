@@ -1,12 +1,13 @@
 use std::hint::unreachable_unchecked;
 
-use j4rs::{errors::J4RsError, Instance, InvocationArg, Jvm};
-use jbuchong::{java, GetClassTypeTrait, TryFromInstanceTrait};
-
 use crate::message::message_trait::{
     CodableMessageTrait, ConstrainSingleTrait, MessageContentTrait, MessageHashCodeTrait,
     MessageTrait, SingleMessageTrait,
 };
+use crate::utils::backend::BotBackend;
+use j4rs::{Instance, InvocationArg, Jvm};
+use jbuchong::{GetClassTypeTrait, TryFromInstanceTrait};
+use mj_helper_macro::mj_all;
 
 #[derive(Clone, Copy)]
 pub enum PokeMessageEnum {
@@ -90,63 +91,62 @@ impl PokeMessageEnum {
         }
     }
 }
-#[java("net.mamoe.mirai.message.data.PokeMessage")]
-pub struct PokeMessage {
-    r#enum: PokeMessageEnum,
-    instance: Instance,
-}
-impl TryFromInstanceTrait for PokeMessage {
-    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
-        let jvm = Jvm::attach_thread().unwrap();
-        let t: (i32, i32) = (
-            jvm.to_rust(
-                jvm.invoke(&instance, "getPokeType", InvocationArg::empty())
-                    .unwrap(),
-            )
-            .unwrap(),
-            jvm.to_rust(
-                jvm.invoke(&instance, "getId", InvocationArg::empty())
-                    .unwrap(),
-            )
-            .unwrap(),
-        );
-        let r#enum = match t {
-            (a, -1) => match a {
-                1 => PokeMessageEnum::戳一戳,
-                2 => PokeMessageEnum::比心,
-                3 => PokeMessageEnum::点赞,
-                4 => PokeMessageEnum::心碎,
-                5 => PokeMessageEnum::六六六,
-                6 => PokeMessageEnum::放大招,
-                _ => unsafe { unreachable_unchecked() },
-            },
-            (126, b) => match b {
-                2011 => PokeMessageEnum::宝贝球,
-                2009 => PokeMessageEnum::让你皮,
-                2007 => PokeMessageEnum::玫瑰花,
-                2006 => PokeMessageEnum::召唤术,
-                2005 => PokeMessageEnum::结印,
-                2004 => PokeMessageEnum::手雷,
-                2003 => PokeMessageEnum::勾引,
-                2002 => PokeMessageEnum::碎屏,
-                2001 => PokeMessageEnum::抓一下,
-                2000 => PokeMessageEnum::敲门,
-                _ => unsafe { unreachable_unchecked() },
-            },
+fn get_enum_(instance: &Instance) -> PokeMessageEnum {
+    let jvm = Jvm::attach_thread().unwrap();
+    let t: (i32, i32) = (
+        jvm.to_rust(
+            jvm.invoke(instance, "getPokeType", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap(),
+        jvm.to_rust(
+            jvm.invoke(instance, "getId", InvocationArg::empty())
+                .unwrap(),
+        )
+        .unwrap(),
+    );
+    match t {
+        (a, -1) => match a {
+            1 => PokeMessageEnum::戳一戳,
+            2 => PokeMessageEnum::比心,
+            3 => PokeMessageEnum::点赞,
+            4 => PokeMessageEnum::心碎,
+            5 => PokeMessageEnum::六六六,
+            6 => PokeMessageEnum::放大招,
             _ => unsafe { unreachable_unchecked() },
-        };
-        Ok(PokeMessage { r#enum, instance })
+        },
+        (126, b) => match b {
+            2011 => PokeMessageEnum::宝贝球,
+            2009 => PokeMessageEnum::让你皮,
+            2007 => PokeMessageEnum::玫瑰花,
+            2006 => PokeMessageEnum::召唤术,
+            2005 => PokeMessageEnum::结印,
+            2004 => PokeMessageEnum::手雷,
+            2003 => PokeMessageEnum::勾引,
+            2002 => PokeMessageEnum::碎屏,
+            2001 => PokeMessageEnum::抓一下,
+            2000 => PokeMessageEnum::敲门,
+            _ => unsafe { unreachable_unchecked() },
+        },
+        _ => unsafe { unreachable_unchecked() },
     }
 }
-impl From<PokeMessage> for PokeMessageEnum {
-    fn from(value: PokeMessage) -> Self {
+#[mj_all("message.data.PokeMessage")]
+pub struct PokeMessage<B: BotBackend> {
+    #[default(fn_name = get_enum_)]
+    r#enum: PokeMessageEnum,
+    instance: Instance,
+    _backend: B,
+}
+impl<B: BotBackend> From<PokeMessage<B>> for PokeMessageEnum {
+    fn from(value: PokeMessage<B>) -> Self {
         value.r#enum
     }
 }
-impl From<PokeMessageEnum> for PokeMessage {
-    fn from(value: PokeMessageEnum) -> PokeMessage {
+impl<B: BotBackend> From<PokeMessageEnum> for PokeMessage<B> {
+    fn from(value: PokeMessageEnum) -> PokeMessage<B> {
         let jvm = Jvm::attach_thread().unwrap();
-        let type_name = <PokeMessage as GetClassTypeTrait>::get_type_name();
+        let type_name = <PokeMessage<B> as GetClassTypeTrait>::get_type_name();
         let field = match value {
             PokeMessageEnum::戳一戳 => "ChuoYiChuo",
             PokeMessageEnum::比心 => "BiXin",
@@ -168,7 +168,7 @@ impl From<PokeMessageEnum> for PokeMessage {
         PokeMessage::try_from_instance(jvm.static_class_field(type_name, field).unwrap()).unwrap()
     }
 }
-impl PokeMessage {
+impl<B: BotBackend> PokeMessage<B> {
     pub fn get_name(&self) -> &str {
         self.r#enum.get_name()
     }
@@ -180,7 +180,7 @@ impl PokeMessage {
     }
 }
 
-impl MessageTrait for PokeMessage {
+impl<B: BotBackend> MessageTrait<B> for PokeMessage<B> {
     fn to_content(&self) -> String {
         String::from("[戳一戳]")
     }
@@ -197,12 +197,12 @@ impl MessageTrait for PokeMessage {
     }
 }
 
-impl SingleMessageTrait for PokeMessage {}
+impl<B: BotBackend> SingleMessageTrait<B> for PokeMessage<B> {}
 
-impl MessageContentTrait for PokeMessage {}
+impl<B: BotBackend> MessageContentTrait<B> for PokeMessage<B> {}
 
-impl ConstrainSingleTrait for PokeMessage {}
+impl<B: BotBackend> ConstrainSingleTrait<B> for PokeMessage<B> {}
 
-impl CodableMessageTrait for PokeMessage {}
+impl<B: BotBackend> CodableMessageTrait<B> for PokeMessage<B> {}
 
-impl MessageHashCodeTrait for PokeMessage {}
+impl<B: BotBackend> MessageHashCodeTrait for PokeMessage<B> {}

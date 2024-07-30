@@ -20,7 +20,7 @@ pub struct PrimitiveConvert;
 #[java_type("java.lang.Long", Data = i64, Marker = DefaultConvert)]
 #[java_type("java.lang.Float", Data = f32, Marker = DefaultConvert)]
 #[java_type("java.lang.Double", Data = f64, Marker = DefaultConvert)]
-pub struct DataWrapper<Data, Marker> {
+pub struct DataWrapper<Data, Marker = DefaultConvert> {
     data: Data,
     _m: PhantomData<Marker>,
 }

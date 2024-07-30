@@ -1,8 +1,9 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-use jbuchong::{java, GetClassTypeTrait, GetInstanceTrait, FromInstanceTrait};
+use jbuchong::{java_all, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
 
 use mj_helper_macro::mj_all;
 
+use crate::utils::backend::BotBackend;
 use crate::{
     contact::{ContactTrait, UserOrBotTrait},
     message::{
@@ -15,24 +16,25 @@ use crate::{
 };
 
 #[mj_all("message.data.ForwardMessageBuilder")]
-pub struct ForwardMessageBuilder {
+pub struct ForwardMessageBuilder<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl ForwardMessageBuilder {
-    pub fn new(contact: &impl ContactTrait) -> Self {
+impl<B: BotBackend> ForwardMessageBuilder<B> {
+    pub fn new(contact: &impl ContactTrait<B>) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let contact = contact.get_instance();
         let contact = InvocationArg::try_from(contact).unwrap();
         let instance = jvm
             .create_instance(<Self as GetClassTypeTrait>::get_type_name(), &[contact])
             .unwrap();
-        Self { instance }
+        Self::from_instance(instance)
     }
     pub fn add(
         self,
-        user_or_bot: &impl UserOrBotTrait,
-        message: &impl MessageTrait,
+        user_or_bot: &impl UserOrBotTrait<B>,
+        message: &impl MessageTrait<B>,
         time: i32,
     ) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
@@ -52,7 +54,7 @@ impl ForwardMessageBuilder {
         self,
         sender_id: i64,
         sender_name: &str,
-        message: &impl MessageTrait,
+        message: &impl MessageTrait<B>,
         time: i32,
     ) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
@@ -78,16 +80,16 @@ impl ForwardMessageBuilder {
     }
     pub fn set_display_strategy(
         self,
-        title: String,
-        brief: String,
-        source: String,
-        preview: Vec<String>,
-        summary: String,
+        _title: String,
+        _brief: String,
+        _source: String,
+        _preview: Vec<String>,
+        _summary: String,
     ) -> Self {
         todo!("set_display_strategy")
     }
 
-    pub fn build(&self) -> ForwardMessage {
+    pub fn build(&self) -> ForwardMessage<B> {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke(&self.instance, "build", InvocationArg::empty())
@@ -99,16 +101,18 @@ impl ForwardMessageBuilder {
 // TODO: RawForwardMessage is necessary for set_display_strategy.
 // TODO: to_forward_message for message and chain, etc.
 #[mj_all("message.data.ForwardMessage")]
-pub struct ForwardMessage {
+pub struct ForwardMessage<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-#[java]
-pub struct ForwardMessageNode {
+#[java_all]
+pub struct ForwardMessageNode<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl ForwardMessageNode {
+impl<B: BotBackend> ForwardMessageNode<B> {
     pub fn get_sender_id(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.to_rust(
@@ -133,7 +137,7 @@ impl ForwardMessageNode {
         )
         .unwrap()
     }
-    pub fn get_message_chain(&self) -> MessageChain {
+    pub fn get_message_chain(&self) -> MessageChain<B> {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke(&self.instance, "getMessageChain", InvocationArg::empty())
@@ -151,9 +155,9 @@ impl ForwardMessageNode {
     }
 }
 
-impl MessageHashCodeTrait for ForwardMessageNode {}
+impl<B: BotBackend> MessageHashCodeTrait for ForwardMessageNode<B> {}
 
-impl ForwardMessage {
+impl<B: BotBackend> ForwardMessage<B> {
     pub fn get_brief(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         let brief = jvm
@@ -161,7 +165,7 @@ impl ForwardMessage {
             .unwrap();
         jvm.to_rust(brief).unwrap()
     }
-    pub fn get_node_vector(&self) -> Vec<ForwardMessageNode> {
+    pub fn get_node_vector(&self) -> Vec<ForwardMessageNode<B>> {
         let jvm = Jvm::attach_thread().unwrap();
         let mut node_vector = Vec::new();
         let list = jvm
@@ -174,7 +178,7 @@ impl ForwardMessage {
             jvm.to_rust(has_next).unwrap()
         } {
             let next = jvm.invoke(&list, "next", InvocationArg::empty()).unwrap();
-            node_vector.push(ForwardMessageNode { instance: next })
+            node_vector.push(ForwardMessageNode::from_instance(next))
         }
         node_vector
     }
@@ -214,12 +218,12 @@ impl ForwardMessage {
     }
 }
 
-impl MessageTrait for ForwardMessage {}
+impl<B: BotBackend> MessageTrait<B> for ForwardMessage<B> {}
 
-impl SingleMessageTrait for ForwardMessage {}
+impl<B: BotBackend> SingleMessageTrait<B> for ForwardMessage<B> {}
 
-impl MessageContentTrait for ForwardMessage {}
+impl<B: BotBackend> MessageContentTrait<B> for ForwardMessage<B> {}
 
-impl ConstrainSingleTrait for ForwardMessage {}
+impl<B: BotBackend> ConstrainSingleTrait<B> for ForwardMessage<B> {}
 
-impl MessageHashCodeTrait for ForwardMessage {}
+impl<B: BotBackend> MessageHashCodeTrait for ForwardMessage<B> {}

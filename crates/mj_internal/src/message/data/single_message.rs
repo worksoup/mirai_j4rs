@@ -11,33 +11,34 @@ use crate::message::{
     },
     message_trait::{MessageTrait, SingleMessageTrait},
 };
+use crate::utils::backend::BotBackend;
 
 // TODO: 需要知道 Java 或者 MessageChain 会不会返回除了以下消息之外的 SingleMessage
 // TODO: 还有一些消息没有实现，需要补上。
 #[mj_all("message.data.SingleMessage")]
-pub enum SingleMessage {
-    At(At),
-    AtAll(AtAll),
-    Audio(Audio),
-    Face(Face),
-    FileMessage(FileMessage),
-    ForwardMessage(ForwardMessage),
-    Image(Image),
-    LightApp(LightApp),
-    MarketFaceAll(MarketFaceAll),
-    MessageSource(MessageSource),
-    MessageOrigin(MessageOrigin),
-    MusicShare(MusicShare),
-    PlainText(PlainText),
-    PokeMessage(PokeMessage),
-    QuoteReply(QuoteReply),
-    SuperFace(SuperFace),
-    VipFace(VipFace),
+pub enum SingleMessage<B: BotBackend> {
+    At(At<B>),
+    AtAll(AtAll<B>),
+    Audio(Audio<B>),
+    Face(Face<B>),
+    FileMessage(FileMessage<B>),
+    ForwardMessage(ForwardMessage<B>),
+    Image(Image<B>),
+    LightApp(LightApp<B>),
+    MarketFaceAll(MarketFaceAll<B>),
+    MessageSource(MessageSource<B>),
+    MessageOrigin(MessageOrigin<B>),
+    MusicShare(MusicShare<B>),
+    PlainText(PlainText<B>),
+    PokeMessage(PokeMessage<B>),
+    QuoteReply(QuoteReply<B>),
+    SuperFace(SuperFace<B>),
+    VipFace(VipFace<B>),
     #[fall]
-    UnsupportedMessage(UnsupportedMessage),
+    UnsupportedMessage(UnsupportedMessage<B>),
     // 以下这个应该不会被 MessageChain 返回吧？
 }
 
-impl MessageTrait for SingleMessage {}
+impl<B: BotBackend> MessageTrait<B> for SingleMessage<B> {}
 
-impl SingleMessageTrait for SingleMessage {}
+impl<B: BotBackend> SingleMessageTrait<B> for SingleMessage<B> {}

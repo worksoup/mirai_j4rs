@@ -4,13 +4,15 @@ use mj_helper_macro::mj_event;
 
 use crate::contact::{OtherClient, User};
 use crate::event::{BotEventTrait, BotPassiveEventTrait, MessageEventTrait, OtherClientEventTrait};
+use crate::utils::backend::BotBackend;
 
 #[mj_event]
-pub struct OtherClientMessageEvent {
+pub struct OtherClientMessageEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
-impl MessageEventTrait<User, OtherClient> for OtherClientMessageEvent {}
-impl BotPassiveEventTrait for OtherClientMessageEvent {}
+impl<B: BotBackend> MessageEventTrait<B, User<B>, OtherClient<B>> for OtherClientMessageEvent<B> {}
+impl<B: BotBackend> BotPassiveEventTrait<B> for OtherClientMessageEvent<B> {}
 
-impl BotEventTrait for OtherClientMessageEvent {}
-impl OtherClientEventTrait for OtherClientMessageEvent {}
+impl<B: BotBackend> BotEventTrait<B> for OtherClientMessageEvent<B> {}
+impl<B: BotBackend> OtherClientEventTrait<B> for OtherClientMessageEvent<B> {}

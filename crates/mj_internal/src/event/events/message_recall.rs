@@ -3,35 +3,39 @@ use j4rs::Instance;
 use mj_helper_macro::mj_event;
 
 use crate::event::{BotEventTrait, GroupEventTrait, GroupOperableEventTrait};
+use crate::utils::backend::BotBackend;
 
-pub trait MessageRecallTrait: BotEventTrait {}
+pub trait MessageRecallTrait<B: BotBackend>: BotEventTrait<B> {}
 #[mj_event("event.events.MessageRecallEvent$FriendRecall")]
-pub struct FriendRecall {
+pub struct FriendRecall<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl BotEventTrait for FriendRecall {}
+impl<B: BotBackend> BotEventTrait<B> for FriendRecall<B> {}
 
-impl MessageRecallTrait for FriendRecall {}
+impl<B: BotBackend> MessageRecallTrait<B> for FriendRecall<B> {}
 
 #[mj_event("event.events.MessageRecallEvent$GroupRecall")]
-pub struct GroupRecall {
+pub struct GroupRecall<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl BotEventTrait for GroupRecall {}
+impl<B: BotBackend> BotEventTrait<B> for GroupRecall<B> {}
 
-impl MessageRecallTrait for GroupRecall {}
+impl<B: BotBackend> MessageRecallTrait<B> for GroupRecall<B> {}
 
-impl GroupEventTrait for GroupRecall {}
+impl<B: BotBackend> GroupEventTrait<B> for GroupRecall<B> {}
 
-impl GroupOperableEventTrait for GroupRecall {}
+impl<B: BotBackend> GroupOperableEventTrait<B> for GroupRecall<B> {}
 
 #[mj_event]
-pub struct MessageRecallEvent {
+pub struct MessageRecallEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl BotEventTrait for MessageRecallEvent {}
+impl<B: BotBackend> BotEventTrait<B> for MessageRecallEvent<B> {}
 
-impl MessageRecallTrait for MessageRecallEvent {}
+impl<B: BotBackend> MessageRecallTrait<B> for MessageRecallEvent<B> {}

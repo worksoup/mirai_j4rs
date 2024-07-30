@@ -1,6 +1,5 @@
-use j4rs::{errors::J4RsError, Instance, InvocationArg, Jvm};
-use jbuchong::{java, AsInstanceTrait, TryFromInstanceTrait};
-
+use crate::utils::backend::BotBackend;
+use crate::utils::data_wrapper::DataWrapper;
 use crate::{
     contact::{
         Bot, ContactOrBotTrait, ContactTrait, NudgeSupportedTrait, SendMessageSupportedTrait,
@@ -8,80 +7,31 @@ use crate::{
     },
     utils::{contact::friend_group::FriendGroup, other::enums::AvatarSpec},
 };
+use j4rs::{Instance, InvocationArg};
+use mj_helper_macro::{java_fn, mj_all};
 
-#[java("net.mamoe.mirai.contact.Friend")]
-pub struct Friend {
-    bot: Bot,
+#[mj_all("contact.Friend")]
+pub struct Friend<B: BotBackend> {
     instance: Instance,
-    id: i64,
+    _backend: B,
+}
+impl<B: BotBackend> SendMessageSupportedTrait<B> for Friend<B> {}
+
+impl<B: BotBackend> Friend<B> {
+    pub fn from_bot(bot: &Bot<B>) -> Self {
+        bot.get_as_friend()
+    }
+    #[java_fn]
+    pub fn delete(&self) {}
+    #[java_fn]
+    pub fn get_friend_group(&self) -> FriendGroup<B> {}
+    #[java_fn]
+    pub fn get_remark(&self) -> String {}
+    #[java_fn]
+    pub fn set_remark(&self, remark: DataWrapper<&str>) {}
 }
 
-impl TryFromInstanceTrait for Friend {
-    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
-        let jvm = Jvm::attach_thread().unwrap();
-        let bot = jvm
-            .invoke(&instance, "getBot", InvocationArg::empty())
-            .unwrap();
-        let bot = Bot::try_from_instance(bot).unwrap();
-        let id = jvm
-            .to_rust(
-                jvm.invoke(&instance, "getId", InvocationArg::empty())
-                    .unwrap(),
-            )
-            .unwrap();
-        Ok(Friend { bot, instance, id })
-    }
-}
-impl SendMessageSupportedTrait for Friend {}
-
-impl Friend {
-    pub fn from_bot(bot: &Bot) -> Self {
-        let id = bot.get_id();
-        let instance = Jvm::attach_thread()
-            .unwrap()
-            .invoke(bot.as_instance(), "getAsFriend", InvocationArg::empty())
-            .unwrap();
-        Friend {
-            bot: bot.clone(),
-            instance,
-            id,
-        }
-    }
-    pub fn delete(&self) {
-        let jvm = Jvm::attach_thread().unwrap();
-        let _ = jvm
-            .invoke(&self.instance, "delete", InvocationArg::empty())
-            .unwrap();
-    }
-    pub fn get_friend_group(&self) -> FriendGroup {
-        let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm
-            .invoke(&self.instance, "getFriendGroup", InvocationArg::empty())
-            .unwrap();
-        FriendGroup { instance }
-    }
-    pub fn get_remark(&self) -> String {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(
-            jvm.invoke(&self.instance, "getRemark", InvocationArg::empty())
-                .unwrap(),
-        )
-        .unwrap()
-    }
-    pub fn set_remark(&self, remark: &str) {
-        let jvm = Jvm::attach_thread().unwrap();
-        let remark = InvocationArg::try_from(remark).unwrap();
-        let _ = jvm.invoke(&self.instance, "delete", &[remark]).unwrap();
-    }
-}
-
-impl ContactOrBotTrait for Friend {
-    fn get_bot(&self) -> Bot {
-        self.bot.clone()
-    }
-    fn get_id(&self) -> i64 {
-        self.id
-    }
+impl<B: BotBackend> ContactOrBotTrait<B> for Friend<B> {
     fn get_avatar_url(&self, size: Option<AvatarSpec>) -> String {
         let size: i32 = if let Some(size) = size {
             size.into()
@@ -96,10 +46,10 @@ impl ContactOrBotTrait for Friend {
     }
 }
 
-impl UserOrBotTrait for Friend {}
+impl<B: BotBackend> UserOrBotTrait<B> for Friend<B> {}
 
-impl NudgeSupportedTrait for Friend {}
+impl<B: BotBackend> NudgeSupportedTrait<B> for Friend<B> {}
 
-impl ContactTrait for Friend {}
+impl<B: BotBackend> ContactTrait<B> for Friend<B> {}
 
-impl UserTrait for Friend {}
+impl<B: BotBackend> UserTrait<B> for Friend<B> {}

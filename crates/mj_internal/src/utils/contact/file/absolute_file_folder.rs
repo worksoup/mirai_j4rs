@@ -1,14 +1,14 @@
+use crate::utils::backend::BotBackend;
+use crate::utils::contact::file::{AbsoluteFile, AbsoluteFileFolderTrait, AbsoluteFolder};
 use mj_helper_macro::mj_all;
 
-use crate::utils::contact::file::{AbsoluteFile, AbsoluteFileFolderTrait, AbsoluteFolder};
-
 #[mj_all("contact.file.AbsoluteFileFolder")]
-pub enum AbsoluteFileFolder {
-    AbsoluteFile(AbsoluteFile),
-    AbsoluteFolder(AbsoluteFolder),
+pub enum AbsoluteFileFolder<B: BotBackend> {
+    AbsoluteFile(AbsoluteFile<B>),
+    AbsoluteFolder(AbsoluteFolder<B>),
 }
 
-impl AbsoluteFileFolderTrait for AbsoluteFileFolder {
+impl<B: BotBackend> AbsoluteFileFolderTrait<B> for AbsoluteFileFolder<B> {
     fn refreshed(&self) -> Self {
         match self {
             AbsoluteFileFolder::AbsoluteFile(a) => AbsoluteFileFolder::AbsoluteFile(a.refreshed()),

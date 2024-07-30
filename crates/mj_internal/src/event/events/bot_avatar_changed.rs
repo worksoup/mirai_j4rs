@@ -3,9 +3,11 @@ use j4rs::Instance;
 use mj_helper_macro::mj_event;
 
 use crate::event::BotEventTrait;
+use crate::utils::backend::BotBackend;
 
 #[mj_event]
-pub struct BotAvatarChangedEvent {
+pub struct BotAvatarChangedEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
-impl BotEventTrait for BotAvatarChangedEvent {}
+impl <B: BotBackend> BotEventTrait<B> for BotAvatarChangedEvent<B> {}

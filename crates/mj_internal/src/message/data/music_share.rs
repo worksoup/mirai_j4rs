@@ -6,18 +6,20 @@ use crate::message::message_trait::{
     CodableMessageTrait, ConstrainSingleTrait, MessageContentTrait, MessageTrait,
     SingleMessageTrait,
 };
+use crate::utils::backend::BotBackend;
 
 #[mj_all("message.data.MusicShare")]
-pub struct MusicShare {
+pub struct MusicShare<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl MessageTrait for MusicShare {}
+impl<B: BotBackend> MessageTrait<B> for MusicShare<B> {}
 
-impl SingleMessageTrait for MusicShare {}
+impl<B: BotBackend> SingleMessageTrait<B> for MusicShare<B> {}
 
-impl MessageContentTrait for MusicShare {}
+impl<B: BotBackend> MessageContentTrait<B> for MusicShare<B> {}
 
-impl ConstrainSingleTrait for MusicShare {}
+impl<B: BotBackend> ConstrainSingleTrait<B> for MusicShare<B> {}
 
-impl CodableMessageTrait for MusicShare {}
+impl<B: BotBackend> CodableMessageTrait<B> for MusicShare<B> {}

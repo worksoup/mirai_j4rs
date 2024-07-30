@@ -7,17 +7,22 @@ use crate::event::{
     BotEventTrait, BotPassiveEventTrait, GroupAwareMessageTrait, MessageEventTrait,
     OtherClientEventTrait, TempMessageEventTrait, UserMessageEventTrait,
 };
+use crate::utils::backend::BotBackend;
 
 #[mj_event]
-pub struct GroupTempMessageEvent {
+pub struct GroupTempMessageEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl GroupAwareMessageTrait<NormalMember, NormalMember> for GroupTempMessageEvent {}
-impl TempMessageEventTrait<NormalMember> for GroupTempMessageEvent {}
-impl UserMessageEventTrait<NormalMember, NormalMember> for GroupTempMessageEvent {}
+impl<B: BotBackend> GroupAwareMessageTrait<B, NormalMember<B>, NormalMember<B>>
+    for GroupTempMessageEvent<B>
+{
+}
+impl<B: BotBackend> TempMessageEventTrait<B, NormalMember<B>> for GroupTempMessageEvent<B> {}
+impl<B: BotBackend> UserMessageEventTrait<B, NormalMember<B>, NormalMember<B>> for GroupTempMessageEvent<B> {}
 
-impl MessageEventTrait<NormalMember, NormalMember> for GroupTempMessageEvent {}
-impl BotEventTrait for GroupTempMessageEvent {}
-impl BotPassiveEventTrait for GroupTempMessageEvent {}
-impl OtherClientEventTrait for GroupTempMessageEvent {}
+impl<B: BotBackend> MessageEventTrait<B, NormalMember<B>, NormalMember<B>> for GroupTempMessageEvent<B> {}
+impl<B: BotBackend> BotEventTrait<B> for GroupTempMessageEvent<B> {}
+impl<B: BotBackend> BotPassiveEventTrait<B> for GroupTempMessageEvent<B> {}
+impl<B: BotBackend> OtherClientEventTrait<B> for GroupTempMessageEvent<B> {}

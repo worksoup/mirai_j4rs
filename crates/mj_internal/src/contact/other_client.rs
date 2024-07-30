@@ -3,14 +3,16 @@ use j4rs::Instance;
 use mj_helper_macro::mj_all;
 
 use crate::contact::{ContactOrBotTrait, ContactTrait, SendMessageSupportedTrait};
+use crate::utils::backend::BotBackend;
 
 #[mj_all("contact.OtherClient")]
-pub struct OtherClient {
+pub struct OtherClient<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl ContactOrBotTrait for OtherClient {}
+impl<B: BotBackend> ContactOrBotTrait<B> for OtherClient<B> {}
 
-impl ContactTrait for OtherClient {}
+impl<B: BotBackend> ContactTrait<B> for OtherClient<B> {}
 
-impl SendMessageSupportedTrait for OtherClient {}
+impl<B: BotBackend> SendMessageSupportedTrait<B> for OtherClient<B> {}

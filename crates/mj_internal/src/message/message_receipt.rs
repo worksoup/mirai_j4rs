@@ -1,32 +1,38 @@
 use j4rs::{Instance, InvocationArg, Jvm};
 
-use jbuchong::FromInstanceTrait;
+use jbuchong::{java, FromInstanceTrait};
 
+use crate::utils::backend::BotBackend;
 use crate::{
     contact::ContactTrait,
     error::MiraiRsError,
     message::{data::QuoteReply, message_trait::MessageTrait},
 };
-
-pub struct MessageReceipt<'a, T>
+#[java("net.mamoe.mirai.message.MessageReceipt")]
+pub struct MessageReceipt<'a, B: BotBackend, T>
 where
-    T: ContactTrait,
+    T: ContactTrait<B>,
 {
     instance: Instance,
     target: &'a T,
+    _backend: B,
 }
 
-impl<'a, T> MessageReceipt<'a, T>
+impl<'a, B: BotBackend, T> MessageReceipt<'a, B, T>
 where
-    T: ContactTrait,
+    T: ContactTrait<B>,
 {
     pub(crate) fn new(instance: Instance, target: &'a T) -> Self {
-        MessageReceipt { instance, target }
+        MessageReceipt {
+            instance,
+            target,
+            _backend: B::default(),
+        }
     }
     pub fn get_target(&self) -> &T {
         self.target
     }
-    pub fn get_source(&self) -> () {
+    pub fn get_source(&self) {
         todo!("message.data.OnlineMessageSource.Outgoing")
     }
     pub fn is_to_group(&self) -> bool {
@@ -39,21 +45,21 @@ where
             .to_rust()
             .unwrap()
     }
-    pub fn quote(&self) -> QuoteReply {
+    pub fn quote(&self) -> QuoteReply<B> {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke(&self.instance, "quote", InvocationArg::empty())
             .unwrap();
         QuoteReply::from_instance(instance)
     }
-    pub fn quote_reply(&self, _message: impl MessageTrait) -> QuoteReply {
+    pub fn quote_reply(&self, _message: impl MessageTrait<B>) -> QuoteReply<B> {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke(&self.instance, "quote", InvocationArg::empty())
             .unwrap();
         QuoteReply::from_instance(instance)
     }
-    pub fn quote_reply_string(&self, message: String) -> QuoteReply {
+    pub fn quote_reply_string(&self, message: String) -> QuoteReply<B> {
         let jvm = Jvm::attach_thread().unwrap();
         let message = InvocationArg::try_from(message).unwrap();
         let instance = jvm.invoke(&self.instance, "quote", &[message]).unwrap();

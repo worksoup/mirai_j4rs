@@ -6,21 +6,23 @@ use std::fmt::{Display, Formatter};
 use crate::contact::{Bot, Group, NormalMember};
 use crate::event::{BotEventTrait, MiraiEventTrait};
 use crate::message::MessageHashCodeTrait;
+use crate::utils::backend::BotBackend;
 
 // TODO: BaseGroupMemberInfoChangeEvent
 #[mj_event]
-pub struct MemberJoinRequestEvent {
+pub struct MemberJoinRequestEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl MemberJoinRequestEvent {
+impl<B: BotBackend> MemberJoinRequestEvent<B> {
     pub fn accept(&self) {
         let jvm = Jvm::attach_thread().unwrap();
         let _ = jvm
             .invoke(&self.instance, "getBot", InvocationArg::empty())
             .unwrap();
     }
-    pub fn equals(&self, other: impl MiraiEventTrait) -> bool {
+    pub fn equals(&self, other: impl MiraiEventTrait<B>) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke(
@@ -31,7 +33,7 @@ impl MemberJoinRequestEvent {
             .unwrap();
         jvm.to_rust(instance).unwrap()
     }
-    pub fn get_bot(&self) -> Bot {
+    pub fn get_bot(&self) -> Bot<B> {
         let instance = Jvm::attach_thread()
             .unwrap()
             .invoke(&self.instance, "getBot", InvocationArg::empty())
@@ -60,7 +62,7 @@ impl MemberJoinRequestEvent {
             .unwrap();
         jvm.to_rust(instance).unwrap()
     }
-    pub fn get_group(&self) -> Group {
+    pub fn get_group(&self) -> Group<B> {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke(&self.instance, "getGroup", InvocationArg::empty())
@@ -81,7 +83,7 @@ impl MemberJoinRequestEvent {
             .unwrap();
         jvm.to_rust(instance).unwrap()
     }
-    pub fn get_invitor(&self) -> NormalMember {
+    pub fn get_invitor(&self) -> NormalMember<B> {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke(&self.instance, "getInvitor", InvocationArg::empty())
@@ -119,7 +121,7 @@ impl MemberJoinRequestEvent {
         let _ = jvm.invoke(&self.instance, "reject", &[blacklist]).unwrap();
     }
 }
-impl Display for MemberJoinRequestEvent {
+impl<B: BotBackend> Display for MemberJoinRequestEvent<B> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
@@ -128,6 +130,6 @@ impl Display for MemberJoinRequestEvent {
         f.write_str(jvm.to_rust::<String>(instance).unwrap().as_str())
     }
 }
-impl MessageHashCodeTrait for MemberJoinRequestEvent {}
+impl<B: BotBackend> MessageHashCodeTrait for MemberJoinRequestEvent<B> {}
 
-impl BotEventTrait for MemberJoinRequestEvent {}
+impl<B: BotBackend> BotEventTrait<B> for MemberJoinRequestEvent<B> {}

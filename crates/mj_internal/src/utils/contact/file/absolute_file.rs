@@ -3,14 +3,16 @@ use jbuchong::{utils::primitive_byte_array_to_string, FromInstanceTrait, GetInst
 use mj_helper_macro::mj_all;
 
 use crate::message::data::FileMessage;
+use crate::utils::backend::BotBackend;
 use crate::utils::contact::file::{AbsoluteFileFolderTrait, AbsoluteFolder};
 
 #[mj_all("contact.file.AbsoluteFile")]
-pub struct AbsoluteFile {
+pub struct AbsoluteFile<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl AbsoluteFile {
+impl<B: BotBackend> AbsoluteFile<B> {
     /// 文件到期时间戳，单位为秒。
     pub fn get_expiry_time(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
@@ -84,7 +86,7 @@ impl AbsoluteFile {
             .to_rust()
             .unwrap()
     }
-    pub fn move_to(&self, remote_folder: &AbsoluteFolder) -> bool {
+    pub fn move_to(&self, remote_folder: &AbsoluteFolder<B>) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
         let folder = InvocationArg::try_from(remote_folder.get_instance()).unwrap();
         jvm.chain(&self.instance)
@@ -96,7 +98,7 @@ impl AbsoluteFile {
     }
     /// 得到 AbsoluteFile 所对应的 FileMessage.
     /// 注: 在 上传文件 时就已经发送了文件消息, FileMessage 不可手动发送
-    pub fn to_message(&self) -> FileMessage {
+    pub fn to_message(&self) -> FileMessage<B> {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke(&self.instance, "refreshed", InvocationArg::empty())
@@ -105,12 +107,12 @@ impl AbsoluteFile {
     }
 }
 
-impl AbsoluteFileFolderTrait for AbsoluteFile {
+impl<B: BotBackend> AbsoluteFileFolderTrait<B> for AbsoluteFile<B> {
     fn refreshed(&self) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke(&self.instance, "refreshed", InvocationArg::empty())
             .unwrap();
-        AbsoluteFile { instance }
+        AbsoluteFile::from_instance(instance)
     }
 }

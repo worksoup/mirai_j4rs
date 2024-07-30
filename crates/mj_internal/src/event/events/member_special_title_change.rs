@@ -1,3 +1,4 @@
+use crate::utils::backend::BotBackend;
 use j4rs::Instance;
 
 use mj_helper_macro::mj_event;
@@ -8,19 +9,20 @@ use crate::event::{
 };
 
 #[mj_event]
-pub struct MemberSpecialTitleChangeEvent {
+pub struct MemberSpecialTitleChangeEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl BotEventTrait for MemberSpecialTitleChangeEvent {}
+impl<B: BotBackend> BotEventTrait<B> for MemberSpecialTitleChangeEvent<B> {}
 
-impl GroupEventTrait for MemberSpecialTitleChangeEvent {}
+impl<B: BotBackend> GroupEventTrait<B> for MemberSpecialTitleChangeEvent<B> {}
 
-impl BaseGroupMemberInfoChangeEventTrait for MemberSpecialTitleChangeEvent {}
+impl<B: BotBackend> BaseGroupMemberInfoChangeEventTrait<B> for MemberSpecialTitleChangeEvent<B> {}
 
-impl GroupMemberInfoChangeEventTrait for MemberSpecialTitleChangeEvent {}
+impl<B: BotBackend> GroupMemberInfoChangeEventTrait<B> for MemberSpecialTitleChangeEvent<B> {}
 
-impl UserEventTrait for MemberSpecialTitleChangeEvent {}
+impl<B: BotBackend> UserEventTrait<B> for MemberSpecialTitleChangeEvent<B> {}
 
-impl GroupMemberEventTrait for MemberSpecialTitleChangeEvent {}
-impl GroupOperableEventTrait for MemberSpecialTitleChangeEvent {}
+impl<B: BotBackend> GroupMemberEventTrait<B> for MemberSpecialTitleChangeEvent<B> {}
+impl<B: BotBackend> GroupOperableEventTrait<B> for MemberSpecialTitleChangeEvent<B> {}

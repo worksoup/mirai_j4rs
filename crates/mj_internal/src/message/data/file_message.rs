@@ -4,6 +4,7 @@ use jbuchong::{FromInstanceTrait, GetClassTypeTrait};
 use mj_base::MIRAI_PREFIX;
 use mj_helper_macro::mj_all;
 
+use crate::utils::backend::BotBackend;
 use crate::utils::contact::file::AbsoluteFile;
 use crate::{
     contact::FileSupportedTrait,
@@ -23,11 +24,12 @@ use crate::{
 ///  要获取到 [`FileMessage`]，可以通过 [`MessageEvent`](crate::event::MessageEventTrait) 获取，或通过 [`AbsoluteFile::to_message`] 得到。
 // TODO: 实现 SendSupportedTrait, 限制某些消息的发送。
 #[mj_all("message.data.FileMessage")]
-pub struct FileMessage {
+pub struct FileMessage<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl FileMessage {
+impl<B: BotBackend> FileMessage<B> {
     /// 获取文件名。
     pub fn get_name(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
@@ -81,13 +83,13 @@ impl FileMessage {
                 &[file_id, internal_id, name, size],
             )
             .unwrap();
-        FileMessage { instance }
+        FileMessage::from_instance(instance)
     }
     /// 获取一个对应的 [`AbsoluteFile`]. 当目标群或好友不存在这个文件时返回 `None`.
-    pub fn to_absolute_file<FileSupported: FileSupportedTrait>(
+    pub fn to_absolute_file<FileSupported: FileSupportedTrait<B>>(
         &self,
         contact: FileSupported,
-    ) -> Option<AbsoluteFile> {
+    ) -> Option<AbsoluteFile<B>> {
         let jvm = Jvm::attach_thread().unwrap();
         // let instance = InvocationArg::try_from(self.get_instance()).unwrap();
         let contact = InvocationArg::from(
@@ -115,12 +117,12 @@ impl FileMessage {
     }
 }
 
-impl MessageTrait for FileMessage {}
+impl<B: BotBackend> MessageTrait<B> for FileMessage<B> {}
 
-impl SingleMessageTrait for FileMessage {}
+impl<B: BotBackend> SingleMessageTrait<B> for FileMessage<B> {}
 
-impl MessageContentTrait for FileMessage {}
+impl<B: BotBackend> MessageContentTrait<B> for FileMessage<B> {}
 
-impl ConstrainSingleTrait for FileMessage {}
+impl<B: BotBackend> ConstrainSingleTrait<B> for FileMessage<B> {}
 
-impl CodableMessageTrait for FileMessage {}
+impl<B: BotBackend> CodableMessageTrait<B> for FileMessage<B> {}

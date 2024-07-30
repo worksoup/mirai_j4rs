@@ -1,3 +1,4 @@
 use crate::event::{BotEventTrait, UserEventTrait};
+use crate::utils::backend::BotBackend;
 
-pub trait StrangerEventTrait: BotEventTrait + UserEventTrait {}
+pub trait StrangerEventTrait<B: BotBackend>: BotEventTrait<B> + UserEventTrait<B> {}

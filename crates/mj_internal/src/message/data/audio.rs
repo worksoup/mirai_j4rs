@@ -5,38 +5,40 @@ use mj_helper_macro::mj_all;
 use crate::message::message_trait::{
     AudioTrait, ConstrainSingleTrait, MessageContentTrait, MessageTrait, SingleMessageTrait,
 };
+use crate::utils::backend::BotBackend;
 
 #[mj_all("message.data.Audio")]
-pub enum Audio {
-    OnlineAudio(OnlineAudio),
-    OfflineAudio(OfflineAudio),
+pub enum Audio <B: BotBackend>{
+    OnlineAudio(OnlineAudio<B>),
+    OfflineAudio(OfflineAudio<B>),
 }
-impl AudioTrait for Audio {}
-impl SingleMessageTrait for Audio {}
-impl MessageContentTrait for Audio {}
-impl ConstrainSingleTrait for Audio {}
-impl MessageTrait for Audio {}
+impl<B: BotBackend> AudioTrait<B> for Audio<B> {}
+impl<B: BotBackend> SingleMessageTrait<B> for Audio<B> {}
+impl<B: BotBackend> MessageContentTrait<B> for Audio<B> {}
+impl<B: BotBackend> ConstrainSingleTrait<B> for Audio<B> {}
+impl<B: BotBackend> MessageTrait<B> for Audio<B> {}
 
 #[mj_all("message.data.OfflineAudio")]
-pub struct OfflineAudio {
+pub struct OfflineAudio<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
-impl OfflineAudio {
+impl<B: BotBackend> OfflineAudio<B> {
     pub fn new() -> Self {
         todo!()
     }
 }
-impl Default for OfflineAudio {
+impl<B: BotBackend> Default for OfflineAudio<B> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl TryFrom<OnlineAudio> for OfflineAudio {
+impl<B: BotBackend> TryFrom<OnlineAudio<B>> for OfflineAudio<B> {
     // TODO: 需要合适的错误类型。
     type Error = ();
 
-    fn try_from(online_audio: OnlineAudio) -> Result<Self, Self::Error> {
+    fn try_from(online_audio: OnlineAudio<B>) -> Result<Self, Self::Error> {
         let jvm = Jvm::attach_thread().unwrap();
         let online_audio = InvocationArg::try_from(online_audio.get_instance()).unwrap();
         let instance = jvm
@@ -51,21 +53,22 @@ impl TryFrom<OnlineAudio> for OfflineAudio {
     }
 }
 
-impl SingleMessageTrait for OfflineAudio {}
+impl<B: BotBackend> SingleMessageTrait<B> for OfflineAudio<B> {}
 
-impl MessageTrait for OfflineAudio {}
+impl<B: BotBackend> MessageTrait<B> for OfflineAudio<B> {}
 
-impl ConstrainSingleTrait for OfflineAudio {}
+impl<B: BotBackend> ConstrainSingleTrait<B> for OfflineAudio<B> {}
 
-impl MessageContentTrait for OfflineAudio {}
+impl<B: BotBackend> MessageContentTrait<B> for OfflineAudio<B> {}
 
-impl AudioTrait for OfflineAudio {}
+impl<B: BotBackend> AudioTrait<B> for OfflineAudio<B> {}
 
 #[mj_all("message.data.OnlineAudio")]
-pub struct OnlineAudio {
+pub struct OnlineAudio<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
-impl OnlineAudio {
+impl<B: BotBackend> OnlineAudio<B> {
     pub fn get_length(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = self.get_instance().unwrap();
@@ -83,8 +86,8 @@ impl OnlineAudio {
         jvm.to_rust(instance).unwrap()
     }
 }
-impl AudioTrait for OnlineAudio {}
-impl SingleMessageTrait for OnlineAudio {}
-impl MessageContentTrait for OnlineAudio {}
-impl ConstrainSingleTrait for OnlineAudio {}
-impl MessageTrait for OnlineAudio {}
+impl<B: BotBackend> AudioTrait<B> for OnlineAudio<B> {}
+impl<B: BotBackend> SingleMessageTrait<B> for OnlineAudio<B> {}
+impl<B: BotBackend> MessageContentTrait<B> for OnlineAudio<B> {}
+impl<B: BotBackend> ConstrainSingleTrait<B> for OnlineAudio<B> {}
+impl<B: BotBackend> MessageTrait<B> for OnlineAudio<B> {}

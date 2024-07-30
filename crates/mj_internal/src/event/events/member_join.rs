@@ -6,89 +6,94 @@ use crate::event::{
     BaseGroupMemberInfoChangeEventTrait, BotEventTrait, BotPassiveEventTrait, GroupEventTrait,
     GroupMemberEventTrait, GroupMemberInfoChangeEventTrait, UserEventTrait,
 };
+use crate::utils::backend::BotBackend;
 
-pub trait MemberJoinEventTrait:
-    GroupMemberEventTrait + BotPassiveEventTrait + GroupMemberInfoChangeEventTrait
+pub trait MemberJoinEventTrait<B: BotBackend>:
+    GroupMemberEventTrait<B> + BotPassiveEventTrait<B> + GroupMemberInfoChangeEventTrait<B>
 {
 }
 #[mj_event("event.events.MemberJoinEvent$Active")]
-pub struct Active {
+pub struct Active<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl GroupMemberEventTrait for Active {}
+impl<B: BotBackend> GroupMemberEventTrait<B> for Active<B> {}
 
-impl GroupEventTrait for Active {}
+impl<B: BotBackend> GroupEventTrait<B> for Active<B> {}
 
-impl BotEventTrait for Active {}
+impl<B: BotBackend> BotEventTrait<B> for Active<B> {}
 
-impl UserEventTrait for Active {}
+impl<B: BotBackend> UserEventTrait<B> for Active<B> {}
 
-impl BotPassiveEventTrait for Active {}
+impl<B: BotBackend> BotPassiveEventTrait<B> for Active<B> {}
 
-impl GroupMemberInfoChangeEventTrait for Active {}
+impl<B: BotBackend> GroupMemberInfoChangeEventTrait<B> for Active<B> {}
 
-impl BaseGroupMemberInfoChangeEventTrait for Active {}
+impl<B: BotBackend> BaseGroupMemberInfoChangeEventTrait<B> for Active<B> {}
 
-impl MemberJoinEventTrait for Active {}
+impl<B: BotBackend> MemberJoinEventTrait<B> for Active<B> {}
 #[mj_event("event.events.MemberJoinEvent$Invite")]
-pub struct Invite {
+pub struct Invite<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl GroupMemberEventTrait for Invite {}
+impl<B: BotBackend> GroupMemberEventTrait<B> for Invite<B> {}
 
-impl GroupEventTrait for Invite {}
+impl<B: BotBackend> GroupEventTrait<B> for Invite<B> {}
 
-impl BotEventTrait for Invite {}
+impl<B: BotBackend> BotEventTrait<B> for Invite<B> {}
 
-impl UserEventTrait for Invite {}
+impl<B: BotBackend> UserEventTrait<B> for Invite<B> {}
 
-impl BotPassiveEventTrait for Invite {}
+impl<B: BotBackend> BotPassiveEventTrait<B> for Invite<B> {}
 
-impl GroupMemberInfoChangeEventTrait for Invite {}
+impl<B: BotBackend> GroupMemberInfoChangeEventTrait<B> for Invite<B> {}
 
-impl BaseGroupMemberInfoChangeEventTrait for Invite {}
+impl<B: BotBackend> BaseGroupMemberInfoChangeEventTrait<B> for Invite<B> {}
 
-impl MemberJoinEventTrait for Invite {}
+impl<B: BotBackend> MemberJoinEventTrait<B> for Invite<B> {}
 #[mj_event("event.events.MemberJoinEvent$Retrieve")]
-pub struct Retrieve {
+pub struct Retrieve<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl GroupMemberEventTrait for Retrieve {}
+impl<B: BotBackend> GroupMemberEventTrait<B> for Retrieve<B> {}
 
-impl GroupEventTrait for Retrieve {}
+impl<B: BotBackend> GroupEventTrait<B> for Retrieve<B> {}
 
-impl BotEventTrait for Retrieve {}
+impl<B: BotBackend> BotEventTrait<B> for Retrieve<B> {}
 
-impl UserEventTrait for Retrieve {}
+impl<B: BotBackend> UserEventTrait<B> for Retrieve<B> {}
 
-impl BotPassiveEventTrait for Retrieve {}
+impl<B: BotBackend> BotPassiveEventTrait<B> for Retrieve<B> {}
 
-impl GroupMemberInfoChangeEventTrait for Retrieve {}
+impl<B: BotBackend> GroupMemberInfoChangeEventTrait<B> for Retrieve<B> {}
 
-impl BaseGroupMemberInfoChangeEventTrait for Retrieve {}
+impl<B: BotBackend> BaseGroupMemberInfoChangeEventTrait<B> for Retrieve<B> {}
 
-impl MemberJoinEventTrait for Retrieve {}
+impl<B: BotBackend> MemberJoinEventTrait<B> for Retrieve<B> {}
 
 #[mj_event]
-pub struct MemberJoinEvent {
+pub struct MemberJoinEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl GroupMemberEventTrait for MemberJoinEvent {}
+impl<B: BotBackend> GroupMemberEventTrait<B> for MemberJoinEvent<B> {}
 
-impl GroupEventTrait for MemberJoinEvent {}
+impl<B: BotBackend> GroupEventTrait<B> for MemberJoinEvent<B> {}
 
-impl BotEventTrait for MemberJoinEvent {}
+impl<B: BotBackend> BotEventTrait<B> for MemberJoinEvent<B> {}
 
-impl UserEventTrait for MemberJoinEvent {}
+impl<B: BotBackend> UserEventTrait<B> for MemberJoinEvent<B> {}
 
-impl BotPassiveEventTrait for MemberJoinEvent {}
+impl<B: BotBackend> BotPassiveEventTrait<B> for MemberJoinEvent<B> {}
 
-impl GroupMemberInfoChangeEventTrait for MemberJoinEvent {}
+impl<B: BotBackend> GroupMemberInfoChangeEventTrait<B> for MemberJoinEvent<B> {}
 
-impl BaseGroupMemberInfoChangeEventTrait for MemberJoinEvent {}
+impl<B: BotBackend> BaseGroupMemberInfoChangeEventTrait<B> for MemberJoinEvent<B> {}
 
-impl MemberJoinEventTrait for MemberJoinEvent {}
+impl<B: BotBackend> MemberJoinEventTrait<B> for MemberJoinEvent<B> {}

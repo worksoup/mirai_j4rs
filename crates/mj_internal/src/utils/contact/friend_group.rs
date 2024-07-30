@@ -1,25 +1,19 @@
-use j4rs::{errors::J4RsError, Instance, InvocationArg, Jvm};
+use j4rs::{Instance, InvocationArg, Jvm};
 use jbuchong::{
-    java,
-    utils::java_iter_to_rust_vec,
-    GetClassTypeTrait, {GetInstanceTrait, TryFromInstanceTrait},
+    java_all, utils::java_iter_to_rust_vec, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait,
 };
 use mj_helper_macro::mj_all;
 
 use crate::contact::Friend;
+use crate::utils::backend::BotBackend;
 
-#[java]
-pub struct FriendGroup {
+#[java_all]
+pub struct FriendGroup<B: BotBackend> {
     pub(crate) instance: Instance,
+    _backend: B,
 }
 
-impl TryFromInstanceTrait for FriendGroup {
-    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
-        Ok(Self { instance })
-    }
-}
-
-impl FriendGroup {
+impl<B: BotBackend> FriendGroup<B> {
     pub fn delete(&self) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.to_rust(
@@ -34,7 +28,7 @@ impl FriendGroup {
         jvm.to_rust(jvm.invoke(&self.instance, "delete", &[new_name]).unwrap())
             .unwrap()
     }
-    pub fn move_in(&self, friend: Friend) -> bool {
+    pub fn move_in(&self, friend: Friend<B>) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
         let friend = InvocationArg::try_from(friend.get_instance()).unwrap();
         jvm.to_rust(jvm.invoke(&self.instance, "delete", &[friend]).unwrap())
@@ -56,7 +50,7 @@ impl FriendGroup {
         )
         .unwrap()
     }
-    pub fn get_friends(&self) -> Vec<Friend> {
+    pub fn get_friends(&self) -> Vec<Friend<B>> {
         let jvm = Jvm::attach_thread().unwrap();
         let collection = jvm
             .invoke(&self.instance, "getFriends", InvocationArg::empty())
@@ -77,12 +71,13 @@ impl FriendGroup {
 }
 
 #[mj_all("contact.friendgroup.FriendGroups")]
-pub struct FriendGroups {
+pub struct FriendGroups<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl FriendGroups {
-    pub fn to_vec(&self) -> Vec<FriendGroup> {
+impl<B: BotBackend> FriendGroups<B> {
+    pub fn to_vec(&self) -> Vec<FriendGroup<B>> {
         let jvm = Jvm::attach_thread().unwrap();
         let collection = jvm
             .invoke(&self.instance, "asCollection", InvocationArg::empty())
@@ -93,7 +88,7 @@ impl FriendGroups {
             .unwrap();
         java_iter_to_rust_vec(&jvm, iter)
     }
-    pub fn create(name: String) -> FriendGroup {
+    pub fn create(name: String) -> FriendGroup<B> {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke_static(
@@ -102,9 +97,9 @@ impl FriendGroups {
                 &[InvocationArg::try_from(name).unwrap()],
             )
             .unwrap();
-        FriendGroup { instance }
+        FriendGroup::from_instance(instance)
     }
-    pub fn get(&self, id: i64) -> FriendGroup {
+    pub fn get(&self, id: i64) -> FriendGroup<B> {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke(
@@ -113,13 +108,13 @@ impl FriendGroups {
                 &[InvocationArg::try_from(id).unwrap()],
             )
             .unwrap();
-        FriendGroup { instance }
+        FriendGroup::from_instance(instance)
     }
-    pub fn get_default(&self) -> FriendGroup {
+    pub fn get_default(&self) -> FriendGroup<B> {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke(&self.instance, "getDefault", InvocationArg::empty())
             .unwrap();
-        FriendGroup { instance }
+        FriendGroup::from_instance(instance)
     }
 }

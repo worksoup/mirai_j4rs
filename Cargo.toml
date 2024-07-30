@@ -9,7 +9,6 @@ crate-type = ["cdylib", "lib"]
 
 [workspace]
 resolver = "2"
-edition = "2021"
 members = [
     "crates/mj_*", "examples/*",
 ]

@@ -1,44 +1,30 @@
-use std::fmt::{Display, Formatter};
-use std::marker::PhantomData;
+use std::{
+    fmt::{Display, Formatter},
+    marker::PhantomData,
+};
 
-use j4rs::errors::J4RsError;
+use crate::{
+    contact::ContactTrait,
+    message::MessageHashCodeTrait,
+    utils::{backend::BotBackend, MiraiRsCollectionTrait},
+};
 use j4rs::{Instance, InvocationArg, Jvm};
-use jbuchong::utils::instance_is_null;
-use jbuchong::{GetInstanceTrait, TryFromInstanceTrait};
+use jbuchong::{utils::instance_is_null, GetInstanceTrait, TryFromInstanceTrait};
+use mj_helper_macro::mj_all;
 
-use crate::contact::ContactTrait;
-use crate::message::MessageHashCodeTrait;
-use crate::utils::MiraiRsCollectionTrait;
-
-pub struct ContactList<T>
+#[mj_all("contact.ContactList")]
+pub struct ContactList<B: BotBackend, T>
 where
-    T: ContactTrait + TryFromInstanceTrait,
+    T: ContactTrait<B> + TryFromInstanceTrait,
 {
-    pub(crate) instance: Instance,
-    pub(crate) _unused: PhantomData<T>,
+    instance: Instance,
+    _backend: B,
+    _unused: PhantomData<T>,
 }
 
-impl<T: ContactTrait + TryFromInstanceTrait> TryFromInstanceTrait for ContactList<T> {
-    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
-        Ok(ContactList {
-            instance,
-            _unused: PhantomData,
-        })
-    }
-}
-
-impl<T: ContactTrait + TryFromInstanceTrait> GetInstanceTrait for ContactList<T> {
-    fn get_instance(&self) -> Result<Instance, J4RsError> {
-        Ok(Jvm::attach_thread()
-            .unwrap()
-            .clone_instance(&self.instance)
-            .unwrap())
-    }
-}
-
-impl<T> ContactList<T>
+impl<B: BotBackend, T> ContactList<B, T>
 where
-    T: ContactTrait + TryFromInstanceTrait,
+    T: ContactTrait<B> + TryFromInstanceTrait,
 {
     pub fn contains(&self, contact: T) -> bool {
         Jvm::attach_thread()
@@ -114,9 +100,9 @@ where
             .unwrap()
     }
 }
-impl<T> Display for ContactList<T>
+impl<B: BotBackend, T> Display for ContactList<B, T>
 where
-    T: ContactTrait + TryFromInstanceTrait,
+    T: ContactTrait<B> + TryFromInstanceTrait,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let s: String = Jvm::attach_thread()
@@ -132,8 +118,13 @@ where
     }
 }
 
-impl<T: ContactTrait + TryFromInstanceTrait> MessageHashCodeTrait for ContactList<T> {}
-impl<T: ContactTrait + TryFromInstanceTrait> MiraiRsCollectionTrait for ContactList<T> {
+impl<B: BotBackend, T: ContactTrait<B> + TryFromInstanceTrait> MessageHashCodeTrait
+    for ContactList<B, T>
+{
+}
+impl<B: BotBackend, T: ContactTrait<B> + TryFromInstanceTrait> MiraiRsCollectionTrait
+    for ContactList<B, T>
+{
     type Element = T;
 
     fn get_size(&self) -> i32 {

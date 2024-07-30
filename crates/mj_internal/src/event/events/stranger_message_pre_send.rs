@@ -6,18 +6,20 @@ use crate::event::{
     BotActiveEventTrait, BotEventTrait, CancellableEventTrait, MessagePreSendEventTrait,
     UserMessagePreSendEventTrait,
 };
+use crate::utils::backend::BotBackend;
 
 #[mj_event]
-pub struct StrangerMessagePreSendEvent {
+pub struct StrangerMessagePreSendEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl MessagePreSendEventTrait for StrangerMessagePreSendEvent {}
+impl<B: BotBackend> MessagePreSendEventTrait<B> for StrangerMessagePreSendEvent<B> {}
 
-impl BotEventTrait for StrangerMessagePreSendEvent {}
+impl<B: BotBackend> BotEventTrait<B> for StrangerMessagePreSendEvent<B> {}
 
-impl BotActiveEventTrait for StrangerMessagePreSendEvent {}
+impl<B: BotBackend> BotActiveEventTrait<B> for StrangerMessagePreSendEvent<B> {}
 
-impl CancellableEventTrait for StrangerMessagePreSendEvent {}
+impl<B:BotBackend> CancellableEventTrait<B> for StrangerMessagePreSendEvent<B> {}
 
-impl UserMessagePreSendEventTrait for StrangerMessagePreSendEvent {}
+impl<B: BotBackend> UserMessagePreSendEventTrait<B> for StrangerMessagePreSendEvent<B> {}

@@ -2,14 +2,15 @@ use j4rs::{Instance, InvocationArg, Jvm};
 use lazy_static::lazy_static;
 use regex::Regex;
 
+use crate::utils::backend::BotBackend;
 use crate::{
     contact::Bot,
     message::message_trait::{
         CodableMessageTrait, MessageContentTrait, MessageTrait, SingleMessageTrait,
     },
 };
-use jbuchong::GetClassTypeTrait;
 use jbuchong::{utils::primitive_byte_array_to_string, GetInstanceTrait};
+use jbuchong::{FromInstanceTrait, GetClassTypeTrait};
 use mj_helper_macro::mj_all;
 
 lazy_static! {
@@ -54,11 +55,12 @@ impl ImageType {
 }
 
 #[mj_all("message.data.Image")]
-pub struct Image {
+pub struct Image<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl Image {
+impl<B: BotBackend> Image<B> {
     pub fn from_id(image_id: String) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
@@ -68,7 +70,7 @@ impl Image {
                 &[InvocationArg::try_from(image_id).unwrap()],
             )
             .unwrap();
-        Self { instance }
+        Self::from_instance(instance)
     }
     pub fn get_height(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
@@ -181,7 +183,7 @@ impl Image {
             .to_rust()
             .unwrap()
     }
-    pub fn is_uploaded(&self, bot: Bot, md5: [i8; 16], size: i64) -> bool {
+    pub fn is_uploaded(&self, bot: Bot<B>, md5: [i8; 16], size: i64) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
         let bot = InvocationArg::try_from(bot.get_instance()).unwrap();
         let md5 = {
@@ -209,7 +211,7 @@ impl Image {
         .unwrap()
     }
     /// TODO: 此函数为重载，还未实现。
-    pub fn todo_is_uploaded() -> () {}
+    pub fn todo_is_uploaded() {}
     pub fn query_url(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
@@ -223,12 +225,12 @@ impl Image {
     }
 }
 
-impl MessageTrait for Image {}
+impl<B: BotBackend> MessageTrait<B> for Image<B> {}
 
-impl CodableMessageTrait for Image {}
+impl<B: BotBackend> CodableMessageTrait<B> for Image<B> {}
 
-impl SingleMessageTrait for Image {}
+impl<B: BotBackend> SingleMessageTrait<B> for Image<B> {}
 
-impl MessageContentTrait for Image {}
+impl<B: BotBackend> MessageContentTrait<B> for Image<B> {}
 
 // impl MessageHashCodeTrait for Image {}

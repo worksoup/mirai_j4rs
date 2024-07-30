@@ -63,20 +63,24 @@ impl<Backend: BotBackend> BotBuilder<Backend> {
         jvm
     }
 }
-pub use mirai_backend::*;
-pub use overflow_backend::*;
 mod mirai_backend {
-    use crate::auth::bot_authorization::BotAuthorization;
-    use crate::contact::Bot;
-    use crate::utils::backend::Mirai;
-    use crate::utils::bot_builder::BotBuilder;
-    use crate::utils::login_solver::LoginSolverTrait;
-    use crate::utils::other::enums::{HeartbeatStrategy, MiraiProtocol};
-    use crate::utils::{BotConfiguration, ContactListCache};
+    use crate::{
+        auth::bot_authorization::BotAuthorization,
+        contact::Bot,
+        utils::{
+            backend::Mirai,
+            bot_builder::BotBuilder,
+            login_solver::LoginSolverTrait,
+            other::enums::{HeartbeatStrategy, MiraiProtocol},
+            BotConfiguration, ContactListCache,
+        },
+    };
     use j4rs::{Instance, InvocationArg, Jvm};
     use jbuchong::{AsInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait};
-    use std::marker::PhantomData;
-    use std::path::{Path, PathBuf};
+    use std::{
+        marker::PhantomData,
+        path::{Path, PathBuf},
+    };
 
     impl BotBuilder<Mirai> {
         pub fn new<P: AsRef<Path>>(working_dir: P) -> Self {
@@ -320,7 +324,7 @@ mod mirai_backend {
             extra(&self.jvm, &self.instance, self.get_config().as_instance());
             self
         }
-        pub fn build(self) -> Bot {
+        pub fn build(self) -> Bot<Mirai> {
             let id = if let Some(id) = self.id {
                 id
             } else {
@@ -361,16 +365,17 @@ mod mirai_backend {
     }
 }
 mod overflow_backend {
-    use crate::contact::Bot;
-    use crate::utils::backend::Overflow;
-    use crate::utils::bot_builder::BotBuilder;
-    use crate::utils::data_wrapper::{DataWrapper, PrimitiveConvert};
+    use crate::{
+        contact::Bot,
+        utils::{
+            backend::Overflow,
+            bot_builder::BotBuilder,
+            data_wrapper::{DataWrapper, PrimitiveConvert},
+        },
+    };
     use j4rs::{Instance, InvocationArg, Jvm};
-    use jbuchong::{FromInstanceTrait, GetClassTypeTrait};
-    use jbuchong::{GetInstanceTrait, ToArgTrait};
     use mj_helper_macro::{error_msg_suppressor, java_fn};
-    use std::marker::PhantomData;
-    use std::path::Path;
+    use std::{marker::PhantomData, path::Path};
 
     impl BotBuilder<Overflow> {
         pub fn positive<P: AsRef<Path>>(working_dir: P, host: &str) -> Self {
@@ -380,7 +385,7 @@ mod overflow_backend {
             Self::reversed_create(working_dir, &[], &[], port)
         }
         #[java_fn("positive")]
-        fn positive_internal(jvm: &Jvm, host: &str) -> Instance {
+        fn positive_internal(jvm: &Jvm, host: DataWrapper<&str>) -> Instance {
             /**/
         }
         #[java_fn("reversed")]
@@ -420,7 +425,7 @@ mod overflow_backend {
     }
     impl BotBuilder<Overflow> {
         #[java_fn]
-        pub fn connect(&self) -> Bot {
+        pub fn connect(&self) -> Bot<Overflow> {
             /* auto impl. */
         }
         fn extra_code(&mut self, instance: Instance) -> &mut BotBuilder<Overflow> {
@@ -468,7 +473,7 @@ mod overflow_backend {
             error_msg_suppressor!("return self.extra_code(instance);");
         }
         #[java_fn]
-        pub fn token(&mut self, token: &str) -> &mut BotBuilder<Overflow> {
+        pub fn token(&mut self, token: DataWrapper<&str>) -> &mut BotBuilder<Overflow> {
             /* auto impl. */
             error_msg_suppressor!("return self.extra_code(instance);");
         }

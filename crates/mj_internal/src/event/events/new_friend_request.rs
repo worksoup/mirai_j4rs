@@ -6,13 +6,15 @@ use std::fmt::{Display, Formatter};
 use crate::contact::Group;
 use crate::event::{BotEventTrait, FriendInfoChangeEventTrait};
 use crate::message::MessageHashCodeTrait;
+use crate::utils::backend::BotBackend;
 
 #[mj_event]
-pub struct NewFriendRequestEvent {
+pub struct NewFriendRequestEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl NewFriendRequestEvent {
+impl<B: BotBackend> NewFriendRequestEvent<B> {
     pub fn accept(&self) {
         let jvm = Jvm::attach_thread().unwrap();
         let _ = jvm
@@ -35,7 +37,7 @@ impl NewFriendRequestEvent {
         )
         .unwrap()
     }
-    pub fn get_from_group(&self) -> Option<Group> {
+    pub fn get_from_group(&self) -> Option<Group<B>> {
         let jvm = Jvm::attach_thread().unwrap();
         let group = jvm
             .invoke(&self.instance, "getFromGroup", InvocationArg::empty())
@@ -85,7 +87,7 @@ impl NewFriendRequestEvent {
         .unwrap()
     }
 }
-impl Display for NewFriendRequestEvent {
+impl<B: BotBackend> Display for NewFriendRequestEvent<B> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str(
             {
@@ -100,8 +102,8 @@ impl Display for NewFriendRequestEvent {
         )
     }
 }
-impl MessageHashCodeTrait for NewFriendRequestEvent {}
+impl<B: BotBackend> MessageHashCodeTrait for NewFriendRequestEvent<B> {}
 
-impl BotEventTrait for NewFriendRequestEvent {}
+impl<B: BotBackend> BotEventTrait<B> for NewFriendRequestEvent<B> {}
 
-impl FriendInfoChangeEventTrait for NewFriendRequestEvent {}
+impl<B: BotBackend> FriendInfoChangeEventTrait<B> for NewFriendRequestEvent<B> {}

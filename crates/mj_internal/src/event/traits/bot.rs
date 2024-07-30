@@ -6,12 +6,13 @@ use crate::contact::{Bot, ContactTrait, Member, NormalMember, UserTrait};
 use crate::event::{
     CancellableEventTrait, GroupAwareMessageTrait, MiraiEventTrait, UserMessageEventTrait,
 };
+use crate::utils::backend::BotBackend;
 
-pub trait BotEventTrait
+pub trait BotEventTrait<B: BotBackend>
 where
-    Self: MiraiEventTrait,
+    Self: MiraiEventTrait<B>,
 {
-    fn get_bot(&self) -> Bot {
+    fn get_bot(&self) -> Bot<B> {
         let jvm = Jvm::attach_thread().unwrap();
         let bot = jvm
             .invoke(self.as_instance(), "getBot", InvocationArg::empty())
@@ -20,9 +21,9 @@ where
     }
 }
 
-pub trait BotActiveEventTrait: BotEventTrait {}
-pub trait BotPassiveEventTrait: BotEventTrait {}
-pub trait BaseGroupMemberInfoChangeEventTrait: BotEventTrait {
+pub trait BotActiveEventTrait<B: BotBackend>: BotEventTrait<B> {}
+pub trait BotPassiveEventTrait<B: BotBackend>: BotEventTrait<B> {}
+pub trait BaseGroupMemberInfoChangeEventTrait<B: BotBackend>: BotEventTrait<B> {
     fn get_group_id(&self) -> i64 {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
@@ -31,22 +32,32 @@ pub trait BaseGroupMemberInfoChangeEventTrait: BotEventTrait {
         jvm.to_rust(instance).unwrap()
     }
 }
-pub trait FriendInfoChangeEventTrait: BotEventTrait {}
+pub trait FriendInfoChangeEventTrait<B: BotBackend>: BotEventTrait<B> {}
 // TODO
-pub trait MessageRecallTrait: BotEventTrait {}
+pub trait MessageRecallTrait<B: BotBackend>: BotEventTrait<B> {}
 // TODO
-pub trait MessagePostSendEventTrait<T: ContactTrait>: BotEventTrait + BotActiveEventTrait {}
-// TODO
-pub trait UserMessagePostSendEventTrait<T: UserTrait>: MessagePostSendEventTrait<T> {}
-// TODO
-pub trait MessagePreSendEventTrait:
-    BotEventTrait + BotActiveEventTrait + CancellableEventTrait
+pub trait MessagePostSendEventTrait<B: BotBackend, T: ContactTrait<B>>:
+    BotEventTrait<B> + BotActiveEventTrait<B>
 {
 }
-pub trait UserMessagePreSendEventTrait: MessagePreSendEventTrait {}
-pub trait TempMessagePostSendEventTrait: UserMessagePostSendEventTrait<Member> {}
-pub trait TempMessagePreSendEventTrait: UserMessagePreSendEventTrait {}
-pub trait TempMessageEventTrait<Subject: ContactTrait>:
-    GroupAwareMessageTrait<NormalMember, Subject> + UserMessageEventTrait<NormalMember, Subject>
+// TODO
+pub trait UserMessagePostSendEventTrait<B: BotBackend, T: UserTrait<B>>:
+    MessagePostSendEventTrait<B, T>
+{
+}
+// TODO
+pub trait MessagePreSendEventTrait<B: BotBackend>:
+    BotEventTrait<B> + BotActiveEventTrait<B> + CancellableEventTrait<B>
+{
+}
+pub trait UserMessagePreSendEventTrait<B: BotBackend>: MessagePreSendEventTrait<B> {}
+pub trait TempMessagePostSendEventTrait<B: BotBackend>:
+    UserMessagePostSendEventTrait<B, Member<B>>
+{
+}
+pub trait TempMessagePreSendEventTrait<B: BotBackend>: UserMessagePreSendEventTrait<B> {}
+pub trait TempMessageEventTrait<B: BotBackend, Subject: ContactTrait<B>>:
+    GroupAwareMessageTrait<B, NormalMember<B>, Subject>
+    + UserMessageEventTrait<B, NormalMember<B>, Subject>
 {
 }

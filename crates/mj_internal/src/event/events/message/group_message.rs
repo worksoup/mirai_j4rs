@@ -4,18 +4,20 @@ use mj_helper_macro::mj_event;
 
 use crate::contact::{Group, Member};
 use crate::event::{BotEventTrait, BotPassiveEventTrait, MessageEventTrait, OtherClientEventTrait};
+use crate::utils::backend::BotBackend;
 
 #[mj_event]
-pub struct GroupMessageEvent {
+pub struct GroupMessageEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl GroupMessageEvent {}
+impl<B: BotBackend> GroupMessageEvent<B> {}
 
 // 实现了 message 所需要的函数。
-impl MessageEventTrait<Member, Group> for GroupMessageEvent {}
-impl OtherClientEventTrait for GroupMessageEvent {}
+impl<B: BotBackend> MessageEventTrait<B, Member<B>, Group<B>> for GroupMessageEvent<B> {}
+impl<B: BotBackend> OtherClientEventTrait<B> for GroupMessageEvent<B> {}
 
-impl BotEventTrait for GroupMessageEvent {}
+impl<B: BotBackend> BotEventTrait<B> for GroupMessageEvent<B> {}
 
-impl BotPassiveEventTrait for GroupMessageEvent {}
+impl<B: BotBackend> BotPassiveEventTrait<B> for GroupMessageEvent<B> {}

@@ -6,16 +6,18 @@ use crate::contact::Stranger;
 use crate::event::{
     BotActiveEventTrait, BotEventTrait, MessagePostSendEventTrait, UserMessagePostSendEventTrait,
 };
+use crate::utils::backend::BotBackend;
 
 #[mj_event]
-pub struct StrangerMessagePostSendEvent {
+pub struct StrangerMessagePostSendEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl MessagePostSendEventTrait<Stranger> for StrangerMessagePostSendEvent {}
+impl<B:BotBackend> MessagePostSendEventTrait<B, Stranger<B>> for StrangerMessagePostSendEvent<B> {}
 
-impl BotEventTrait for StrangerMessagePostSendEvent {}
+impl<B:BotBackend> BotEventTrait<B> for StrangerMessagePostSendEvent<B> {}
 
-impl BotActiveEventTrait for StrangerMessagePostSendEvent {}
+impl<B:BotBackend> BotActiveEventTrait<B> for StrangerMessagePostSendEvent<B> {}
 
-impl UserMessagePostSendEventTrait<Stranger> for StrangerMessagePostSendEvent {}
+impl<B:BotBackend> UserMessagePostSendEventTrait<B, Stranger<B>> for StrangerMessagePostSendEvent<B> {}

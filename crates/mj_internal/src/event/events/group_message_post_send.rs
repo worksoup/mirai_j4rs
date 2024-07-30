@@ -4,14 +4,16 @@ use mj_helper_macro::mj_event;
 
 use crate::contact::Group;
 use crate::event::{BotActiveEventTrait, BotEventTrait, MessagePostSendEventTrait};
+use crate::utils::backend::BotBackend;
 
 #[mj_event]
-pub struct GroupMessagePostSendEvent {
+pub struct GroupMessagePostSendEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl MessagePostSendEventTrait<Group> for GroupMessagePostSendEvent {}
+impl<B: BotBackend> MessagePostSendEventTrait<B, Group<B>> for GroupMessagePostSendEvent<B> {}
 
-impl BotEventTrait for GroupMessagePostSendEvent {}
+impl<B: BotBackend> BotEventTrait<B> for GroupMessagePostSendEvent<B> {}
 
-impl BotActiveEventTrait for GroupMessagePostSendEvent {}
+impl<B: BotBackend> BotActiveEventTrait<B> for GroupMessagePostSendEvent<B> {}

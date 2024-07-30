@@ -1,12 +1,9 @@
 use j4rs::{InvocationArg, Jvm};
 
-use jbuchong::{
-    AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait,
-};
-use mj_base::MIRAI_PREFIX;
-
+use crate::contact::Bot;
 use crate::message::action::Nudge;
 use crate::message::data::OfflineAudio;
+use crate::utils::backend::BotBackend;
 use crate::{
     contact::{
         group::{
@@ -22,44 +19,26 @@ use crate::{
         other::enums::AvatarSpec,
     },
 };
+use jbuchong::{
+    AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait,
+};
+use mj_base::MIRAI_PREFIX;
+use mj_helper_macro::java_fn;
 
-pub trait AssertMemberPermissionTrait: MemberTrait {
+pub trait AssertMemberPermissionTrait<B: BotBackend>: MemberTrait<B> {
     fn is_owner(&self) -> bool;
     fn is_administrator(&self) -> bool;
     fn is_operator(&self) -> bool;
 }
 
-pub trait ContactOrBotTrait
+pub trait ContactOrBotTrait<B: BotBackend>
 where
     Self: Sized + GetInstanceTrait + TryFromInstanceTrait + AsInstanceTrait,
 {
-    fn get_bot(&self) -> crate::contact::bot::Bot {
-        let instance = Jvm::attach_thread()
-            .unwrap()
-            .invoke(
-                &GetInstanceTrait::get_instance(self).unwrap(),
-                "getBot",
-                InvocationArg::empty(),
-            )
-            .unwrap();
-        crate::contact::bot::Bot::try_from_instance(instance).unwrap()
-    }
-
-    fn get_id(&self) -> i64 {
-        Jvm::attach_thread()
-            .unwrap()
-            .to_rust(
-                Jvm::attach_thread()
-                    .unwrap()
-                    .invoke(
-                        &self.get_instance().unwrap(),
-                        "getId",
-                        InvocationArg::empty(),
-                    )
-                    .unwrap(),
-            )
-            .unwrap()
-    }
+    #[java_fn]
+    fn get_bot(&self) -> Bot<B> {}
+    #[java_fn]
+    fn get_id(&self) -> i64 {}
 
     // 根据mirai源码，各个类型实现该trait时实际如此：
     // ```rust
@@ -104,14 +83,14 @@ where
     }
 }
 
-pub trait ContactTrait
+pub trait ContactTrait<B: BotBackend>
 where
-    Self: ContactOrBotTrait,
+    Self: ContactOrBotTrait<B>,
 {
 }
 
-pub trait SendMessageSupportedTrait: ContactTrait {
-    fn send_message(&self, message: &impl MessageTrait) -> MessageReceipt<Self> {
+pub trait SendMessageSupportedTrait<B: BotBackend>: ContactTrait<B> {
+    fn send_message(&self, message: &impl MessageTrait<B>) -> MessageReceipt<B, Self> {
         let instance = Jvm::attach_thread()
             .unwrap()
             .invoke(
@@ -123,7 +102,7 @@ pub trait SendMessageSupportedTrait: ContactTrait {
         MessageReceipt::new(instance, self)
     }
 
-    fn send_string(&self, string: &str) -> MessageReceipt<'_, Self> {
+    fn send_string(&self, string: &str) -> MessageReceipt<B, Self> {
         let instance = Jvm::attach_thread()
             .unwrap()
             .invoke(
@@ -134,7 +113,7 @@ pub trait SendMessageSupportedTrait: ContactTrait {
             .unwrap();
         MessageReceipt::new(instance, self)
     }
-    fn upload_image(&self, resource: &ExternalResource) -> Image {
+    fn upload_image(&self, resource: &ExternalResource) -> Image<B> {
         let jvm = Jvm::attach_thread().unwrap();
         // 存疑：是否需要传入 Group(java) 本身？
         // 新：似乎不需要？
@@ -151,7 +130,7 @@ pub trait SendMessageSupportedTrait: ContactTrait {
             .unwrap();
         Image::from_instance(image_instance)
     }
-    fn upload_image_from_file(&self, path: &str) -> Image {
+    fn upload_image_from_file(&self, path: &str) -> Image<B> {
         // let jvm = Jvm::attach_thread().unwrap();
         let resource = ExternalResource::create_from_file(path);
         let image = self.upload_image(&resource);
@@ -161,11 +140,11 @@ pub trait SendMessageSupportedTrait: ContactTrait {
     }
 }
 
-pub trait FileSupportedTrait
+pub trait FileSupportedTrait<B: BotBackend>
 where
-    Self: ContactTrait,
+    Self: ContactTrait<B>,
 {
-    fn get_files(&self) -> RemoteFiles {
+    fn get_files(&self) -> RemoteFiles<B> {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .cast(
@@ -180,11 +159,11 @@ where
     }
 }
 
-pub trait AudioSupportedTrait
+pub trait AudioSupportedTrait<B: BotBackend>
 where
-    Self: ContactTrait,
+    Self: ContactTrait<B>,
 {
-    fn upload_audio(&self, resource: &ExternalResource) -> OfflineAudio {
+    fn upload_audio(&self, resource: &ExternalResource) -> OfflineAudio<B> {
         let jvm = Jvm::attach_thread().unwrap();
         let resource = InvocationArg::try_from(resource.get_instance()).unwrap();
         let instance = jvm
@@ -194,14 +173,14 @@ where
     }
 }
 
-pub trait UserOrBotTrait
+pub trait UserOrBotTrait<B: BotBackend>
 where
-    Self: ContactOrBotTrait,
+    Self: ContactOrBotTrait<B>,
 {
 }
 
-pub trait NudgeSupportedTrait: UserOrBotTrait {
-    fn nudge(&self) -> Nudge<Self> {
+pub trait NudgeSupportedTrait<B: BotBackend>: UserOrBotTrait<B> {
+    fn nudge(&self) -> Nudge<B, Self> {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke(
@@ -214,17 +193,17 @@ pub trait NudgeSupportedTrait: UserOrBotTrait {
     }
 }
 
-pub trait UserTrait
+pub trait UserTrait<B: BotBackend>
 where
-    Self: UserOrBotTrait + ContactTrait,
+    Self: UserOrBotTrait<B> + ContactTrait<B>,
 {
 }
 
-pub trait MemberTrait
+pub trait MemberTrait<B: BotBackend>
 where
-    Self: UserTrait,
+    Self: UserTrait<B>,
 {
-    fn get_group(&self) -> Group {
+    fn get_group(&self) -> Group<B> {
         let jvm = Jvm::attach_thread().unwrap();
         let group = jvm
             .invoke(
@@ -321,16 +300,16 @@ where
 }
 
 // TODO: 为 `Bot`, `Stranger`, `NormalMember`, 实现。
-pub trait AsFriend {
-    fn as_friend(&self) -> Friend;
+pub trait AsFriend<B: BotBackend> {
+    fn as_friend(&self) -> Friend<B>;
 }
 
 // TODO: 为 `Bot`, `NormalMember`, 实现。
-pub trait AsStranger {
-    fn as_stranger(&self) -> Friend;
+pub trait AsStranger<B: BotBackend> {
+    fn as_stranger(&self) -> Friend<B>;
 }
 
-pub trait AnnouncementTrait: GetInstanceTrait {
+pub trait AnnouncementTrait<B: BotBackend>: GetInstanceTrait {
     /// 内容。
     fn get_content(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
@@ -358,7 +337,7 @@ pub trait AnnouncementTrait: GetInstanceTrait {
         AnnouncementParameters::try_from_instance(paras).unwrap()
     }
     /// 创建 [`OfflineAnnouncement`]. 也可以使用 `self.into()` 或 [`OfflineAnnouncement::from`].
-    fn to_offline(&self) -> OfflineAnnouncement {
+    fn to_offline(&self) -> OfflineAnnouncement<B> {
         let jvm = Jvm::attach_thread().unwrap();
         let a = InvocationArg::try_from(self.get_instance()).unwrap();
         let offline = jvm
@@ -373,7 +352,7 @@ pub trait AnnouncementTrait: GetInstanceTrait {
     /// 将该公告发布到群。需要管理员权限。发布公告后群内将会出现 "有新公告" 系统提示。
     ///
     /// 需要处理的错误有：[`MiraiRsErrorEnum::PermissionDenied`], [`MiraiRsErrorEnum::IllegalState`].
-    fn publish_to(&self, group: Group) -> Result<OnlineAnnouncement, MiraiRsError> {
+    fn publish_to(&self, group: Group<B>) -> Result<OnlineAnnouncement<B>, MiraiRsError> {
         let jvm = Jvm::attach_thread().unwrap();
         let group = group.get_instance();
         let group = InvocationArg::try_from(group).unwrap();
@@ -382,11 +361,11 @@ pub trait AnnouncementTrait: GetInstanceTrait {
     }
 }
 
-pub trait PublishAnnouncementSupportedTrait {
-    fn publish_announcement(&self, content: &str) -> Result<OnlineAnnouncement, MiraiRsError>;
+pub trait PublishAnnouncementSupportedTrait<B: BotBackend> {
+    fn publish_announcement(&self, content: &str) -> Result<OnlineAnnouncement<B>, MiraiRsError>;
     fn publish_announcement_with_parameters(
         &self,
         content: &str,
         parameters: AnnouncementParameters,
-    ) -> Result<OnlineAnnouncement, MiraiRsError>;
+    ) -> Result<OnlineAnnouncement<B>, MiraiRsError>;
 }

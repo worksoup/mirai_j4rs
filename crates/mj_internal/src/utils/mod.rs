@@ -65,11 +65,11 @@ impl<T: TryFromInstanceTrait + GetClassTypeTrait> JavaStream<T> {
         JavaStream::from_instance(instance)
     }
 
-    pub fn map<B: TryFromInstanceTrait + GetClassTypeTrait, F>(&self, f: F) -> JavaStream<B>
+    pub fn map<B, F>(&self, f: F) -> JavaStream<B>
     where
         F: Fn(T) -> B + 'static,
         T: TryFromInstanceTrait,
-        B: GetInstanceTrait + TryFromInstanceTrait,
+        B: GetClassTypeTrait + TryFromInstanceTrait + GetInstanceTrait,
     {
         let jvm = Jvm::attach_thread().unwrap();
         let f = Function::new(f);

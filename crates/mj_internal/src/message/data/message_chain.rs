@@ -1,7 +1,8 @@
 use j4rs::{Instance, InvocationArg, Jvm};
-use jbuchong::{java, FromInstanceTrait, GetInstanceTrait};
+use jbuchong::{java_all, FromInstanceTrait, GetInstanceTrait};
 use mj_helper_macro::mj_all;
 
+use crate::utils::backend::BotBackend;
 use crate::{
     message::{
         data::single_message::SingleMessage,
@@ -11,20 +12,21 @@ use crate::{
 };
 
 #[mj_all("message.data.MessageChain")]
-pub struct MessageChain {
+pub struct MessageChain<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl MessageChain {}
+impl<B: BotBackend> MessageChain<B> {}
 
-impl MessageTrait for MessageChain {}
+impl<B: BotBackend> MessageTrait<B> for MessageChain<B> {}
 
-impl CodableMessageTrait for MessageChain {}
+impl<B: BotBackend> CodableMessageTrait<B> for MessageChain<B> {}
 
-impl MessageChainTrait for MessageChain {}
+impl<B: BotBackend> MessageChainTrait<B> for MessageChain<B> {}
 
-impl MiraiRsCollectionTrait for MessageChain {
-    type Element = SingleMessage;
+impl<B: BotBackend> MiraiRsCollectionTrait for MessageChain<B> {
+    type Element = SingleMessage<B>;
 
     fn get_size(&self) -> i32 {
         let jvm = Jvm::attach_thread().unwrap();
@@ -59,26 +61,27 @@ impl MiraiRsCollectionTrait for MessageChain {
     }
 }
 
-impl IntoIterator for MessageChain {
-    type Item = SingleMessage;
-    type IntoIter = MessageChainIterator;
+impl<B: BotBackend> IntoIterator for MessageChain<B> {
+    type Item = SingleMessage<B>;
+    type IntoIter = MessageChainIterator<B>;
 
     fn into_iter(self) -> Self::IntoIter {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke(&self.instance, "iterator", InvocationArg::empty())
             .unwrap();
-        Self::IntoIter { instance }
+        Self::IntoIter::from_instance(instance)
     }
 }
 
-#[java]
-pub struct MessageChainIterator {
+#[java_all]
+pub struct MessageChainIterator<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl Iterator for MessageChainIterator {
-    type Item = SingleMessage;
+impl<B: BotBackend> Iterator for MessageChainIterator<B> {
+    type Item = SingleMessage<B>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let jvm = Jvm::attach_thread().unwrap();

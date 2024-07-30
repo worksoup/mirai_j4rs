@@ -6,14 +6,16 @@ use crate::contact::{
     ContactOrBotTrait, ContactTrait, NudgeSupportedTrait, SendMessageSupportedTrait,
     UserOrBotTrait, UserTrait,
 };
+use crate::utils::backend::BotBackend;
 use crate::utils::other::enums::AvatarSpec;
 
 #[mj_all("contact.Stranger")]
-pub struct Stranger {
+pub struct Stranger<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl ContactOrBotTrait for Stranger {
+impl<B: BotBackend> ContactOrBotTrait<B> for Stranger<B> {
     fn get_avatar_url(&self, size: Option<AvatarSpec>) -> String {
         let size: i32 = if let Some(size) = size {
             size.into()
@@ -28,12 +30,12 @@ impl ContactOrBotTrait for Stranger {
     }
 }
 
-impl UserOrBotTrait for Stranger {}
+impl<B: BotBackend> UserOrBotTrait<B> for Stranger<B> {}
 
-impl NudgeSupportedTrait for Stranger {}
+impl<B: BotBackend> NudgeSupportedTrait<B> for Stranger<B> {}
 
-impl ContactTrait for Stranger {}
+impl<B: BotBackend> ContactTrait<B> for Stranger<B> {}
 
-impl SendMessageSupportedTrait for Stranger {}
+impl<B: BotBackend> SendMessageSupportedTrait<B> for Stranger<B> {}
 
-impl UserTrait for Stranger {}
+impl<B: BotBackend> UserTrait<B> for Stranger<B> {}

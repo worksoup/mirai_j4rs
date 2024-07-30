@@ -1,6 +1,7 @@
-use j4rs::{errors::J4RsError, Instance, InvocationArg, Jvm};
-use jbuchong::{java, AsInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait};
+use j4rs::{Instance, InvocationArg, Jvm};
+use jbuchong::{java_all, AsInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
 
+use crate::utils::backend::BotBackend;
 use crate::{
     contact::Group,
     message::message_trait::{
@@ -9,14 +10,24 @@ use crate::{
     },
 };
 
-#[java("net.mamoe.mirai.message.data.At")]
-pub struct At {
+fn get_target_(instance: &Instance) -> i64 {
+    let jvm = Jvm::attach_thread().unwrap();
+    jvm.to_rust(
+        jvm.invoke(instance, "getTarget", InvocationArg::empty())
+            .unwrap(),
+    )
+    .unwrap()
+}
+#[java_all("net.mamoe.mirai.message.data.At")]
+pub struct At<B: BotBackend> {
+    #[default(fn_name = get_target_)]
     id: i64,
     instance: Instance,
+    _backend: B,
 }
 
-impl At {
-    pub fn new(id: i64) -> At {
+impl<B: BotBackend> At<B> {
+    pub fn new(id: i64) -> Self {
         let instance = Jvm::attach_thread()
             .unwrap()
             .create_instance(
@@ -27,9 +38,13 @@ impl At {
                     .unwrap()],
             )
             .unwrap();
-        At { id, instance }
+        At {
+            id,
+            instance,
+            _backend: B::default(),
+        }
     }
-    pub fn to_display_string(&self, group: &Group) -> String {
+    pub fn to_display_string(&self, group: &Group<B>) -> String {
         Jvm::attach_thread()
             .unwrap()
             .to_rust(
@@ -49,23 +64,23 @@ impl At {
     }
 }
 
-impl MessageTrait for At {
+impl<B: BotBackend> MessageTrait<B> for At<B> {
     fn to_content(&self) -> String {
         format!("@{}", self.id)
     }
 }
 
-impl CodableMessageTrait for At {
+impl<B: BotBackend> CodableMessageTrait<B> for At<B> {
     fn to_code(&self) -> String {
         format!("[mirai:at:{}]", self.id)
     }
 }
 
-impl SingleMessageTrait for At {}
+impl<B: BotBackend> SingleMessageTrait<B> for At<B> {}
 
-impl MessageContentTrait for At {}
+impl<B: BotBackend> MessageContentTrait<B> for At<B> {}
 
-impl MessageHashCodeTrait for At {
+impl<B: BotBackend> MessageHashCodeTrait for At<B> {
     /// # 说明
     /// java.lang.Long 里的实现：
     /// ``` java
@@ -75,20 +90,5 @@ impl MessageHashCodeTrait for At {
     /// ```
     fn hash_code(&self) -> i32 {
         (self.id ^ (self.id/*i64*/ >> 32)) as i32
-    }
-}
-
-impl TryFromInstanceTrait for At {
-    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
-        let jvm = Jvm::attach_thread().unwrap();
-        Ok(Self {
-            id: jvm
-                .to_rust(
-                    jvm.invoke(&instance, "getTarget", InvocationArg::empty())
-                        .unwrap(),
-                )
-                .unwrap(),
-            instance,
-        })
     }
 }

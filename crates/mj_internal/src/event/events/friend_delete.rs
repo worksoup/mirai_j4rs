@@ -3,16 +3,18 @@ use j4rs::Instance;
 use mj_helper_macro::mj_event;
 
 use crate::event::{BotEventTrait, FriendEventTrait, FriendInfoChangeEventTrait, UserEventTrait};
+use crate::utils::backend::BotBackend;
 
 #[mj_event]
-pub struct FriendDeleteEvent {
+pub struct FriendDeleteEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl BotEventTrait for FriendDeleteEvent {}
+impl<B: BotBackend> BotEventTrait<B> for FriendDeleteEvent<B> {}
 
-impl UserEventTrait for FriendDeleteEvent {}
+impl<B: BotBackend> UserEventTrait<B> for FriendDeleteEvent<B> {}
 
-impl FriendEventTrait for FriendDeleteEvent {}
+impl<B: BotBackend> FriendEventTrait<B> for FriendDeleteEvent<B> {}
 
-impl FriendInfoChangeEventTrait for FriendDeleteEvent {}
+impl<B: BotBackend> FriendInfoChangeEventTrait<B> for FriendDeleteEvent<B> {}

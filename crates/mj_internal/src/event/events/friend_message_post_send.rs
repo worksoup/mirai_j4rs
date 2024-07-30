@@ -6,16 +6,18 @@ use crate::contact::Friend;
 use crate::event::{
     BotActiveEventTrait, BotEventTrait, MessagePostSendEventTrait, UserMessagePostSendEventTrait,
 };
+use crate::utils::backend::BotBackend;
 
 #[mj_event]
-pub struct FriendMessagePostSendEvent {
+pub struct FriendMessagePostSendEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl MessagePostSendEventTrait<Friend> for FriendMessagePostSendEvent {}
+impl<B: BotBackend> MessagePostSendEventTrait<B, Friend<B>> for FriendMessagePostSendEvent<B> {}
 
-impl BotEventTrait for FriendMessagePostSendEvent {}
+impl<B: BotBackend> BotEventTrait<B> for FriendMessagePostSendEvent<B> {}
 
-impl BotActiveEventTrait for FriendMessagePostSendEvent {}
+impl<B: BotBackend> BotActiveEventTrait<B> for FriendMessagePostSendEvent<B> {}
 
-impl UserMessagePostSendEventTrait<Friend> for FriendMessagePostSendEvent {}
+impl<B: BotBackend> UserMessagePostSendEventTrait<B, Friend<B>> for FriendMessagePostSendEvent<B> {}

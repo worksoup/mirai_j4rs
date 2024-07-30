@@ -7,16 +7,18 @@ use crate::event::{
     BotEventTrait, BotPassiveEventTrait, GroupAwareMessageTrait, MessageEventTrait,
     MessageSyncEventTrait, OtherClientEventTrait,
 };
+use crate::utils::backend::BotBackend;
 
 #[mj_event]
-pub struct GroupMessageSyncEvent {
+pub struct GroupMessageSyncEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl GroupAwareMessageTrait<Member, Group> for GroupMessageSyncEvent {}
-impl MessageSyncEventTrait<Member, Group> for GroupMessageSyncEvent {}
+impl<B: BotBackend> GroupAwareMessageTrait<B, Member<B>, Group<B>> for GroupMessageSyncEvent<B> {}
+impl<B: BotBackend> MessageSyncEventTrait<B, Member<B>, Group<B>> for GroupMessageSyncEvent<B> {}
 
-impl BotPassiveEventTrait for GroupMessageSyncEvent {}
-impl MessageEventTrait<Member, Group> for GroupMessageSyncEvent {}
-impl OtherClientEventTrait for GroupMessageSyncEvent {}
-impl BotEventTrait for GroupMessageSyncEvent {}
+impl<B: BotBackend> BotPassiveEventTrait<B> for GroupMessageSyncEvent<B> {}
+impl<B: BotBackend> MessageEventTrait<B, Member<B>, Group<B>> for GroupMessageSyncEvent<B> {}
+impl<B: BotBackend> OtherClientEventTrait<B> for GroupMessageSyncEvent<B> {}
+impl<B: BotBackend> BotEventTrait<B> for GroupMessageSyncEvent<B> {}

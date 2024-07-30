@@ -1,6 +1,3 @@
-use j4rs::{errors::J4RsError, Instance, InvocationArg, Jvm};
-use jbuchong::{java, GetClassTypeTrait, TryFromInstanceTrait};
-
 use crate::message::{
     data::super_face::SuperFace,
     message_trait::{
@@ -8,37 +5,40 @@ use crate::message::{
         SingleMessageTrait,
     },
 };
+use crate::utils::backend::BotBackend;
+use j4rs::{Instance, InvocationArg, Jvm};
+use jbuchong::GetClassTypeTrait;
+use mj_helper_macro::mj_all;
 
 include!("face_res.rs");
-#[java("net.mamoe.mirai.message.data.Face")]
-pub struct Face {
+#[mj_all("message.data.Face")]
+pub struct Face<B: BotBackend> {
+    #[default(fn_name=get_name_)]
     name: String,
+    #[default(fn_name=get_id_)]
     id: i32,
     instance: Instance,
+    _backend: B,
+}
+fn get_name_(instance: &Instance) -> String {
+    let jvm = Jvm::attach_thread().unwrap();
+    jvm.to_rust(
+        jvm.invoke(instance, "getName", InvocationArg::empty())
+            .unwrap(),
+    )
+    .unwrap()
 }
 
-impl TryFromInstanceTrait for Face {
-    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
-        let jvm = Jvm::attach_thread().unwrap();
-        Ok(Face {
-            name: jvm
-                .to_rust(
-                    jvm.invoke(&instance, "getName", InvocationArg::empty())
-                        .unwrap(),
-                )
-                .unwrap(),
-            id: jvm
-                .to_rust(
-                    jvm.invoke(&instance, "getId", InvocationArg::empty())
-                        .unwrap(),
-                )
-                .unwrap(),
-            instance,
-        })
-    }
+fn get_id_(instance: &Instance) -> i32 {
+    let jvm = Jvm::attach_thread().unwrap();
+    jvm.to_rust(
+        jvm.invoke(instance, "getId", InvocationArg::empty())
+            .unwrap(),
+    )
+    .unwrap()
 }
 
-impl Face {
+impl<B: BotBackend> Face<B> {
     pub fn get_id(&self) -> i32 {
         self.id
     }
@@ -47,14 +47,14 @@ impl Face {
     }
 }
 
-impl From<i32> for Face {
+impl<B: BotBackend> From<i32> for Face<B> {
     fn from(id: i32) -> Self {
         let face = FaceEnum::from(id);
         Self::from(face)
     }
 }
 
-impl From<FaceEnum> for Face {
+impl<B: BotBackend> From<FaceEnum> for Face<B> {
     fn from(face: FaceEnum) -> Self {
         let name = format!("[{:?}]", face);
         let id = face.into();
@@ -68,33 +68,38 @@ impl From<FaceEnum> for Face {
                     .unwrap()],
             )
             .unwrap();
-        Face { name, id, instance }
+        Face {
+            name,
+            id,
+            instance,
+            _backend: B::default(),
+        }
     }
 }
 
-impl From<SuperFace> for Face {
-    fn from(super_face: SuperFace) -> Self {
+impl<B: BotBackend> From<SuperFace<B>> for Face<B> {
+    fn from(super_face: SuperFace<B>) -> Self {
         super_face.get_face()
     }
 }
 
-impl MessageTrait for Face {
+impl<B: BotBackend> MessageTrait<B> for Face<B> {
     fn to_content(&self) -> String {
         self.name.clone()
     }
     fn to_string(&self) -> String {
-        self.to_content()
+        MessageTrait::<B>::to_content(self)
     }
 }
 
-impl CodableMessageTrait for Face {
+impl<B: BotBackend> CodableMessageTrait<B> for Face<B> {
     fn to_code(&self) -> String {
         format!("[mirai:face:{}]", self.id)
     }
 }
 
-impl SingleMessageTrait for Face {}
+impl<B: BotBackend> SingleMessageTrait<B> for Face<B> {}
 
-impl MessageContentTrait for Face {}
+impl<B: BotBackend> MessageContentTrait<B> for Face<B> {}
 
-impl MessageHashCodeTrait for Face {}
+impl<B: BotBackend> MessageHashCodeTrait for Face<B> {}

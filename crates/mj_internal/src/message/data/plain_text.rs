@@ -1,18 +1,28 @@
-use j4rs::{errors::J4RsError, Instance, InvocationArg, Jvm};
-use jbuchong::{java, GetClassTypeTrait, TryFromInstanceTrait};
-
 use crate::message::message_trait::{
     CodableMessageTrait, MessageContentTrait, MessageHashCodeTrait, MessageTrait,
     SingleMessageTrait,
 };
-
-#[java("net.mamoe.mirai.message.data.PlainText")]
-pub struct PlainText {
+use crate::utils::backend::BotBackend;
+use j4rs::{Instance, InvocationArg, Jvm};
+use jbuchong::GetClassTypeTrait;
+use mj_helper_macro::mj_all;
+fn get_content_(instance: &Instance) -> String {
+    let jvm = Jvm::attach_thread().unwrap();
+    jvm.to_rust(
+        jvm.invoke(instance, "getContent", InvocationArg::empty())
+            .unwrap(),
+    )
+    .unwrap()
+}
+#[mj_all("message.data.PlainText")]
+pub struct PlainText<B: BotBackend> {
+    #[default(fn_name = get_content_)]
     content: String,
     instance: Instance,
+    _backend: B,
 }
 
-impl From<&str> for PlainText {
+impl<B: BotBackend> From<&str> for PlainText<B> {
     fn from(value: &str) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         PlainText {
@@ -23,11 +33,12 @@ impl From<&str> for PlainText {
                     &[InvocationArg::try_from(value).unwrap()],
                 )
                 .unwrap(),
+            _backend: B::default(),
         }
     }
 }
 
-impl From<String> for PlainText {
+impl<B: BotBackend> From<String> for PlainText<B> {
     fn from(value: String) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
@@ -39,17 +50,18 @@ impl From<String> for PlainText {
         PlainText {
             content: value,
             instance,
+            _backend: B::default(),
         }
     }
 }
 
-impl PlainText {
+impl<B: BotBackend> PlainText<B> {
     pub fn get_content(&self) -> String {
         self.content.clone()
     }
 }
 
-impl MessageTrait for PlainText {
+impl<B: BotBackend> MessageTrait<B> for PlainText<B> {
     fn to_content(&self) -> String {
         self.get_content()
     }
@@ -58,29 +70,14 @@ impl MessageTrait for PlainText {
     }
 }
 
-impl CodableMessageTrait for PlainText {
+impl<B: BotBackend> CodableMessageTrait<B> for PlainText<B> {
     fn to_code(&self) -> String {
         self.get_content()
     }
 }
 
-impl SingleMessageTrait for PlainText {}
+impl<B: BotBackend> SingleMessageTrait<B> for PlainText<B> {}
 
-impl MessageContentTrait for PlainText {}
+impl<B: BotBackend> MessageContentTrait<B> for PlainText<B> {}
 
-impl MessageHashCodeTrait for PlainText {}
-
-impl TryFromInstanceTrait for PlainText {
-    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
-        let jvm = Jvm::attach_thread().unwrap();
-        Ok(PlainText {
-            content: jvm
-                .to_rust(
-                    jvm.invoke(&instance, "getContent", InvocationArg::empty())
-                        .unwrap(),
-                )
-                .unwrap(),
-            instance,
-        })
-    }
-}
+impl<B: BotBackend> MessageHashCodeTrait for PlainText<B> {}

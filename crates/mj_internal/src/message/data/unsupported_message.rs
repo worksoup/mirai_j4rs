@@ -2,14 +2,16 @@ use j4rs::Instance;
 use jbuchong::java_all;
 
 use crate::message::message_trait::{MessageContentTrait, MessageTrait, SingleMessageTrait};
+use crate::utils::backend::BotBackend;
 
 #[java_all]
-pub struct UnsupportedMessage {
+pub struct UnsupportedMessage<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl MessageTrait for UnsupportedMessage {}
+impl<B: BotBackend> MessageTrait<B> for UnsupportedMessage<B> {}
 
-impl SingleMessageTrait for UnsupportedMessage {}
+impl<B: BotBackend> SingleMessageTrait<B> for UnsupportedMessage<B> {}
 
-impl MessageContentTrait for UnsupportedMessage {}
+impl<B: BotBackend> MessageContentTrait<B> for UnsupportedMessage<B> {}

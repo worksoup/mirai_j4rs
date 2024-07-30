@@ -7,6 +7,7 @@ use jbuchong::{
 };
 
 use crate::contact::Bot;
+use crate::utils::backend::Mirai;
 
 /// 该结构体未实现 [`LoginSolverTrait`], 如需使用相关功能请调用本实例的 `get_instance` 方法，获得 `Instance` 后直接操作。
 #[java_all]
@@ -65,8 +66,8 @@ impl GetInstanceTrait for State {
 
 pub struct QrCodeLoginListener {
     instance: Option<Instance>,
-    on_fetch_qrcode: Option<Func2<Bot, Vec<i8>, KotlinUnit>>,
-    on_state_changed: Option<Func2<Bot, State, KotlinUnit>>,
+    on_fetch_qrcode: Option<Func2<Bot<Mirai>, Vec<i8>, KotlinUnit>>,
+    on_state_changed: Option<Func2<Bot<Mirai>, State, KotlinUnit>>,
     on_interval_loop: Option<Func0<KotlinUnit>>,
     on_completed: Option<Func0<KotlinUnit>>,
 }
@@ -77,8 +78,8 @@ impl QrCodeLoginListener {
         const QR_CODE_MARGIN: i32,
         const QR_CODE_EC_LEVEL: i32,
         const QR_CODE_STATE_UPDATE_INTERVAL: i64,
-        F: Fn(Bot, &Vec<i8>),
-        S: Fn(Bot, State),
+        F: Fn(Bot<Mirai>, &Vec<i8>),
+        S: Fn(Bot<Mirai>, State),
         I: Fn(),
         C: Fn(),
     >(
@@ -158,7 +159,7 @@ impl QrCodeLoginListener {
         todo!()
     }
 
-    pub fn on_fetch_qrcode(&self, bot: Bot, data: &Vec<i8>) {
+    pub fn on_fetch_qrcode(&self, bot: Bot<Mirai>, data: &Vec<i8>) {
         if let Some(ref internal_on_fetch_qrcode) = self.on_fetch_qrcode {
             internal_on_fetch_qrcode.call(bot, data.clone());
         } else {
@@ -184,7 +185,7 @@ impl QrCodeLoginListener {
             jvm.invoke(instance, "onFetchQRCode", &[bot, data]).unwrap();
         }
     }
-    pub fn on_state_changed(&self, bot: Bot, state: State) {
+    pub fn on_state_changed(&self, bot: Bot<Mirai>, state: State) {
         if let Some(ref internal_on_state_changed) = self.on_state_changed {
             internal_on_state_changed.call(bot, state);
         } else {
@@ -245,8 +246,8 @@ where
     const QR_CODE_MARGIN: i32 = 4;
     const QR_CODE_EC_LEVEL: i32 = 2;
     const QR_CODE_STATE_UPDATE_INTERVAL: i64 = 5000;
-    fn on_fetch_qrcode(bot: Bot, data: &[i8]);
-    fn on_state_changed(bot: Bot, state: State);
+    fn on_fetch_qrcode(bot: Bot<Mirai>, data: &[i8]);
+    fn on_state_changed(bot: Bot<Mirai>, state: State);
     fn on_interval_loop();
     fn on_completed();
 }
@@ -358,28 +359,28 @@ impl TryFromInstanceTrait for DeviceVerificationResult {
 
 pub trait LoginSolverTrait: 'static {
     const IS_SLIDER_CAPTCHA_SUPPORTED: bool = true;
-    fn on_solve_slider_captcha(bot: Bot, url: &str) -> String;
-    fn on_solve_pic_captcha(bot: Bot, data: &[i8]) -> String;
-    fn create_qrcode_login_listener(bot: Bot) -> QrCodeLoginListener;
+    fn on_solve_slider_captcha(bot: Bot<Mirai>, url: &str) -> String;
+    fn on_solve_pic_captcha(bot: Bot<Mirai>, data: &[i8]) -> String;
+    fn create_qrcode_login_listener(bot: Bot<Mirai>) -> QrCodeLoginListener;
     fn on_solve_device_verification(
-        bot: Bot,
+        bot: Bot<Mirai>,
         requests: DeviceVerificationRequests,
     ) -> DeviceVerificationResult;
-    fn __on_solve_slider_captcha(bot: Bot, url: JavaString) -> JavaString {
+    fn __on_solve_slider_captcha(bot: Bot<Mirai>, url: JavaString) -> JavaString {
         Self::on_solve_slider_captcha(bot, url.as_str()).into()
     }
-    fn __on_solve_pic_captcha(bot: Bot, data: JavaBytes) -> JavaString {
+    fn __on_solve_pic_captcha(bot: Bot<Mirai>, data: JavaBytes) -> JavaString {
         Self::on_solve_pic_captcha(bot, data.deref()).into()
     }
-    fn __create_qrcode_login_listener(bot: Bot) -> QrCodeLoginListener {
+    fn __create_qrcode_login_listener(bot: Bot<Mirai>) -> QrCodeLoginListener {
         Self::create_qrcode_login_listener(bot)
     }
     fn __instance() -> (
         Instance,
-        Func2<Bot, JavaString, JavaString>,
-        Func2<Bot, JavaBytes, JavaString>,
-        Func1<Bot, QrCodeLoginListener>,
-        Func2<Bot, DeviceVerificationRequests, DeviceVerificationResult>,
+        Func2<Bot<Mirai>, JavaString, JavaString>,
+        Func2<Bot<Mirai>, JavaBytes, JavaString>,
+        Func1<Bot<Mirai>, QrCodeLoginListener>,
+        Func2<Bot<Mirai>, DeviceVerificationRequests, DeviceVerificationResult>,
     ) {
         let jvm = Jvm::attach_thread().unwrap();
 

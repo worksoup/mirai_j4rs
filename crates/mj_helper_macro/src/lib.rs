@@ -7,16 +7,13 @@ use proc_macro2::Span;
 use quote::quote;
 use syn::{
     parse_macro_input, DeriveInput, FnArg, GenericArgument, ItemFn, LitStr, PatType,
-    PathArguments::AngleBracketed, PathSegment, Stmt, Type,
+    PathArguments::AngleBracketed, Stmt, Type,
 };
 
 fn add_prefix(input: TokenStream) -> LitStr {
     let type_name: &syn::LitStr = &syn::parse(input).expect("类型名称请用字符串表示！");
-    let type_name = type_name.value();
-    LitStr::new(
-        format!("{}{}", MIRAI_PREFIX, type_name).as_str(),
-        Span::mixed_site(),
-    )
+    let ty = type_name.value();
+    LitStr::new(format!("{}{}", MIRAI_PREFIX, ty).as_str(), type_name.span())
 }
 /// ### `mj_all`
 ///
@@ -45,7 +42,7 @@ pub fn mirai_event_derive(input: TokenStream) -> TokenStream {
     let generics = &ast.generics;
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let gen = quote! {
-        impl #impl_generics crate::event::MiraiEventTrait for #name #ty_generics #where_clause {
+        impl #impl_generics crate::event::MiraiEventTrait<B> for #name #ty_generics #where_clause {
         }
     };
     gen.into()
@@ -157,9 +154,9 @@ pub fn java_fn(java_fn_name: TokenStream, input: TokenStream) -> TokenStream {
         jvm_var: &mut proc_macro2::TokenStream,
     ) {
         let pat = &pat_type.pat;
-        let arg = if let Some(_) = and_token {
+        let arg = if and_token.is_some() {
             quote! {
-                let #pat = jbuchong::ToArgTrait::to_arg(&#pat).unwrap();
+                let #pat = jbuchong::ToArgTrait::to_arg(#pat).unwrap();
             }
         } else {
             quote! {
@@ -178,9 +175,8 @@ pub fn java_fn(java_fn_name: TokenStream, input: TokenStream) -> TokenStream {
                                 && let Some(GenericArgument::Type(inner_type)) =
                                     angle_bracketed_args.args.first()
                             {
-                                let PathSegment { ident, arguments } = last_segments;
                                 let arg = quote! {
-                                    let #pat = #ident::#arguments::from(#pat);
+                                    let #pat = <#ty>::from(#pat);
                                     #arg
                                 };
                                 arg_conversions.push(arg);
@@ -230,7 +226,7 @@ pub fn java_fn(java_fn_name: TokenStream, input: TokenStream) -> TokenStream {
                 jvm_var,
             ),
             _ => {
-                panic!("不支持此类型！")
+                panic!("不支持此类型！你可以定义一个内部函数，然后进行包装。")
             }
         }
     }
@@ -265,7 +261,7 @@ pub fn java_fn(java_fn_name: TokenStream, input: TokenStream) -> TokenStream {
             #block
         }
     };
-    let java_call = if let Some(_) = self_arg {
+    let java_call = if self_arg.is_some() {
         quote! {
             let instance = #jvm_var.invoke(&<Self as jbuchong::GetInstanceTrait>::get_instance(self).unwrap(), #java_fn_name, infer_type(&[#(#args),*])).unwrap();
         }

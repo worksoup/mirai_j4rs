@@ -3,12 +3,13 @@ use std::marker::PhantomData;
 use j4rs::{Instance, InvocationArg, Jvm};
 use jbuchong::{java_all, AsInstanceTrait, GetInstanceTrait, TryFromInstanceTrait};
 
+use crate::utils::backend::BotBackend;
 use crate::{
     contact::{ContactTrait, UserOrBotTrait},
     message::message_trait::MessageHashCodeTrait,
 };
 
-pub trait NudgeTrait<UserOrBot: UserOrBotTrait>:
+pub trait NudgeTrait<B: BotBackend, UserOrBot: UserOrBotTrait<B>>:
     GetInstanceTrait + MessageHashCodeTrait + TryFromInstanceTrait + AsInstanceTrait
 {
     fn get_target(&self) -> UserOrBot {
@@ -30,7 +31,7 @@ pub trait NudgeTrait<UserOrBot: UserOrBotTrait>:
     fn equals(&self) -> bool {
         todo!("低优先级。")
     }
-    fn send_to(&self, receiver: impl ContactTrait) -> bool {
+    fn send_to(&self, receiver: impl ContactTrait<B>) -> bool {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke(
@@ -43,8 +44,9 @@ pub trait NudgeTrait<UserOrBot: UserOrBotTrait>:
     }
 }
 #[java_all]
-pub struct Nudge<UserOrBot: UserOrBotTrait> {
+pub struct Nudge<B: BotBackend, UserOrBot: UserOrBotTrait<B>> {
     instance: Instance,
+    _backend: B,
     _u: PhantomData<UserOrBot>,
 }
-impl<UserOrBot: UserOrBotTrait> MessageHashCodeTrait for Nudge<UserOrBot> {}
+impl<B: BotBackend, UserOrBot: UserOrBotTrait<B>> MessageHashCodeTrait for Nudge<B, UserOrBot> {}

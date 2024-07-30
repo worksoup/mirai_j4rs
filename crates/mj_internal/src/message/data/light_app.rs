@@ -5,13 +5,15 @@ use crate::message::message_trait::{
     CodableMessageTrait, MessageContentTrait, MessageHashCodeTrait, MessageTrait, RichMessageTrait,
     SingleMessageTrait,
 };
+use crate::utils::backend::BotBackend;
 
 #[mj_all("message.data.LightApp")]
-pub struct LightApp {
+pub struct LightApp <B: BotBackend>{
     instance: Instance,
+    _backend: B,
 }
 
-impl LightApp {
+impl<B: BotBackend> LightApp<B> {
     pub fn get_content(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         jvm.to_rust(
@@ -22,14 +24,14 @@ impl LightApp {
     }
 }
 
-impl MessageHashCodeTrait for LightApp {}
+impl<B: BotBackend> MessageHashCodeTrait for LightApp<B> {}
 
-impl MessageTrait for LightApp {}
+impl<B: BotBackend> MessageTrait<B> for LightApp<B> {}
 
-impl SingleMessageTrait for LightApp {}
+impl<B: BotBackend> SingleMessageTrait<B> for LightApp<B> {}
 
-impl MessageContentTrait for LightApp {}
+impl<B: BotBackend> MessageContentTrait<B> for LightApp<B> {}
 
-impl RichMessageTrait for LightApp {}
+impl<B: BotBackend> RichMessageTrait<B> for LightApp<B> {}
 
-impl CodableMessageTrait for LightApp {}
+impl<B: BotBackend> CodableMessageTrait<B> for LightApp<B> {}

@@ -3,12 +3,14 @@ use j4rs::Instance;
 use mj_helper_macro::mj_event;
 
 use crate::event::{BotEventTrait, BotPassiveEventTrait, GroupEventTrait};
+use crate::utils::backend::BotBackend;
 
 #[mj_event]
-pub struct GroupTalkativeChangeEvent {
+pub struct GroupTalkativeChangeEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
-impl BotPassiveEventTrait for GroupTalkativeChangeEvent {}
-impl GroupEventTrait for GroupTalkativeChangeEvent {}
+impl<B: BotBackend> BotPassiveEventTrait<B> for GroupTalkativeChangeEvent<B> {}
+impl<B: BotBackend> GroupEventTrait<B> for GroupTalkativeChangeEvent<B> {}
 
-impl BotEventTrait for GroupTalkativeChangeEvent {}
+impl<B: BotBackend> BotEventTrait<B> for GroupTalkativeChangeEvent<B> {}

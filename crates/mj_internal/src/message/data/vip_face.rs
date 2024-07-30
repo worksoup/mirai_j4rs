@@ -6,19 +6,21 @@ use crate::message::message_trait::{
     CodableMessageTrait, ConstrainSingleTrait, MessageContentTrait, MessageTrait,
     SingleMessageTrait,
 };
+use crate::utils::backend::BotBackend;
 
 // TODO: 低优先级
 #[mj_all("message.data.VipFace")]
-pub struct VipFace {
+pub struct VipFace<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl MessageTrait for VipFace {}
+impl<B: BotBackend> MessageTrait<B> for VipFace<B> {}
 
-impl SingleMessageTrait for VipFace {}
+impl<B: BotBackend> SingleMessageTrait<B> for VipFace<B> {}
 
-impl MessageContentTrait for VipFace {}
+impl<B: BotBackend> MessageContentTrait<B> for VipFace<B> {}
 
-impl ConstrainSingleTrait for VipFace {}
+impl<B: BotBackend> ConstrainSingleTrait<B> for VipFace<B> {}
 
-impl CodableMessageTrait for VipFace {}
+impl<B: BotBackend> CodableMessageTrait<B> for VipFace<B> {}

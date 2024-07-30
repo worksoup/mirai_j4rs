@@ -7,18 +7,20 @@ use crate::event::{
     BroadcastControllableTrait, GroupEventTrait, GroupMemberInfoChangeEventTrait,
     GroupOperableEventTrait, GroupSettingsChangeEventTrait,
 };
+use crate::utils::backend::BotBackend;
 
 #[mj_event]
-pub struct GroupEntranceAnnouncementChangeEvent {
+pub struct GroupEntranceAnnouncementChangeEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl GroupSettingsChangeEventTrait<String> for GroupEntranceAnnouncementChangeEvent {}
-impl GroupOperableEventTrait for GroupEntranceAnnouncementChangeEvent {}
-impl GroupMemberInfoChangeEventTrait for GroupEntranceAnnouncementChangeEvent {}
+impl<B:BotBackend> GroupSettingsChangeEventTrait<B, String> for GroupEntranceAnnouncementChangeEvent<B> {}
+impl<B:BotBackend> GroupOperableEventTrait<B> for GroupEntranceAnnouncementChangeEvent<B> {}
+impl<B:BotBackend> GroupMemberInfoChangeEventTrait<B> for GroupEntranceAnnouncementChangeEvent<B> {}
 
-impl BotEventTrait for GroupEntranceAnnouncementChangeEvent {}
-impl GroupEventTrait for GroupEntranceAnnouncementChangeEvent {}
-impl BaseGroupMemberInfoChangeEventTrait for GroupEntranceAnnouncementChangeEvent {}
-impl BroadcastControllableTrait for GroupEntranceAnnouncementChangeEvent {}
-impl BotPassiveEventTrait for GroupEntranceAnnouncementChangeEvent {}
+impl<B: BotBackend> BotEventTrait<B> for GroupEntranceAnnouncementChangeEvent<B> {}
+impl<B:BotBackend> GroupEventTrait<B> for GroupEntranceAnnouncementChangeEvent<B> {}
+impl<B:BotBackend> BaseGroupMemberInfoChangeEventTrait<B> for GroupEntranceAnnouncementChangeEvent<B> {}
+impl<B:BotBackend> BroadcastControllableTrait<B> for GroupEntranceAnnouncementChangeEvent<B> {}
+impl<B:BotBackend> BotPassiveEventTrait<B> for GroupEntranceAnnouncementChangeEvent<B> {}

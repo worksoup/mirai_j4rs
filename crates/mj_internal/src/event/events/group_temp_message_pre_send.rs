@@ -6,20 +6,22 @@ use crate::event::{
     BotActiveEventTrait, BotEventTrait, CancellableEventTrait, MessagePreSendEventTrait,
     TempMessagePreSendEventTrait, UserMessagePreSendEventTrait,
 };
+use crate::utils::backend::BotBackend;
 
 #[mj_event]
-pub struct GroupTempMessagePreSendEvent {
+pub struct GroupTempMessagePreSendEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl UserMessagePreSendEventTrait for GroupTempMessagePreSendEvent {}
+impl<B: BotBackend> UserMessagePreSendEventTrait<B> for GroupTempMessagePreSendEvent<B> {}
 
-impl MessagePreSendEventTrait for GroupTempMessagePreSendEvent {}
+impl<B: BotBackend> MessagePreSendEventTrait<B> for GroupTempMessagePreSendEvent<B> {}
 
-impl BotEventTrait for GroupTempMessagePreSendEvent {}
+impl<B: BotBackend> BotEventTrait<B> for GroupTempMessagePreSendEvent<B> {}
 
-impl BotActiveEventTrait for GroupTempMessagePreSendEvent {}
+impl<B: BotBackend> BotActiveEventTrait<B> for GroupTempMessagePreSendEvent<B> {}
 
-impl CancellableEventTrait for GroupTempMessagePreSendEvent {}
+impl<B:BotBackend> CancellableEventTrait<B> for GroupTempMessagePreSendEvent<B> {}
 
-impl TempMessagePreSendEventTrait for GroupTempMessagePreSendEvent {}
+impl<B: BotBackend> TempMessagePreSendEventTrait<B> for GroupTempMessagePreSendEvent<B> {}

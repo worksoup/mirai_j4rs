@@ -7,6 +7,7 @@ use jbuchong::{
 
 use mj_helper_macro::{error_msg_suppressor, java_fn, mj_all};
 
+use crate::utils::backend::Mirai;
 use crate::{
     contact::Bot,
     utils::{
@@ -49,7 +50,7 @@ pub struct BotConfiguration {
 impl BotConfiguration {
     #[java_fn("copy")]
     fn copy_internal(&self) -> Self {}
-    pub fn copy_configuration_from(bot: &Bot) -> Self {
+    pub fn copy_configuration_from(bot: &Bot<Mirai>) -> Self {
         bot.get_configuration().copy_internal()
     }
 }
@@ -61,8 +62,8 @@ impl Default for BotConfiguration {
 impl BotConfiguration {
     #[java_fn]
     pub fn get_auto_reconnect_on_force_offline(&self) -> bool {}
-    pub fn get_bot_logger_supplier(&self) -> Box<dyn Fn(&Bot) -> MiraiLogger + '_> {
-        let bot_logger_supplier = |bot: &Bot| -> MiraiLogger {
+    pub fn get_bot_logger_supplier(&self) -> Box<dyn Fn(&Bot<Mirai>) -> MiraiLogger + '_> {
+        let bot_logger_supplier = |bot: &Bot<Mirai>| -> MiraiLogger {
             let tmp = Jvm::attach_thread()
                 .unwrap()
                 .invoke(
@@ -100,12 +101,12 @@ impl BotConfiguration {
             "instance"
         )))
     }
-    pub fn get_device_info(&self) -> Option<impl Fn(Bot) -> DeviceInfo + '_> {
+    pub fn get_device_info(&self) -> Option<impl Fn(Bot<Mirai>) -> DeviceInfo + '_> {
         let tmp = Jvm::attach_thread()
             .unwrap()
             .invoke(&self.instance, "getDeviceInfo", InvocationArg::empty())
             .unwrap();
-        let bot_logger_supplier = move |bot: Bot| -> DeviceInfo {
+        let bot_logger_supplier = move |bot: Bot<Mirai>| -> DeviceInfo {
             DeviceInfo(
                 Jvm::attach_thread()
                     .unwrap()
@@ -314,15 +315,17 @@ impl BotConfiguration {
     where
         T: LoginSolverTrait,
     {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.invoke(
-            &self.instance,
-            "setLoginSolver",
-            &[InvocationArg::try_from(todo!()).unwrap()],
-        )
-        .unwrap();
-        // 防止 drop.
-        self._login_solver_holder = todo!()
+        //java fn :"setLoginSolver".
+        todo!()
+        // let jvm = Jvm::attach_thread().unwrap();
+        // jvm.invoke(
+        //     &self.instance,
+        //     "setLoginSolver",
+        //     &[InvocationArg::try_from(todo!()).unwrap()],
+        // )
+        // .unwrap();
+        // // 防止 drop.
+        // self._login_solver_holder = todo!()
     }
     pub fn set_network_logger_supplier(&self) {
         Jvm::attach_thread()

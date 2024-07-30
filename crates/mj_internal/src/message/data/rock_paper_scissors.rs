@@ -1,28 +1,33 @@
 use j4rs::{Instance, InvocationArg, Jvm};
 
 use jbuchong::GetClassTypeTrait;
-use jbuchong::{GetInstanceTrait as _, utils::instance_is_null};
+use jbuchong::{utils::instance_is_null, GetInstanceTrait as _};
 use mj_helper_macro::mj_all;
 
 use crate::message::message_trait::{
     CodableMessageTrait, ConstrainSingleTrait, MarketFaceTrait, MessageContentTrait,
     MessageHashCodeTrait, MessageTrait, SingleMessageTrait,
 };
+use crate::utils::backend::BotBackend;
 
 #[mj_all("message.data.RockPaperScissors")]
-pub struct RockPaperScissors {
+pub struct RockPaperScissors<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
 /// 魔法表情猜拳。
 /// 新版客户端只能显示动画而不能显示结果。
-impl RockPaperScissors {
+impl<B: BotBackend> RockPaperScissors<B> {
     fn new(field: &str) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .static_class_field(<Self as GetClassTypeTrait>::get_type_name(), field)
             .unwrap();
-        Self { instance }
+        Self {
+            instance,
+            _backend: B::default(),
+        }
     }
     pub fn rock() -> Self {
         Self::new("ROCK")
@@ -36,7 +41,7 @@ impl RockPaperScissors {
     pub fn equals() {
         todo!("低优先级")
     }
-    pub fn eliminates(&self, other: RockPaperScissors) -> Option<bool> {
+    pub fn eliminates(&self, other: RockPaperScissors<B>) -> Option<bool> {
         let jvm = Jvm::attach_thread().unwrap();
         let result = jvm
             .invoke(
@@ -60,20 +65,23 @@ impl RockPaperScissors {
                 InvocationArg::empty(),
             )
             .unwrap();
-        Self { instance }
+        Self {
+            instance,
+            _backend: B::default(),
+        }
     }
 }
 
-impl MessageTrait for RockPaperScissors {}
+impl<B: BotBackend> MessageTrait<B> for RockPaperScissors<B> {}
 
-impl SingleMessageTrait for RockPaperScissors {}
+impl<B: BotBackend> SingleMessageTrait<B> for RockPaperScissors<B> {}
 
-impl MessageContentTrait for RockPaperScissors {}
+impl<B: BotBackend> MessageContentTrait<B> for RockPaperScissors<B> {}
 
-impl ConstrainSingleTrait for RockPaperScissors {}
+impl<B: BotBackend> ConstrainSingleTrait<B> for RockPaperScissors<B> {}
 
-impl CodableMessageTrait for RockPaperScissors {}
+impl<B: BotBackend> CodableMessageTrait<B> for RockPaperScissors<B> {}
 
-impl MessageHashCodeTrait for RockPaperScissors {}
+impl<B: BotBackend> MessageHashCodeTrait for RockPaperScissors<B> {}
 
-impl MarketFaceTrait for RockPaperScissors {}
+impl<B: BotBackend> MarketFaceTrait<B> for RockPaperScissors<B> {}

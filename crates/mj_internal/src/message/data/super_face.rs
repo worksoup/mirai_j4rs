@@ -11,13 +11,15 @@ use crate::message::{
         MessageTrait, SingleMessageTrait,
     },
 };
+use crate::utils::backend::BotBackend;
 
 #[mj_all("message.data.SuperFace")]
-pub struct SuperFace {
+pub struct SuperFace<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl SuperFace {
+impl<B: BotBackend> SuperFace<B> {
     fn _new(face_id: i32, id: &str, r#type: i32) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let face_id = InvocationArg::try_from(face_id)
@@ -35,9 +37,12 @@ impl SuperFace {
                 &[face_id, id, r#type],
             )
             .unwrap();
-        Self { instance }
+        Self {
+            instance,
+            _backend: B::default(),
+        }
     }
-    pub fn get_face(&self) -> Face {
+    pub fn get_face(&self) -> Face<B> {
         let jvm = Jvm::attach_thread().unwrap();
         let face_id = jvm
             .invoke(&self.instance, "getFace", InvocationArg::empty())
@@ -58,7 +63,7 @@ impl SuperFace {
             .unwrap();
         jvm.to_rust(face_id).unwrap()
     }
-    pub fn get_key(&self) -> () {}
+    pub fn get_key(&self) {}
     pub fn get_name(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
         let face_id = jvm
@@ -75,22 +80,22 @@ impl SuperFace {
     }
 }
 
-impl MessageHashCodeTrait for SuperFace {}
+impl<B: BotBackend> MessageHashCodeTrait for SuperFace<B> {}
 
-impl MessageTrait for SuperFace {}
+impl<B: BotBackend> MessageTrait<B> for SuperFace<B> {}
 
-impl ConstrainSingleTrait for SuperFace {}
+impl<B: BotBackend> ConstrainSingleTrait<B> for SuperFace<B> {}
 
-impl SingleMessageTrait for SuperFace {}
+impl<B: BotBackend> SingleMessageTrait<B> for SuperFace<B> {}
 
-impl MessageContentTrait for SuperFace {}
+impl<B: BotBackend> MessageContentTrait<B> for SuperFace<B> {}
 
-impl CodableMessageTrait for SuperFace {}
+impl<B: BotBackend> CodableMessageTrait<B> for SuperFace<B> {}
 
-impl TryFrom<Face> for SuperFace {
+impl<B: BotBackend> TryFrom<Face<B>> for SuperFace<B> {
     type Error = (); //TODO: 合适的错误类型。
 
-    fn try_from(face: Face) -> Result<Self, Self::Error> {
+    fn try_from(face: Face<B>) -> Result<Self, Self::Error> {
         let jvm = Jvm::attach_thread().unwrap();
         let face = InvocationArg::try_from(face.get_instance()).unwrap();
         let instance = jvm

@@ -13,8 +13,9 @@ mod tests {
             AudioTrait, CodableMessageTrait, MessageHashCodeTrait, MessageTrait,
         },
         utils::{
+            backend::Overflow,
             contact::file::{AbsoluteFileFolderTrait, ExternalResource},
-            just_for_examples::bot_group_member,
+            just_for_examples::bot_group_member_overflow,
         },
     };
 
@@ -23,12 +24,14 @@ mod tests {
     static AUDIO_PATH: &str = "../../working_dir/test.mp3";
     static FILE_PATH: &str = AUDIO_PATH;
     #[test]
-    fn at() {
-        let (bot, group_id, member_id) = bot_group_member(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
-        bot.login();
+    fn test_all() {
+        // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+        let (bot, group_id, member_id) = bot_group_member_overflow(WORKING_DIR, 1106);
+        let group = Group::new(&bot, group_id).unwrap();
+        let friend = bot.get_friend(member_id).expect("Bot 没有该好友。");
+        // bot.login(); // Overflow 后端无登录逻辑。
         // `At`
         let at = At::new(member_id);
-        let group = Group::new(&bot, group_id).unwrap();
         println!("{}", at.to_display_string(&group));
         println!("{}", at.to_code());
         println!("{}", at.to_content());
@@ -36,32 +39,16 @@ mod tests {
         println!("{}", at.to_string());
         let r = group.send_message(&at);
         r.recall();
-        bot.close();
-    }
-
-    #[test]
-    fn at_all() {
-        let (bot, group_id, _) = bot_group_member(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
-        bot.login();
         // `AtAll`
         let at_all = AtAll::new();
-        let group = Group::new(&bot, group_id).unwrap();
-        println!("{}", AtAll::get_display());
+        println!("{}", <AtAll<Overflow>>::get_display());
         println!("{}", at_all.to_code());
         println!("{}", at_all.to_content());
         println!("{}", at_all.hash_code());
         println!("{}", at_all.to_string());
         let r = group.send_message(&at_all);
         r.recall();
-        bot.close();
-    }
-
-    #[test]
-    fn audio() {
-        let (bot, group_id, _) = bot_group_member(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
-        bot.login();
         // `Audio`
-        let group = Group::new(&bot, group_id).unwrap();
         // 支持 `*.amr` 或 `*.silk` 格式。如果使用了 `mirai-silk-converter` 的话也可以支持 `*.mp3` 格式。
         let resource = ExternalResource::create_from_file(AUDIO_PATH);
         let audio = group.upload_audio(&resource);
@@ -73,16 +60,8 @@ mod tests {
         println!("{}", audio.to_string());
         let _r = group.send_message(&audio);
         resource.close();
-        bot.close();
-    }
-
-    #[test]
-    fn face() {
-        let (bot, group_id, _) = bot_group_member(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
-        bot.login();
         // `Face`
         let face = Face::from(123);
-        let group = Group::new(&bot, group_id).unwrap();
         println!("{}", face.get_name());
         println!("{}", face.to_code());
         println!("{}", face.to_content());
@@ -90,17 +69,10 @@ mod tests {
         println!("{}", face.to_string());
         let r = group.send_message(&face);
         r.recall();
-        bot.close();
-    }
-    #[test]
-    fn file_message() {
-        let (bot, group_id, _) = bot_group_member(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
-        bot.login();
         // `FileMessage`
-        let group = Group::new(&bot, group_id).unwrap();
         let remote_files = group.get_files();
-        let group = remote_files.get_contact();
-        assert_eq!(group.get_id(), group_id);
+        let group_ = remote_files.get_contact();
+        assert_eq!(group_.get_id(), group_id);
         let root = remote_files.get_root();
         println!("根目录名：{}", root.get_name());
         let root_children = root.children().to_vec();
@@ -132,15 +104,7 @@ mod tests {
         let res = ExternalResource::create_from_file(FILE_PATH);
         let _ = root.upload_new_file("mirai_j4rs_test.mp3", &res);
         res.close();
-        bot.close();
-    }
-
-    #[test]
-    fn forward_message() {
-        let (bot, group_id, _) = bot_group_member(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
-        bot.login();
         // `ForwardMessage`
-        let group = Group::new(&bot, group_id).unwrap();
         let message = ForwardMessageBuilder::new(&group)
             .add(
                 &bot,
@@ -150,14 +114,7 @@ mod tests {
             .add_(3141592654_i64, "(｢・ω・)｢", &AtAll::new(), 1706798166)
             .build();
         let _r = group.send_message(&message);
-        bot.close();
-    }
-    #[test]
-    fn image() {
-        let (bot, group_id, _) = bot_group_member(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
-        bot.login();
         // `Image`
-        let group = Group::new(&bot, group_id).unwrap();
         let image = group.upload_image_from_file(IMAGE_PATH);
         println!("{}", image.get_image_id());
         println!("{}", image.get_md5());
@@ -171,14 +128,6 @@ mod tests {
         println!("{}", image.get_height());
         let image = Image::from_id(image.get_image_id());
         let _r = group.send_message(&image);
-        bot.close();
-    }
-
-    #[test]
-    fn market_face() {
-        let (bot, group_id, _) = bot_group_member(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
-        bot.login();
-        let group = Group::new(&bot, group_id).unwrap();
         // `Dice`
         // 目前新版客户端可以接受该类型消息，但是不会显示点数。
         // 可以直接指定。
@@ -195,13 +144,6 @@ mod tests {
         let _r = group.send_message(&rps);
         // `MarketFace` 其他市场表情。
         // 不支持直接构造和发送。可以转发。
-        bot.close();
-    }
-
-    #[test]
-    fn nudge() {
-        let (bot, _, _member_id) = bot_group_member(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
-        bot.login();
         // 只有安卓手机协议和苹果平板协议支持。其余协议会报错。
         // 用法如下：
         // `BotNudge`
@@ -209,49 +151,23 @@ mod tests {
         // let friend = member_id;
         // let friend = bot.get_friend(friend).expect("Bot 没有该好友。");
         // bot_nudge.send_to(friend);
-        bot.close();
-    }
-
-    #[test]
-    fn poke_message() {
-        let (bot, group_id, member_id) = bot_group_member(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
-        bot.login();
-        let group = Group::new(&bot, group_id).unwrap();
-        let friend = bot.get_friend(member_id).expect("Bot 没有该好友。");
         // `PokeMessage`
         // 在群里可以发 SVIP 的戳一戳。
         // 官方客户端似乎不能在群里发该类型消息。
-        let poke_message: PokeMessage = PokeMessageEnum::召唤术.into();
+        let poke_message: PokeMessage<Overflow> = PokeMessageEnum::召唤术.into();
         let r = group.send_message(&poke_message);
         r.recall();
         // 但是只能给好友发普通戳一戳。
-        let poke_message: PokeMessage = PokeMessageEnum::六六六.into();
+        let poke_message: PokeMessage<Overflow> = PokeMessageEnum::六六六.into();
         let r = friend.send_message(&poke_message);
         r.recall();
-        bot.close();
-    }
-
-    #[test]
-    fn plain_text() {
-        let (bot, group_id, _) = bot_group_member(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
-        bot.login();
-        let group = Group::new(&bot, group_id).unwrap();
         // `PlainText`
         let plain_text = PlainText::from("你好！");
         let _r = group.send_message(&plain_text);
         let _r = group.send_string("Hello!");
-        bot.close();
-    }
-
-    #[test]
-    fn quote_reply() {
-        let (bot, group_id, _) = bot_group_member(WORKING_DIR); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
-        bot.login();
-        let group = Group::new(&bot, group_id).unwrap();
         // `PlainText`
         let plain_text = PlainText::from("你好！");
         let _r = group.send_message(&plain_text);
         let _r = group.send_string("Hello!");
-        bot.close();
     }
 }

@@ -7,18 +7,20 @@ use crate::event::{
     BroadcastControllableTrait, GroupEventTrait, GroupMemberInfoChangeEventTrait,
     GroupSettingsChangeEventTrait,
 };
+use crate::utils::backend::BotBackend;
 
 #[mj_event]
-pub struct GroupAllowConfessTalkEvent {
+pub struct GroupAllowConfessTalkEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl GroupSettingsChangeEventTrait<bool> for GroupAllowConfessTalkEvent {}
-impl GroupMemberInfoChangeEventTrait for GroupAllowConfessTalkEvent {}
+impl<B: BotBackend> GroupSettingsChangeEventTrait<B, bool> for GroupAllowConfessTalkEvent<B> {}
+impl<B: BotBackend> GroupMemberInfoChangeEventTrait<B> for GroupAllowConfessTalkEvent<B> {}
 
-impl BotEventTrait for GroupAllowConfessTalkEvent {}
-impl GroupEventTrait for GroupAllowConfessTalkEvent {}
-impl BaseGroupMemberInfoChangeEventTrait for GroupAllowConfessTalkEvent {}
+impl<B: BotBackend> BotEventTrait<B> for GroupAllowConfessTalkEvent<B> {}
+impl<B: BotBackend> GroupEventTrait<B> for GroupAllowConfessTalkEvent<B> {}
+impl<B: BotBackend> BaseGroupMemberInfoChangeEventTrait<B> for GroupAllowConfessTalkEvent<B> {}
 
-impl BroadcastControllableTrait for GroupAllowConfessTalkEvent {}
-impl BotPassiveEventTrait for GroupAllowConfessTalkEvent {}
+impl<B:BotBackend> BroadcastControllableTrait<B> for GroupAllowConfessTalkEvent<B> {}
+impl<B: BotBackend> BotPassiveEventTrait<B> for GroupAllowConfessTalkEvent<B> {}

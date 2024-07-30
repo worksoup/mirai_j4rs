@@ -5,19 +5,20 @@ use jbuchong::{FromInstanceTrait, TryFromInstanceTrait};
 use crate::contact::{Bot, ContactTrait};
 use crate::event::{BotPassiveEventTrait, MiraiEventTrait, OtherClientEventTrait};
 use crate::message::data::MessageChain;
+use crate::utils::backend::BotBackend;
 
-pub trait MessageEventTrait<Sender: ContactTrait, Subject: ContactTrait>
+pub trait MessageEventTrait<B: BotBackend, Sender: ContactTrait<B>, Subject: ContactTrait<B>>
 where
-    Self: MiraiEventTrait + BotPassiveEventTrait + OtherClientEventTrait,
+    Self: MiraiEventTrait<B> + BotPassiveEventTrait<B> + OtherClientEventTrait<B>,
 {
-    fn get_bot(&self) -> Bot {
+    fn get_bot(&self) -> Bot<B> {
         let jvm = Jvm::attach_thread().unwrap();
         let bot = jvm
             .invoke(self.as_instance(), "getBot", InvocationArg::empty())
             .unwrap();
         Bot::try_from_instance(bot).unwrap()
     }
-    fn get_message(&self) -> MessageChain {
+    fn get_message(&self) -> MessageChain<B> {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
             .invoke(self.as_instance(), "getMessage", InvocationArg::empty())
@@ -39,7 +40,7 @@ where
         )
         .unwrap()
     }
-    fn get_source(&self) -> () {
+    fn get_source(&self) {
         todo!("message.data.OnlineMessageSource.Incoming")
     }
     fn get_subject(&self) -> Subject {
@@ -60,17 +61,17 @@ where
 }
 
 // TODO
-pub trait MessageSyncEventTrait<Sender: ContactTrait, Subject: ContactTrait>:
-    MessageEventTrait<Sender, Subject> + OtherClientEventTrait
+pub trait MessageSyncEventTrait<B: BotBackend, Sender: ContactTrait<B>, Subject: ContactTrait<B>>:
+    MessageEventTrait<B, Sender, Subject> + OtherClientEventTrait<B>
 {
 }
 
-pub trait GroupAwareMessageTrait<Sender: ContactTrait, Subject: ContactTrait>:
-    MessageEventTrait<Sender, Subject>
+pub trait GroupAwareMessageTrait<B: BotBackend, Sender: ContactTrait<B>, Subject: ContactTrait<B>>:
+    MessageEventTrait<B, Sender, Subject>
 {
 }
 
-pub trait UserMessageEventTrait<Sender: ContactTrait, Subject: ContactTrait>:
-    MessageEventTrait<Sender, Subject>
+pub trait UserMessageEventTrait<B: BotBackend, Sender: ContactTrait<B>, Subject: ContactTrait<B>>:
+    MessageEventTrait<B, Sender, Subject>
 {
 }

@@ -1,8 +1,9 @@
 use j4rs::{InvocationArg, Jvm};
 
-use jbuchong::{AsInstanceTrait, TryFromInstanceTrait, GetClassTypeTrait, GetInstanceTrait};
+use crate::utils::backend::BotBackend;
+use jbuchong::{AsInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait};
 
-pub trait MiraiEventTrait
+pub trait MiraiEventTrait<B: BotBackend>
 where
     Self: GetInstanceTrait + GetClassTypeTrait + TryFromInstanceTrait + AsInstanceTrait,
 {

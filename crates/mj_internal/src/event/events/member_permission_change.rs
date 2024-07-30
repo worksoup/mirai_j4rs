@@ -6,21 +6,23 @@ use crate::event::{
     BaseGroupMemberInfoChangeEventTrait, BotEventTrait, BotPassiveEventTrait, GroupEventTrait,
     GroupMemberEventTrait, GroupMemberInfoChangeEventTrait, UserEventTrait,
 };
+use crate::utils::backend::BotBackend;
 
 #[mj_event]
-pub struct MemberPermissionChangeEvent {
+pub struct MemberPermissionChangeEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl GroupEventTrait for MemberPermissionChangeEvent {}
+impl<B: BotBackend> GroupEventTrait<B> for MemberPermissionChangeEvent<B> {}
 
-impl BotEventTrait for MemberPermissionChangeEvent {}
+impl<B: BotBackend> BotEventTrait<B> for MemberPermissionChangeEvent<B> {}
 
-impl UserEventTrait for MemberPermissionChangeEvent {}
+impl<B: BotBackend> UserEventTrait<B> for MemberPermissionChangeEvent<B> {}
 
-impl GroupMemberEventTrait for MemberPermissionChangeEvent {}
-impl BotPassiveEventTrait for MemberPermissionChangeEvent {}
+impl<B: BotBackend> GroupMemberEventTrait<B> for MemberPermissionChangeEvent<B> {}
+impl<B: BotBackend> BotPassiveEventTrait<B> for MemberPermissionChangeEvent<B> {}
 
-impl BaseGroupMemberInfoChangeEventTrait for MemberPermissionChangeEvent {}
+impl<B: BotBackend> BaseGroupMemberInfoChangeEventTrait<B> for MemberPermissionChangeEvent<B> {}
 
-impl GroupMemberInfoChangeEventTrait for MemberPermissionChangeEvent {}
+impl<B: BotBackend> GroupMemberInfoChangeEventTrait<B> for MemberPermissionChangeEvent<B> {}

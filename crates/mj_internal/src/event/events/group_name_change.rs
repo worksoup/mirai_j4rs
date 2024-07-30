@@ -7,17 +7,19 @@ use crate::event::{
     BroadcastControllableTrait, GroupEventTrait, GroupMemberInfoChangeEventTrait,
     GroupOperableEventTrait, GroupSettingsChangeEventTrait,
 };
+use crate::utils::backend::BotBackend;
 
 #[mj_event]
-pub struct GroupNameChangeEvent {
+pub struct GroupNameChangeEvent<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
-impl GroupSettingsChangeEventTrait<String> for GroupNameChangeEvent {}
-impl GroupOperableEventTrait for GroupNameChangeEvent {}
-impl GroupMemberInfoChangeEventTrait for GroupNameChangeEvent {}
+impl<B: BotBackend> GroupSettingsChangeEventTrait<B, String> for GroupNameChangeEvent<B> {}
+impl<B: BotBackend> GroupOperableEventTrait<B> for GroupNameChangeEvent<B> {}
+impl<B: BotBackend> GroupMemberInfoChangeEventTrait<B> for GroupNameChangeEvent<B> {}
 
-impl BotEventTrait for GroupNameChangeEvent {}
-impl GroupEventTrait for GroupNameChangeEvent {}
-impl BaseGroupMemberInfoChangeEventTrait for GroupNameChangeEvent {}
-impl BroadcastControllableTrait for GroupNameChangeEvent {}
-impl BotPassiveEventTrait for GroupNameChangeEvent {}
+impl<B: BotBackend> BotEventTrait<B> for GroupNameChangeEvent<B> {}
+impl<B: BotBackend> GroupEventTrait<B> for GroupNameChangeEvent<B> {}
+impl <B:BotBackend>BaseGroupMemberInfoChangeEventTrait<B> for GroupNameChangeEvent<B> {}
+impl<B:BotBackend> BroadcastControllableTrait<B> for GroupNameChangeEvent<B> {}
+impl <B:BotBackend>BotPassiveEventTrait<B> for GroupNameChangeEvent<B> {}

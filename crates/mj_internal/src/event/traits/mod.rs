@@ -1,3 +1,4 @@
+use crate::utils::backend::BotBackend;
 pub use bot::*;
 pub use event::*;
 pub use friend::*;
@@ -16,5 +17,5 @@ mod other_client;
 mod stranger;
 mod user;
 
-pub trait BroadcastControllableTrait: MiraiEventTrait {}
-pub trait CancellableEventTrait: MiraiEventTrait {}
+pub trait BroadcastControllableTrait<B: BotBackend>: MiraiEventTrait<B> {}
+pub trait CancellableEventTrait<B: BotBackend>: MiraiEventTrait<B> {}

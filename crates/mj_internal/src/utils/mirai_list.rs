@@ -1,23 +1,17 @@
 use crate::contact::ActiveRankRecord;
-use j4rs::errors::J4RsError;
+use crate::utils::backend::BotBackend;
 use j4rs::{Instance, InvocationArg, Jvm};
-use jbuchong::{GetInstanceTrait, TryFromInstanceTrait};
+use jbuchong::{java_all, TryFromInstanceTrait};
 
-pub struct MiraiList<T> {
+#[java_all]
+pub struct MiraiList<B: BotBackend, T> {
     instance: Instance,
     vec: Option<Vec<T>>,
+    _backend: B,
 }
-impl<T> TryFromInstanceTrait for MiraiList<T> {
-    fn try_from_instance(instance: Instance) -> Result<Self, J4RsError> {
-        Ok(Self {
-            instance,
-            vec: None,
-        })
-    }
-}
-impl MiraiList<ActiveRankRecord> {
+impl<B: BotBackend> MiraiList<B, ActiveRankRecord<B>> {
     ///这个函数记得改改。
-    pub fn to_vector(&self) -> &Option<Vec<ActiveRankRecord>> {
+    pub fn to_vector(&self) -> &Option<Vec<ActiveRankRecord<B>>> {
         &self.vec
     }
     ///这个函数记得改改。
@@ -26,7 +20,7 @@ impl MiraiList<ActiveRankRecord> {
         let it = jvm
             .invoke(&self.instance, "listIterator", InvocationArg::empty())
             .unwrap();
-        let mut vec = Vec::<ActiveRankRecord>::new();
+        let mut vec = Vec::<ActiveRankRecord<B>>::new();
         while jvm
             .chain(&it)
             .unwrap()
@@ -41,14 +35,5 @@ impl MiraiList<ActiveRankRecord> {
             }
         }
         self.vec = Some(vec);
-    }
-}
-
-impl<T> GetInstanceTrait for MiraiList<T> {
-    fn get_instance(&self) -> Result<Instance, J4RsError> {
-        Ok(Jvm::attach_thread()
-            .unwrap()
-            .clone_instance(&self.instance)
-            .unwrap())
     }
 }

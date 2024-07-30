@@ -3,20 +3,22 @@ use jbuchong::{GetClassTypeTrait, GetInstanceTrait};
 use mj_helper_macro::mj_all;
 
 use crate::message::message_trait::{ConstrainSingleTrait, MessageTrait, SingleMessageTrait};
+use crate::utils::backend::BotBackend;
 
 // TODO
 #[mj_all("message.data.MessageSource")]
-pub struct MessageSource {
+pub struct MessageSource<B: BotBackend> {
     instance: Instance,
+    _backend: B,
 }
 
-impl MessageTrait for MessageSource {}
+impl<B: BotBackend> MessageTrait<B> for MessageSource<B> {}
 
-impl SingleMessageTrait for MessageSource {}
+impl<B: BotBackend> SingleMessageTrait<B> for MessageSource<B> {}
 
-impl ConstrainSingleTrait for MessageSource {}
+impl<B: BotBackend> ConstrainSingleTrait<B> for MessageSource<B> {}
 
-impl Clone for MessageSource {
+impl<B: BotBackend> Clone for MessageSource<B> {
     fn clone(&self) -> Self {
         let jvm = Jvm::attach_thread().unwrap();
         let instance = jvm
@@ -25,6 +27,9 @@ impl Clone for MessageSource {
                 &[InvocationArg::try_from(self.get_instance()).unwrap()],
             )
             .unwrap();
-        Self { instance }
+        Self {
+            instance,
+            _backend: B::default(),
+        }
     }
 }

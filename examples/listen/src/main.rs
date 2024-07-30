@@ -111,7 +111,7 @@ fn match_single_message<B: BotBackend>(msg: SingleMessage<B>, contact: Option<Gr
 
 fn main() {
     let (bot, _, _) = bot_group_member_overflow("./working_dir", 1106); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
-    bot.login();
+    // bot.login(); // Overflow 后端无登录逻辑。
     let event_channel = bot.get_event_channel();
     let on_group_message_event: Box<dyn Fn(GroupMessageEvent<Overflow>)> =
         Box::new(|group_message_event| {

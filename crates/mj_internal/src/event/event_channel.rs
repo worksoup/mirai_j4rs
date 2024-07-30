@@ -45,7 +45,23 @@ impl<B: BotBackend> EventChannel<B> {
         on_event: impl Fn(E) + 'static,
     ) -> Listener<E> {
         // TODO
-        self.subscribe(on_event)
+        let class_type = E::get_class_type();
+        let consumer = Consumer::new(on_event);
+        let listener = Jvm::attach_thread()
+            .unwrap()
+            .invoke(
+                &self.instance,
+                "subscribeAlways",
+                &[
+                    InvocationArg::from(class_type),
+                    InvocationArg::from(consumer.get_instance().unwrap()),
+                ],
+            )
+            .unwrap();
+        Listener {
+            instance: listener,
+            consumer,
+        }
     }
     pub fn subscribe_once<E: MiraiEventTrait<B>>(
         &self,

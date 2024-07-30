@@ -10,11 +10,6 @@ use syn::{
     PathArguments::AngleBracketed, Stmt, Type,
 };
 
-fn add_prefix(input: TokenStream) -> LitStr {
-    let type_name: &syn::LitStr = &syn::parse(input).expect("类型名称请用字符串表示！");
-    let ty = type_name.value();
-    LitStr::new(format!("{}{}", MIRAI_PREFIX, ty).as_str(), type_name.span())
-}
 /// ### `mj_all`
 ///
 /// 同时应用 [`GetInstanceDerive`], [`AsInstanceDerive`], [`FromInstanceDerive`] 和 [`java_type`](macro@java_type).
@@ -22,6 +17,11 @@ fn add_prefix(input: TokenStream) -> LitStr {
 /// 接受一个字符串字面值参数传递给 `java_type` 属性。
 #[proc_macro_attribute]
 pub fn mj_all(type_name: TokenStream, input: TokenStream) -> TokenStream {
+    fn add_prefix(input: TokenStream) -> LitStr {
+        let type_name: &syn::LitStr = &syn::parse(input).expect("类型名称请用字符串表示！");
+        let ty = type_name.value();
+        LitStr::new(format!("{}{}", MIRAI_PREFIX, ty).as_str(), type_name.span())
+    }
     let ast: &DeriveInput = &syn::parse(input).unwrap();
     let type_name = add_prefix(type_name);
     let gen = quote! {
@@ -78,8 +78,8 @@ pub fn mj_event(mj_type: TokenStream, input: TokenStream) -> TokenStream {
         syn::parse(mj_type).expect("类型名称请用字符串表示！")
     };
     let gen = quote! {
-        #[derive(jbuchong::AsInstanceDerive, jbuchong::TryFromInstanceDerive, jbuchong::GetInstanceDerive, mj_helper_macro::MiraiEventDerive)]
-        #[jbuchong::java_type(#type_name)]
+        #[derive(mj_helper_macro::MiraiEventDerive)]
+        #[mj_helper_macro::mj_all(#type_name)]
         #ast
     };
     gen.into()

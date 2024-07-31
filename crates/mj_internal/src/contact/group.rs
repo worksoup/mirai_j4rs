@@ -1,8 +1,7 @@
 use j4rs::{errors::J4RsError, Instance, InvocationArg, Jvm};
 use jbuchong::{
-    java_all,
-    utils::{instance_is_null, java_iter_to_rust_hash_set},
-    AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait,
+    java_all, utils::java_iter_to_rust_hash_set, FromInstanceTrait, GetClassTypeTrait,
+    GetInstanceTrait, TryFromInstanceTrait,
 };
 use mj_helper_macro::{java_fn, mj_all};
 use std::collections::HashSet;
@@ -1047,25 +1046,7 @@ impl<B: BotBackend> ContactTrait<B> for Group<B> {}
 
 impl<B: BotBackend> Group<B> {
     pub fn new(bot: &Bot<B>, id: i64) -> Option<Group<B>> {
-        let instance = Jvm::attach_thread()
-            .unwrap()
-            .invoke(
-                bot.as_instance(),
-                "getGroup",
-                &[InvocationArg::try_from(id)
-                    .unwrap()
-                    .into_primitive()
-                    .unwrap()],
-            )
-            .unwrap();
-        if !instance_is_null(&instance) {
-            Some(Group {
-                instance,
-                _backend: B::default(),
-            })
-        } else {
-            None
-        }
+        bot.get_group(id)
     }
     pub fn contains_member(&self, member: &NormalMember<B>) -> bool {
         Jvm::attach_thread()

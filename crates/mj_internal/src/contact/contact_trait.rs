@@ -4,6 +4,7 @@ use crate::contact::Bot;
 use crate::message::action::Nudge;
 use crate::message::data::OfflineAudio;
 use crate::utils::backend::BotBackend;
+use crate::utils::data_wrapper::{DataWrapper, PrimitiveConvert};
 use crate::{
     contact::{
         group::{
@@ -23,7 +24,7 @@ use jbuchong::{
     AsInstanceTrait, FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait,
 };
 use mj_base::MIRAI_PREFIX;
-use mj_helper_macro::java_fn;
+use mj_helper_macro::{error_msg_suppressor, java_fn};
 
 pub trait AssertMemberPermissionTrait<B: BotBackend>: MemberTrait<B> {
     fn is_owner(&self) -> bool;
@@ -96,40 +97,18 @@ pub trait SendMessageSupportedTrait<B: BotBackend>: ContactTrait<B> {
             .invoke(
                 &self.get_instance().unwrap(),
                 "sendMessage",
-                &[j4rs::InvocationArg::try_from(message.get_instance()).unwrap()],
+                &[j4rs::InvocationArg::from(message.get_instance().unwrap())],
             )
             .unwrap();
         MessageReceipt::new(instance, self)
     }
-
-    fn send_string(&self, string: &str) -> MessageReceipt<B, Self> {
-        let instance = Jvm::attach_thread()
-            .unwrap()
-            .invoke(
-                &self.get_instance().unwrap(),
-                "sendMessage",
-                &[j4rs::InvocationArg::try_from(string).unwrap()],
-            )
-            .unwrap();
+    #[java_fn]
+    fn send_string(&self, string: DataWrapper<&str>) -> MessageReceipt<B, Self> {
+        let instance = error_msg_suppressor!("instance");
         MessageReceipt::new(instance, self)
     }
-    fn upload_image(&self, resource: &ExternalResource) -> Image<B> {
-        let jvm = Jvm::attach_thread().unwrap();
-        // 存疑：是否需要传入 Group(java) 本身？
-        // 新：似乎不需要？
-        // 新：前两条注释说的是什么来着？
-        let image_instance = jvm
-            .invoke(
-                &self.get_instance().unwrap(),
-                "uploadImage",
-                &[InvocationArg::from(
-                    jvm.clone_instance(&resource.get_instance().unwrap())
-                        .unwrap(),
-                )],
-            )
-            .unwrap();
-        Image::from_instance(image_instance)
-    }
+    #[java_fn]
+    fn upload_image(&self, resource: &ExternalResource) -> Image<B> {}
     fn upload_image_from_file(&self, path: &str) -> Image<B> {
         // let jvm = Jvm::attach_thread().unwrap();
         let resource = ExternalResource::create_from_file(path);
@@ -163,14 +142,8 @@ pub trait AudioSupportedTrait<B: BotBackend>
 where
     Self: ContactTrait<B>,
 {
-    fn upload_audio(&self, resource: &ExternalResource) -> OfflineAudio<B> {
-        let jvm = Jvm::attach_thread().unwrap();
-        let resource = InvocationArg::try_from(resource.get_instance()).unwrap();
-        let instance = jvm
-            .invoke(&self.get_instance().unwrap(), "uploadAudio", &[resource])
-            .unwrap();
-        OfflineAudio::from_instance(instance)
-    }
+    #[java_fn]
+    fn upload_audio(&self, resource: &ExternalResource) -> OfflineAudio<B> {}
 }
 
 pub trait UserOrBotTrait<B: BotBackend>
@@ -180,17 +153,8 @@ where
 }
 
 pub trait NudgeSupportedTrait<B: BotBackend>: UserOrBotTrait<B> {
-    fn nudge(&self) -> Nudge<B, Self> {
-        let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm
-            .invoke(
-                &self.get_instance().unwrap(),
-                "nudge",
-                InvocationArg::empty(),
-            )
-            .unwrap();
-        Nudge::from_instance(instance)
-    }
+    #[java_fn]
+    fn nudge(&self) -> Nudge<B, Self> {}
 }
 
 pub trait UserTrait<B: BotBackend>
@@ -203,139 +167,57 @@ pub trait MemberTrait<B: BotBackend>
 where
     Self: UserTrait<B>,
 {
-    fn get_group(&self) -> Group<B> {
-        let jvm = Jvm::attach_thread().unwrap();
-        let group = jvm
-            .invoke(
-                &self.get_instance().unwrap(),
-                "getGroup",
-                InvocationArg::empty(),
-            )
-            .unwrap();
-        Group::try_from_instance(group).unwrap()
-    }
-    fn get_active(&self) -> MemberActive {
-        let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm
-            .invoke(
-                &self.get_instance().unwrap(),
-                "getActive",
-                InvocationArg::empty(),
-            )
-            .unwrap();
-        MemberActive::try_from_instance(instance).unwrap()
-    }
-    fn get_name_card(&self) -> String {
-        let jvm = Jvm::attach_thread().unwrap();
-        let name_card = jvm
-            .invoke(
-                &self.get_instance().unwrap(),
-                "getNameCard",
-                InvocationArg::empty(),
-            )
-            .unwrap();
-        jvm.to_rust(name_card).unwrap()
-    }
+    #[java_fn]
+    fn get_group(&self) -> Group<B> {}
+    #[java_fn]
+    fn get_active(&self) -> MemberActive {}
+    #[java_fn]
+    fn get_name_card(&self) -> String {}
+    #[java_fn]
     fn get_permission(&self) -> MemberPermission {
-        let jvm = Jvm::attach_thread().unwrap();
+        let jvm = error_msg_suppressor!("jvm");
         let perm = jvm
             .invoke(
-                &self.get_instance().unwrap(),
-                "getPermission",
+                &error_msg_suppressor!("instance"),
+                "getLevel",
                 InvocationArg::empty(),
             )
-            .unwrap();
-        let perm = jvm
-            .invoke(&perm, "getLevel", InvocationArg::empty())
             .unwrap();
         let perm: i32 = jvm.to_rust(perm).unwrap();
         MemberPermission::from(perm)
     }
-    fn get_rank_title(&self) -> String {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(
-            jvm.invoke(
-                &self.get_instance().unwrap(),
-                "getRankTitle",
-                InvocationArg::empty(),
-            )
-            .unwrap(),
-        )
-        .unwrap()
-    }
-    fn get_special_title(&self) -> String {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(
-            jvm.invoke(
-                &self.get_instance().unwrap(),
-                "getSpecialTitle",
-                InvocationArg::empty(),
-            )
-            .unwrap(),
-        )
-        .unwrap()
-    }
-    fn get_temperature_title(&self) -> String {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(
-            jvm.invoke(
-                &self.get_instance().unwrap(),
-                "getTemperatureTitle",
-                InvocationArg::empty(),
-            )
-            .unwrap(),
-        )
-        .unwrap()
-    }
+    #[java_fn]
+    fn get_rank_title(&self) -> String {}
+    #[java_fn]
+    fn get_special_title(&self) -> String {}
+    #[java_fn]
+    fn get_temperature_title(&self) -> String {}
     // TODO: 会抛出错误。
-    fn mute(&self, duration_seconds: i64) {
-        let jvm = Jvm::attach_thread().unwrap();
-        let seconds = InvocationArg::try_from(duration_seconds)
-            .unwrap()
-            .into_primitive()
-            .unwrap();
-        jvm.invoke(&self.get_instance().unwrap(), "mute", &[seconds])
-            .unwrap();
-    }
+    #[java_fn]
+    fn mute(&self, duration_seconds: DataWrapper<i64, PrimitiveConvert>) {}
 }
 
 // TODO: 为 `Bot`, `Stranger`, `NormalMember`, 实现。
-pub trait AsFriend<B: BotBackend> {
-    fn as_friend(&self) -> Friend<B>;
+pub trait AsFriend<B: BotBackend>: UserOrBotTrait<B> {
+    #[java_fn]
+    fn as_friend(&self) -> Friend<B> {}
 }
 
 // TODO: 为 `Bot`, `NormalMember`, 实现。
-pub trait AsStranger<B: BotBackend> {
-    fn as_stranger(&self) -> Friend<B>;
+pub trait AsStranger<B: BotBackend>: UserOrBotTrait<B> {
+    #[java_fn]
+    fn as_stranger(&self) -> Friend<B> {}
 }
 
 pub trait AnnouncementTrait<B: BotBackend>: GetInstanceTrait {
     /// 内容。
-    fn get_content(&self) -> String {
-        let jvm = Jvm::attach_thread().unwrap();
-        let content = jvm
-            .invoke(
-                &self.get_instance().unwrap(),
-                "getContent",
-                InvocationArg::empty(),
-            )
-            .unwrap();
-        jvm.to_rust(content).unwrap()
-    }
+    #[java_fn]
+    fn get_content(&self) -> String {}
     /// 公告的附加属性。
     ///
     /// 参见 [`AnnouncementParameters`].
-    fn get_parameters(&self) -> AnnouncementParameters {
-        let jvm = Jvm::attach_thread().unwrap();
-        let paras = jvm
-            .invoke(
-                &self.get_instance().unwrap(),
-                "getParameters",
-                InvocationArg::empty(),
-            )
-            .unwrap();
-        AnnouncementParameters::try_from_instance(paras).unwrap()
-    }
+    #[java_fn]
+    fn get_parameters(&self) -> AnnouncementParameters {}
     /// 创建 [`OfflineAnnouncement`]. 也可以使用 `self.into()` 或 [`OfflineAnnouncement::from`].
     fn to_offline(&self) -> OfflineAnnouncement<B> {
         let jvm = Jvm::attach_thread().unwrap();
@@ -352,11 +234,9 @@ pub trait AnnouncementTrait<B: BotBackend>: GetInstanceTrait {
     /// 将该公告发布到群。需要管理员权限。发布公告后群内将会出现 "有新公告" 系统提示。
     ///
     /// 需要处理的错误有：[`MiraiRsErrorEnum::PermissionDenied`], [`MiraiRsErrorEnum::IllegalState`].
+    #[java_fn]
     fn publish_to(&self, group: Group<B>) -> Result<OnlineAnnouncement<B>, MiraiRsError> {
-        let jvm = Jvm::attach_thread().unwrap();
-        let group = group.get_instance();
-        let group = InvocationArg::try_from(group).unwrap();
-        let online = jvm.invoke(&self.get_instance().unwrap(), "publishTo", &[group])?;
+        let online = error_msg_suppressor!("instance");
         Ok(OnlineAnnouncement::from_instance(online))
     }
 }

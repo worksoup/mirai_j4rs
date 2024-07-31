@@ -263,7 +263,7 @@ pub fn java_fn(java_fn_name: TokenStream, input: TokenStream) -> TokenStream {
     };
     let java_call = if self_arg.is_some() {
         quote! {
-            let instance = #jvm_var.invoke(&<Self as jbuchong::GetInstanceTrait>::get_instance(self).unwrap(), #java_fn_name, infer_type(&[#(#args),*])).unwrap();
+            let instance = #jvm_var.invoke(&<Self as jbuchong::GetInstanceTrait>::get_instance(&self).unwrap(), #java_fn_name, infer_type(&[#(#args),*])).unwrap();
         }
     } else {
         quote! {

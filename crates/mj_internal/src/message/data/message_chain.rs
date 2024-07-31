@@ -60,10 +60,18 @@ impl<B: BotBackend> MiraiRsCollectionTrait for MessageChain<B> {
             .unwrap()
     }
 }
-
+impl<B: BotBackend> MessageChain<B> {
+    pub fn iter(&self) -> MessageChainIter<B> {
+        let jvm = Jvm::attach_thread().unwrap();
+        let instance = jvm
+            .invoke(&self.instance, "iterator", InvocationArg::empty())
+            .unwrap();
+        MessageChainIter::from_instance(instance)
+    }
+}
 impl<B: BotBackend> IntoIterator for MessageChain<B> {
     type Item = SingleMessage<B>;
-    type IntoIter = MessageChainIterator<B>;
+    type IntoIter = MessageChainIter<B>;
 
     fn into_iter(self) -> Self::IntoIter {
         let jvm = Jvm::attach_thread().unwrap();
@@ -73,14 +81,13 @@ impl<B: BotBackend> IntoIterator for MessageChain<B> {
         Self::IntoIter::from_instance(instance)
     }
 }
-
 #[java_all]
-pub struct MessageChainIterator<B: BotBackend> {
+pub struct MessageChainIter<B: BotBackend> {
     instance: Instance,
     _backend: B,
 }
 
-impl<B: BotBackend> Iterator for MessageChainIterator<B> {
+impl<B: BotBackend> Iterator for MessageChainIter<B> {
     type Item = SingleMessage<B>;
 
     fn next(&mut self) -> Option<Self::Item> {

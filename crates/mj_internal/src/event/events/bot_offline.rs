@@ -1,5 +1,5 @@
-use j4rs::{Instance, InvocationArg, Jvm};
-use mj_helper_macro::mj_event;
+use j4rs::{Instance, InvocationArg};
+use mj_helper_macro::{java_fn, mj_event};
 
 use crate::event::{BotEventTrait, BotPassiveEventTrait};
 use crate::utils::backend::BotBackend;
@@ -7,13 +7,8 @@ use crate::utils::backend::BotBackend;
 /// 见 [`BotOfflineEvent`].
 pub trait BotOfflineEventTrait<B: BotBackend>: BotEventTrait<B> {
     /// 为 `true` 时会尝试重连，仅 [`BotOfflineEvent::Force`] 默认为 `false`, 其他默认为 `true`.
-    fn get_reconnect(&self) -> bool {
-        let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm
-            .invoke(self.as_instance(), "getReconnect", InvocationArg::empty())
-            .unwrap();
-        jvm.to_rust(instance).unwrap()
-    }
+    #[java_fn]
+    fn get_reconnect(&self) -> bool {}
 }
 pub trait CauseAwareTrait {}
 /// 主动离线。

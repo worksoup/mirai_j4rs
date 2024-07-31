@@ -17,7 +17,7 @@ use jbuchong::{
     utils::{instance_is_null, java_iter_to_rust_vec},
     FromInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait,
 };
-use mj_helper_macro::{java_fn, mj_all};
+use mj_helper_macro::{error_msg_suppressor, java_fn, mj_all};
 
 #[mj_all("Bot")]
 pub struct Bot<Backend: BotBackend> {
@@ -33,12 +33,10 @@ impl<B: BotBackend> Clone for Bot<B> {
     }
 }
 impl Bot<Mirai> {
-    pub fn login(&self) {
-        Jvm::attach_thread()
-            .unwrap()
-            .invoke(&self.instance, "login", InvocationArg::empty())
-            .unwrap();
-    }
+    #[java_fn]
+    pub fn login(&self) {}
+    #[java_fn]
+    pub fn get_configuration(&self) -> BotConfiguration {}
 }
 impl<B: BotBackend> Bot<B> {
     pub fn get_bots() -> Vec<Self> {
@@ -77,12 +75,8 @@ impl<B: BotBackend> Bot<B> {
             None
         }
     }
-    pub fn close(self) {
-        Jvm::attach_thread()
-            .unwrap()
-            .invoke(&self.instance, "close", InvocationArg::empty())
-            .unwrap();
-    }
+    #[java_fn]
+    pub fn close(self) {}
     pub fn close_and_join(self, _err: MiraiRsError) {
         // TODO
         Jvm::attach_thread()
@@ -92,122 +86,54 @@ impl<B: BotBackend> Bot<B> {
     }
     #[java_fn]
     pub fn get_as_friend(&self) -> Friend<B> {}
-    pub fn get_as_stranger(&self) -> Stranger<B> {
-        let instance = Jvm::attach_thread()
-            .unwrap()
-            .invoke(&self.instance, "getAsStranger", InvocationArg::empty())
-            .unwrap();
-        Stranger::from_instance(instance)
-    }
-    pub fn get_configuration(&self) -> BotConfiguration {
-        let bot_configuration = Jvm::attach_thread()
-            .unwrap()
-            .invoke(&self.instance, "getConfiguration", InvocationArg::empty())
-            .unwrap();
-        BotConfiguration::try_from_instance(bot_configuration).unwrap()
-    }
-    pub fn get_event_channel(&self) -> EventChannel<B> {
-        let instance = Jvm::attach_thread()
-            .unwrap()
-            .invoke(&self.instance, "getEventChannel", InvocationArg::empty())
-            .unwrap();
-        EventChannel::from_instance(instance)
-    }
+    #[java_fn]
+    pub fn get_as_stranger(&self) -> Stranger<B> {}
+    #[java_fn]
+    pub fn get_event_channel(&self) -> EventChannel<B> {}
+    #[java_fn]
     pub fn get_friend(&self, id: i64) -> Option<Friend<B>> {
-        let instance = Jvm::attach_thread()
-            .unwrap()
-            .invoke(
-                &self.instance,
-                "getFriend",
-                &[InvocationArg::try_from(id)
-                    .unwrap()
-                    .into_primitive()
-                    .unwrap()],
-            )
-            .unwrap();
+        let instance = error_msg_suppressor!("instance");
         if !instance_is_null(&instance) {
             Some(Friend::try_from_instance(instance).unwrap())
         } else {
             None
         }
     }
-    pub fn get_friend_groups(&self) -> FriendGroups<B> {
-        let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm
-            .invoke(&self.instance, "getFriendGroups", InvocationArg::empty())
-            .unwrap();
-        FriendGroups::from_instance(instance)
-    }
-    pub fn get_friends(&self) -> ContactList<B, Friend<B>> {
-        ContactList::try_from_instance(
-            Jvm::attach_thread()
-                .unwrap()
-                .invoke(&self.instance, "getFriends", InvocationArg::empty())
-                .unwrap(),
-        )
-        .unwrap()
-    }
+    #[java_fn]
+    pub fn get_friend_groups(&self) -> FriendGroups<B> {}
+    #[java_fn]
+    pub fn get_friends(&self) -> ContactList<B, Friend<B>> {}
+    #[java_fn]
     pub fn get_group(&self, id: i64) -> Option<Group<B>> {
-        Group::new(self, id)
+        let instance = error_msg_suppressor!("instance");
+        if !instance_is_null(&instance) {
+            Some(Group::from_instance(instance))
+        } else {
+            None
+        }
     }
-    pub fn get_groups(&self) -> ContactList<B, Group<B>> {
-        let instance = Jvm::attach_thread()
-            .unwrap()
-            .invoke(&self.instance, "getGroups", InvocationArg::empty())
-            .unwrap();
-        ContactList::try_from_instance(instance).unwrap()
-    }
+    #[java_fn]
+    pub fn get_groups(&self) -> ContactList<B, Group<B>> {}
     pub fn get_logger() -> MiraiLogger {
         todo!("get logger")
     }
-    pub fn get_other_clients(&self) -> ContactList<B, OtherClient<B>> {
-        let instance = Jvm::attach_thread()
-            .unwrap()
-            .invoke(&self.instance, "getOtherClients", InvocationArg::empty())
-            .unwrap();
-        ContactList::try_from_instance(instance).unwrap()
-    }
+    #[java_fn]
+    pub fn get_other_clients(&self) -> ContactList<B, OtherClient<B>> {}
+    #[java_fn]
     pub fn get_stranger(&self, id: i64) -> Option<Stranger<B>> {
-        let instance = Jvm::attach_thread()
-            .unwrap()
-            .invoke(
-                &self.instance,
-                "getStranger",
-                &[InvocationArg::try_from(id)
-                    .unwrap()
-                    .into_primitive()
-                    .unwrap()],
-            )
-            .unwrap();
+        let instance = error_msg_suppressor!("instance");
         if !instance_is_null(&instance) {
             Some(Stranger::from_instance(instance))
         } else {
             None
         }
     }
-    pub fn get_strangers(&self) -> ContactList<B, Stranger<B>> {
-        let instance = Jvm::attach_thread()
-            .unwrap()
-            .invoke(&self.instance, "getStrangers", InvocationArg::empty())
-            .unwrap();
-        ContactList::try_from_instance(instance).unwrap()
-    }
-    pub fn is_online(&self) -> bool {
-        Jvm::attach_thread()
-            .unwrap()
-            .chain(&self.instance)
-            .unwrap()
-            .invoke("isOnline", InvocationArg::empty())
-            .unwrap()
-            .to_rust()
-            .unwrap()
-    }
-    pub fn join(&self) {
-        Jvm::attach_thread()
-            .unwrap()
-            .invoke(&self.instance, "join", InvocationArg::empty())
-            .unwrap();
-    }
+    #[java_fn]
+    pub fn get_strangers(&self) -> ContactList<B, Stranger<B>> {}
+    #[java_fn]
+    pub fn is_online(&self) -> bool {}
+    #[java_fn]
+    pub fn join(&self) {}
 }
 
 impl<B: BotBackend> ContactOrBotTrait<B> for Bot<B> {

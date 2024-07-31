@@ -1,5 +1,5 @@
-use j4rs::{Instance, InvocationArg, Jvm};
-use mj_helper_macro::mj_all;
+use j4rs::{Instance, InvocationArg};
+use mj_helper_macro::{java_fn, mj_all};
 
 use crate::contact::{ContactOrBotTrait, ContactTrait, MemberTrait, UserOrBotTrait, UserTrait};
 use crate::utils::backend::BotBackend;
@@ -11,19 +11,13 @@ pub struct AnonymousMember<B: BotBackend> {
 }
 
 impl<B: BotBackend> AnonymousMember<B> {
-    pub fn get_anonymous_id(&self) -> String {
-        let jvm = Jvm::attach_thread().unwrap();
-        let id = jvm
-            .invoke(&self.instance, "getAnonymousId", InvocationArg::empty())
-            .unwrap();
-        jvm.to_rust(id).unwrap()
-    }
+    #[java_fn]
+    pub fn get_anonymous_id(&self) -> String {}
 }
 
 impl<B: BotBackend> MemberTrait<B> for AnonymousMember<B> {}
 
-impl<B: BotBackend> ContactOrBotTrait<B> for AnonymousMember<B> {
-}
+impl<B: BotBackend> ContactOrBotTrait<B> for AnonymousMember<B> {}
 
 impl<B: BotBackend> ContactTrait<B> for AnonymousMember<B> {}
 

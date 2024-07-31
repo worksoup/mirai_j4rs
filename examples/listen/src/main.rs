@@ -110,14 +110,14 @@ fn match_single_message<B: BotBackend>(msg: SingleMessage<B>, contact: Option<Gr
 }
 
 fn main() {
-    let (bot, _, _) = bot_group_member_overflow("./working_dir", 1106); // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+    // 这一行的背后定义了 `Env`, 所以一切操作都需要放在这之后。
+    let (bot, _, _) = bot_group_member_overflow("./working_dir", 1106);
     // bot.login(); // Overflow 后端无登录逻辑。
     let event_channel = bot.get_event_channel();
     let on_group_message_event: Box<dyn Fn(GroupMessageEvent<Overflow>)> =
         Box::new(|group_message_event| {
             let msg_chain = group_message_event.get_message();
-            // into_iter 会拿走所有权，之后我会实现一个 as_iter.
-            for msg in msg_chain.into_iter() {
+            for msg in msg_chain.iter() {
                 println!("群组消息");
                 match_single_message(msg, Some(group_message_event.get_subject()));
             }
@@ -125,8 +125,7 @@ fn main() {
     let on_friend_message_event: Box<dyn Fn(FriendMessageEvent<Overflow>)> =
         Box::new(|friend_message_event| {
             let msg_chain = friend_message_event.get_message();
-            // into_iter 会拿走所有权，之后我会实现一个 as_iter.
-            for msg in msg_chain.into_iter() {
+            for msg in msg_chain.iter() {
                 println!("好友消息");
                 match_single_message(msg, None);
             }

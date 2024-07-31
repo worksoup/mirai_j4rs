@@ -1,36 +1,27 @@
-use j4rs::{InvocationArg, Jvm};
+use j4rs::InvocationArg;
 
-use jbuchong::TryFromInstanceTrait;
-
-use crate::contact::{Bot, ContactTrait, Member, NormalMember, UserTrait};
-use crate::event::{
-    CancellableEventTrait, GroupAwareMessageTrait, MiraiEventTrait, UserMessageEventTrait,
+use crate::{
+    contact::{Bot, ContactTrait, Member, NormalMember, UserTrait},
+    event::{
+        CancellableEventTrait, GroupAwareMessageTrait, MiraiEventTrait, UserMessageEventTrait,
+    },
+    utils::backend::BotBackend,
 };
-use crate::utils::backend::BotBackend;
+use mj_helper_macro::java_fn;
 
 pub trait BotEventTrait<B: BotBackend>
 where
     Self: MiraiEventTrait<B>,
 {
-    fn get_bot(&self) -> Bot<B> {
-        let jvm = Jvm::attach_thread().unwrap();
-        let bot = jvm
-            .invoke(self.as_instance(), "getBot", InvocationArg::empty())
-            .unwrap();
-        Bot::try_from_instance(bot).unwrap()
-    }
+    #[java_fn]
+    fn get_bot(&self) -> Bot<B> {}
 }
 
 pub trait BotActiveEventTrait<B: BotBackend>: BotEventTrait<B> {}
 pub trait BotPassiveEventTrait<B: BotBackend>: BotEventTrait<B> {}
 pub trait BaseGroupMemberInfoChangeEventTrait<B: BotBackend>: BotEventTrait<B> {
-    fn get_group_id(&self) -> i64 {
-        let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm
-            .invoke(self.as_instance(), "getGroupId", InvocationArg::empty())
-            .unwrap();
-        jvm.to_rust(instance).unwrap()
-    }
+    #[java_fn]
+    fn get_group_id(&self) -> i64 {}
 }
 pub trait FriendInfoChangeEventTrait<B: BotBackend>: BotEventTrait<B> {}
 // TODO

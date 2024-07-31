@@ -1,10 +1,8 @@
+use j4rs::{errors::J4RsError, Instance};
 use std::{
     error::Error,
     fmt::{Display, Formatter},
 };
-
-use j4rs::errors::J4RsError;
-use j4rs::Instance;
 
 use jbuchong::{GetInstanceTrait, TryFromInstanceTrait};
 
@@ -21,15 +19,13 @@ pub struct MemberPermissionCheck {
 
 impl MemberPermissionCheck {
     fn permission_denied_message(&self) -> String {
-        "权限不足，需要机器人（id = ".to_string()
-            + self.bot.to_string().as_str()
-            + "）在群（ id = "
-            + self.group.to_string().as_str()
-            + "）内的权限至少为 "
-            + format!("{:?}", self.required).as_str()
-            + ", 当前为"
-            + format!("{:?}", self.actual).as_str()
-            + "."
+        format!(
+            "权限不足，需要机器人（id = {}）在群（ id = {}）内的权限至少为 {}, 当前为 {}.",
+            self.bot,
+            self.group,
+            format_args!("{:?}", self.required),
+            format_args!("{:?}", self.actual),
+        )
     }
 }
 

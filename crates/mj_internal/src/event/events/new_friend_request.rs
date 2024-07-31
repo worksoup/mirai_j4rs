@@ -1,12 +1,13 @@
 use j4rs::{Instance, InvocationArg, Jvm};
 use jbuchong::{utils::instance_is_null, TryFromInstanceTrait};
-use mj_helper_macro::mj_event;
+use mj_helper_macro::{error_msg_suppressor, java_fn, mj_event};
 use std::fmt::{Display, Formatter};
 
 use crate::contact::Group;
 use crate::event::{BotEventTrait, FriendInfoChangeEventTrait};
 use crate::message::MessageHashCodeTrait;
 use crate::utils::backend::BotBackend;
+use crate::utils::data_wrapper::{DataWrapper, PrimitiveConvert};
 
 #[mj_event]
 pub struct NewFriendRequestEvent<B: BotBackend> {
@@ -15,33 +16,15 @@ pub struct NewFriendRequestEvent<B: BotBackend> {
 }
 
 impl<B: BotBackend> NewFriendRequestEvent<B> {
-    pub fn accept(&self) {
-        let jvm = Jvm::attach_thread().unwrap();
-        let _ = jvm
-            .invoke(&self.instance, "accept", InvocationArg::empty())
-            .unwrap();
-    }
-    pub fn reject(&self, black_list: bool) {
-        let jvm = Jvm::attach_thread().unwrap();
-        let black_list = InvocationArg::try_from(black_list)
-            .unwrap()
-            .into_primitive()
-            .unwrap();
-        let _ = jvm.invoke(&self.instance, "reject", &[black_list]).unwrap();
-    }
-    pub fn get_event_id(&self) -> i64 {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(
-            jvm.invoke(&self.instance, "getEventId", InvocationArg::empty())
-                .unwrap(),
-        )
-        .unwrap()
-    }
+    #[java_fn]
+    pub fn accept(&self) {}
+    #[java_fn]
+    pub fn reject(&self, black_list: DataWrapper<bool, PrimitiveConvert>) {}
+    #[java_fn]
+    pub fn get_event_id(&self) -> i64 {}
+    #[java_fn]
     pub fn get_from_group(&self) -> Option<Group<B>> {
-        let jvm = Jvm::attach_thread().unwrap();
-        let group = jvm
-            .invoke(&self.instance, "getFromGroup", InvocationArg::empty())
-            .unwrap();
+        let group = error_msg_suppressor!("instance");
         if !instance_is_null(&group) {
             Group::try_from_instance(group).ok()
         } else {
@@ -62,30 +45,13 @@ impl<B: BotBackend> NewFriendRequestEvent<B> {
             None
         }
     }
-    pub fn get_from_id(&self) -> i64 {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(
-            jvm.invoke(&self.instance, "getFromId", InvocationArg::empty())
-                .unwrap(),
-        )
-        .unwrap()
-    }
-    pub fn get_from_nick(&self) -> String {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(
-            jvm.invoke(&self.instance, "getFromNick", InvocationArg::empty())
-                .unwrap(),
-        )
-        .unwrap()
-    }
-    pub fn get_from_message(&self) -> String {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(
-            jvm.invoke(&self.instance, "getMessage", InvocationArg::empty())
-                .unwrap(),
-        )
-        .unwrap()
-    }
+    #[java_fn]
+    pub fn get_from_id(&self) -> i64 {}
+    #[java_fn]
+    pub fn get_from_nick(&self) -> String {}
+    // TODO: check the method name;
+    #[java_fn("getMessage")]
+    pub fn get_from_message(&self) -> String {}
 }
 impl<B: BotBackend> Display for NewFriendRequestEvent<B> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

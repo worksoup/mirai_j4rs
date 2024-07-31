@@ -1,63 +1,32 @@
-use j4rs::{InvocationArg, Jvm};
+use j4rs::InvocationArg;
 
-use jbuchong::{FromInstanceTrait, TryFromInstanceTrait};
-
-use crate::contact::{Bot, ContactTrait};
-use crate::event::{BotPassiveEventTrait, MiraiEventTrait, OtherClientEventTrait};
-use crate::message::data::MessageChain;
-use crate::utils::backend::BotBackend;
+use crate::{
+    contact::{Bot, ContactTrait},
+    event::{BotPassiveEventTrait, MiraiEventTrait, OtherClientEventTrait},
+    message::data::MessageChain,
+    utils::backend::BotBackend,
+};
+use mj_helper_macro::java_fn;
 
 pub trait MessageEventTrait<B: BotBackend, Sender: ContactTrait<B>, Subject: ContactTrait<B>>
 where
     Self: MiraiEventTrait<B> + BotPassiveEventTrait<B> + OtherClientEventTrait<B>,
 {
-    fn get_bot(&self) -> Bot<B> {
-        let jvm = Jvm::attach_thread().unwrap();
-        let bot = jvm
-            .invoke(self.as_instance(), "getBot", InvocationArg::empty())
-            .unwrap();
-        Bot::try_from_instance(bot).unwrap()
-    }
-    fn get_message(&self) -> MessageChain<B> {
-        let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm
-            .invoke(self.as_instance(), "getMessage", InvocationArg::empty())
-            .unwrap();
-        MessageChain::from_instance(instance)
-    }
-    fn get_sender(&self) -> Sender {
-        let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm
-            .invoke(self.as_instance(), "getSender", InvocationArg::empty())
-            .unwrap();
-        Sender::try_from_instance(instance).unwrap()
-    }
-    fn get_sender_name(&self) -> String {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(
-            jvm.invoke(self.as_instance(), "getSenderName", InvocationArg::empty())
-                .unwrap(),
-        )
-        .unwrap()
-    }
+    #[java_fn]
+    fn get_bot(&self) -> Bot<B> {}
+    #[java_fn]
+    fn get_message(&self) -> MessageChain<B> {}
+    #[java_fn]
+    fn get_sender(&self) -> Sender {}
+    #[java_fn]
+    fn get_sender_name(&self) -> String {}
     fn get_source(&self) {
         todo!("message.data.OnlineMessageSource.Incoming")
     }
-    fn get_subject(&self) -> Subject {
-        let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm
-            .invoke(self.as_instance(), "getSubject", InvocationArg::empty())
-            .unwrap();
-        Subject::try_from_instance(instance).unwrap()
-    }
-    fn get_time(&self) -> i64 {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(
-            jvm.invoke(self.as_instance(), "getTime", InvocationArg::empty())
-                .unwrap(),
-        )
-        .unwrap()
-    }
+    #[java_fn]
+    fn get_subject(&self) -> Subject {}
+    #[java_fn]
+    fn get_time(&self) -> i64 {}
 }
 
 // TODO

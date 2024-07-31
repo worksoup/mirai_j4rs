@@ -1,38 +1,21 @@
-use j4rs::{InvocationArg, Jvm};
+use j4rs::InvocationArg;
 
 use crate::utils::backend::BotBackend;
 use jbuchong::{AsInstanceTrait, GetClassTypeTrait, GetInstanceTrait, TryFromInstanceTrait};
+use mj_helper_macro::java_fn;
 
 pub trait MiraiEventTrait<B: BotBackend>
 where
     Self: GetInstanceTrait + GetClassTypeTrait + TryFromInstanceTrait + AsInstanceTrait,
 {
-    fn cancel(&self) {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.invoke(self.as_instance(), "cancel", InvocationArg::empty())
-            .unwrap();
-    }
-    fn intercept(&self) {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.invoke(self.as_instance(), "intercept", InvocationArg::empty())
-            .unwrap();
-    }
-    fn is_canceled(&self) -> bool {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(
-            jvm.invoke(self.as_instance(), "isCanceled", InvocationArg::empty())
-                .unwrap(),
-        )
-        .unwrap()
-    }
-    fn is_intercepted(&self) -> bool {
-        let jvm = Jvm::attach_thread().unwrap();
-        jvm.to_rust(
-            jvm.invoke(self.as_instance(), "isIntercepted", InvocationArg::empty())
-                .unwrap(),
-        )
-        .unwrap()
-    }
+    #[java_fn]
+    fn cancel(&self) {}
+    #[java_fn]
+    fn intercept(&self) {}
+    #[java_fn]
+    fn is_canceled(&self) -> bool {}
+    #[java_fn]
+    fn is_intercepted(&self) -> bool {}
     /// 广播一个事件。
     fn broadcast(&self) {
         todo!("参见 EventKt")

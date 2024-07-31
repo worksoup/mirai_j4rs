@@ -21,6 +21,8 @@ impl<B: BotBackend> EventChannel<B> {
             .unwrap();
         Self::from_instance(instance)
     }
+    /// TODO
+    /// 暂时无法使用，请用 [`subscribe_always`][EventChannel::subscribe_always].
     pub fn subscribe<E: MiraiEventTrait<B>>(&self, on_event: impl Fn(E) + 'static) -> Listener<E> {
         let class_type = E::get_class_type();
         let consumer = Consumer::new(on_event);
@@ -44,7 +46,6 @@ impl<B: BotBackend> EventChannel<B> {
         &self,
         on_event: impl Fn(E) + 'static,
     ) -> Listener<E> {
-        // TODO
         let class_type = E::get_class_type();
         let consumer = Consumer::new(on_event);
         let listener = Jvm::attach_thread()
@@ -63,12 +64,13 @@ impl<B: BotBackend> EventChannel<B> {
             consumer,
         }
     }
+    /// TODO
+    /// 暂时无法使用，暂时与 [`subscribe_always`][EventChannel::subscribe_always] 效果完全相同。
     pub fn subscribe_once<E: MiraiEventTrait<B>>(
         &self,
         on_event: impl Fn(E) + 'static,
     ) -> Listener<E> {
-        // TODO
-        self.subscribe(on_event)
+        self.subscribe_always(on_event)
     }
     pub fn exception_handler(&self) -> Self {
         todo!("exception_handler")

@@ -1,24 +1,19 @@
 use std::marker::PhantomData;
 
-use j4rs::{Instance, InvocationArg, Jvm};
-use jbuchong::{java_all, AsInstanceTrait, GetInstanceTrait, TryFromInstanceTrait};
-
 use crate::utils::backend::BotBackend;
 use crate::{
     contact::{ContactTrait, UserOrBotTrait},
     message::message_trait::MessageHashCodeTrait,
 };
+use j4rs::{Instance, InvocationArg, Jvm};
+use jbuchong::{java_all, AsInstanceTrait, GetInstanceTrait, TryFromInstanceTrait};
+use mj_helper_macro::java_fn;
 
 pub trait NudgeTrait<B: BotBackend, UserOrBot: UserOrBotTrait<B>>:
     GetInstanceTrait + MessageHashCodeTrait + TryFromInstanceTrait + AsInstanceTrait
 {
-    fn get_target(&self) -> UserOrBot {
-        let jvm = Jvm::attach_thread().unwrap();
-        let instance = jvm
-            .invoke(self.as_instance(), "getTarget", InvocationArg::empty())
-            .unwrap();
-        UserOrBot::try_from_instance(instance).unwrap()
-    }
+    #[java_fn]
+    fn get_target(&self) -> UserOrBot {}
     // TODO: 该函数不符合 Mirai 定义的位置。到时候用 rust 标准库里的特征看看能不能实现一下。
     fn to_string(&self) -> String {
         let jvm = Jvm::attach_thread().unwrap();
